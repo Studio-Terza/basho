@@ -19,9 +19,6 @@ impl Chrome {
     const FALLBACK: &str = "chromium";
     const LISTENING: &str = "DevTools listening on ";
     const PROFILE: &str = "../../target/ui-chrome-own";
-    const CACHE: &str = "../../target/ui-chrome-cache";
-    const CACHE_HOME: &str = "XDG_CACHE_HOME";
-    const FONT_CACHE: &str = "fontconfig";
     const PATIENCE: Duration = Duration::from_secs(30);
     const FLAGS: [&str; 8] = [
         "--headless",
@@ -64,24 +61,16 @@ impl Chrome {
             "phone check: chrome binary {}",
             Self::resolved(&binary).display()
         );
-        let cache = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
-            "{}-{}",
-            Self::CACHE,
-            std::process::id()
-        ));
-        std::fs::create_dir_all(cache.join(Self::FONT_CACHE))
-            .expect("the font cache folder can be made");
         let mut process = Command::new(binary)
             .args(Self::FLAGS)
             .arg(format!("--user-data-dir={}", profile.display()))
-            .env(Self::CACHE_HOME, cache)
             .stdout(Stdio::null())
             .stderr(Stdio::piped())
             .spawn()
             .expect("the UI checks need Chrome or Chromium: set CHROME to its binary");
         let (found, endpoint) = mpsc::channel();
         let stderr = process.stderr.take();
-        std::thread::spawn(move || Self::listened(stderr, &found, started));
+        std::thread::spawn(move || Self::listened(stderr, &found));
         let endpoint = endpoint
             .recv_timeout(Self::PATIENCE)
             .expect("Chrome reports its DevTools endpoint");
@@ -92,13 +81,12 @@ impl Chrome {
         }
     }
 
-    fn listened(stderr: Option<ChildStderr>, found: &mpsc::Sender<String>, started: Instant) {
+    fn listened(stderr: Option<ChildStderr>, found: &mpsc::Sender<String>) {
         stderr
             .map(BufReader::new)
             .into_iter()
             .flat_map(BufRead::lines)
             .map_while(Result::ok)
-            .inspect(|line| println!("phone check: chrome {:.2?} {line}", started.elapsed()))
             .filter_map(|line| line.strip_prefix(Self::LISTENING).map(str::to_owned))
             .for_each(|endpoint| found.send(endpoint).unwrap_or_default());
     }
