@@ -19,6 +19,8 @@ impl Chrome {
     const FALLBACK: &str = "chromium";
     const LISTENING: &str = "DevTools listening on ";
     const PROFILE: &str = "../../target/ui-chrome-own";
+    const CACHE: &str = "../../target/ui-chrome-cache";
+    const CACHE_HOME: &str = "XDG_CACHE_HOME";
     const PATIENCE: Duration = Duration::from_secs(30);
     const FLAGS: [&str; 8] = [
         "--headless",
@@ -61,9 +63,12 @@ impl Chrome {
             "phone check: chrome binary {}",
             Self::resolved(&binary).display()
         );
+        let cache = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(Self::CACHE);
+        std::fs::create_dir_all(&cache).expect("the font cache folder can be made");
         let mut process = Command::new(binary)
             .args(Self::FLAGS)
             .arg(format!("--user-data-dir={}", profile.display()))
+            .env(Self::CACHE_HOME, cache)
             .stdout(Stdio::null())
             .stderr(Stdio::piped())
             .spawn()

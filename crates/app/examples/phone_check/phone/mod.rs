@@ -37,6 +37,7 @@ impl Phone {
     const MAP_CHECK: &str = include_str!("../assets/map_check.js");
     const MAP_WAIT: Duration = Duration::from_millis(100);
     const MAP_WAITS: usize = 200;
+    const MAP_SCALE: f64 = 1.0;
     const MAP_DRAWS: [&str; 4] = ["road_major", "road_street", "water", "goal"];
     const TRIP_FILE_WANTED: &str = r#"{"left":0,"offers":[{"file":"small.toml","text":"[trip]"},{"file":"photo.heic","text":null}],"taken":0}"#;
     const KEPT: &str = "../../target/ui-check";
@@ -218,6 +219,12 @@ impl Phone {
     pub fn map_problems(mut self) -> Vec<String> {
         let server = MapServer::started();
         self.tools.replied("Page.bringToFront", &json!({}));
+        self.tools.emulated(&json!({
+            "width": Handset::WIDTH.pixels(),
+            "height": Handset::HEIGHT.pixels(),
+            "deviceScaleFactor": Self::MAP_SCALE,
+            "mobile": true,
+        }));
         self.tools
             .replied("Page.navigate", &json!({ "url": server.page() }));
         let script = format!("({})()", Self::MAP_CHECK);
