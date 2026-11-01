@@ -1,8 +1,10 @@
 mod devtools;
 mod ports;
+mod stopwatch;
 mod unfinished;
 mod violation;
 
+use std::collections::BTreeMap;
 use std::fmt;
 use std::fs;
 use std::path::PathBuf;
@@ -18,6 +20,7 @@ use crate::ui_check::{Drawing, Handset, Harness, Stage};
 use devtools::DevTools;
 use layout::scale::{Text, Token};
 pub use ports::{Chrome, MapServer};
+pub use stopwatch::Stopwatch;
 use unfinished::Unfinished;
 use violation::Violation;
 
@@ -71,8 +74,7 @@ impl Phone {
             })
     }
 
-    pub fn inspect_stages(stages: &[Stage], only: Option<&str>) -> Vec<String> {
-        let chrome = Chrome::shared();
+    pub fn inspect_stages(endpoint: &str, stages: &[Stage], only: Option<&str>) -> Vec<String> {
         let chosen: Arc<Vec<Stage>> = Arc::new(
             stages
                 .iter()
@@ -83,7 +85,7 @@ impl Phone {
         let queue = Arc::new(AtomicUsize::new(0));
         let running: Vec<_> = (0..Self::POOL_SIZE)
             .map(|_| {
-                let endpoint = chrome.endpoint().to_owned();
+                let endpoint = endpoint.to_owned();
                 let chosen = Arc::clone(&chosen);
                 let queue = Arc::clone(&queue);
                 std::thread::spawn(move || Phone::open_on(&endpoint).inspect_queue(&chosen, &queue))
@@ -251,6 +253,37 @@ impl Phone {
                     .map(|name| format!("the map asked the network for {name}")),
             )
             .collect()
+    }
+}
+
+impl Phone {
+    const PROCESS_INFO: &str = "SystemInfo.getProcessInfo";
+    const GPU_INFO: &str = "SystemInfo.getInfo";
+
+    pub fn chrome_usage(endpoint: &str) -> String {
+        let mut tools = DevTools::connect(endpoint);
+        let processes = tools
+            .replied(Self::PROCESS_INFO, &json!({}))
+            .and_then(|reply| serde_json::from_str::<Value>(&reply).ok())
+            .unwrap_or_default();
+        let gpu = tools
+            .replied(Self::GPU_INFO, &json!({}))
+            .and_then(|reply| serde_json::from_str::<Value>(&reply).ok())
+            .unwrap_or_default();
+        let cpu = processes["processInfo"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .fold(BTreeMap::<String, f64>::new(), |mut spent, process| {
+                *spent
+                    .entry(process["type"].as_str().unwrap_or_default().to_owned())
+                    .or_default() += process["cpuTime"].as_f64().unwrap_or_default();
+                spent
+            });
+        format!(
+            "chrome cpu {cpu:.2?}, webgl {}, gpu {}",
+            gpu["gpu"]["featureStatus"]["webgl"], gpu["gpu"]["devices"][0]["deviceString"]
+        )
     }
 }
 

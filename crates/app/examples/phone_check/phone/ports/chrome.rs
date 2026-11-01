@@ -49,6 +49,7 @@ impl Chrome {
     }
 
     fn launched(binary: String) -> Chrome {
+        let started = std::time::Instant::now();
         let profile = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
             "{}-{}-{}",
             Self::PROFILE,
@@ -68,6 +69,7 @@ impl Chrome {
         let endpoint = endpoint
             .recv_timeout(Self::PATIENCE)
             .expect("Chrome reports its DevTools endpoint");
+        println!("phone check: chrome launch {:.2?}", started.elapsed());
         Chrome {
             endpoint,
             process: Some(process),
