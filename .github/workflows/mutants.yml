@@ -1,0 +1,77 @@
+name: Mutants
+
+on:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+
+permissions:
+  contents: read
+
+jobs:
+  changed:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: mutants-changed-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git remote set-head origin --auto
+      - uses: dtolnay/rust-toolchain@1.99.0
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants@27.1.0
+      - run: cargo xtask mutants
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutants-changed
+          path: target/procedures/*/mutants.txt
+          retention-days: 30
+
+  shard:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    concurrency:
+      group: mutants-full-${{ github.run_id }}-${{ matrix.crates }}
+      cancel-in-progress: false
+    strategy:
+      fail-fast: false
+      matrix:
+        crates:
+          - guide
+          - basho
+          - wiki
+          - map_plan+map_class+menu+layout+tiles+report+plain_text
+          - xtask+day_print+basho_lints+style_lints+osm_items+tile_draft+tile_shapes+apple_text+sim_ports+sim_suite+testflight_ports
+    env:
+      MUTANTS_SHARD: ${{ matrix.crates }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git remote set-head origin --auto
+      - uses: dtolnay/rust-toolchain@1.99.0
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-mutants@27.1.0
+      - name: mutants in shard
+        id: run
+        continue-on-error: true
+        run: cargo xtask mutants --full
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shard-${{ strategy.job-index }}
+          path: target/procedures/*/mutants.txt
+          retention-days: 30

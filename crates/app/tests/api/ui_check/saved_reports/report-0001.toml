@@ -1,0 +1,12 @@
+number = 1
+note = ""
+
+[capture]
+time = "2027-05-04 09:41"
+decisions = []
+
+[capture.facts]
+screen = "map"
+step = "day 2 step 3"
+position = "38.00100, -77.98000 ± 20 m"
+tracker = "day 2 leg 3 under Moving gps on-route automatic, 120 m along"

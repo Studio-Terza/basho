@@ -1,0 +1,24 @@
+[package]
+name = "tile_shapes"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+guide = { path = "../../crates/guide" }
+map_class = { path = "../../crates/map_class" }
+serde = { version = "1", features = ["derive"] }
+tiles = { path = "../../crates/tiles" }
+
+[[test]]
+name = "api"
+path = "tests/api/main.rs"
+
+[dev-dependencies]
+rayon = "1"
+
+[lints]
+workspace = true

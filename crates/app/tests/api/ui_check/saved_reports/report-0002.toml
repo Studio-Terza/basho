@@ -1,0 +1,17 @@
+number = 2
+note = """
+The tracker moved back a step
+near the bridge"""
+
+[capture]
+time = "2027-05-04 10:15"
+decisions = [
+    "2027-05-04 10:12 day 2 leg 3 under Moving gps on-route automatic",
+    "2027-05-04 10:14 day 2 leg 2 under Moving gps-lost on-route set 3 under base 2 under",
+]
+
+[capture.facts]
+screen = "today"
+step = "day 2 step 2 browsing"
+position = "38.00200, -77.98100 ± 60 m, last fix 2027-05-04 10:13"
+tracker = "day 2 leg 2 under Moving gps-lost on-route set 3 under base 2 under, 40 m along, 200 m off the route"

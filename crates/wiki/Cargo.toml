@@ -1,0 +1,16 @@
+[package]
+name = "wiki"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+strum = { version = "0.28", features = ["derive"] }
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+guide = { path = "../guide" }
+
+[lints]
+workspace = true

@@ -1,0 +1,10 @@
+[budgets.browser]
+division = "performance-and-cost"
+allowance = { duration = 10000 }
+window = "per_change"
+
+[budgets.browser-warning]
+division = "performance-and-cost/browser"
+allowance = { of = "browser", percent = 60 }
+window = "per_change"
+overspend = "escalate"

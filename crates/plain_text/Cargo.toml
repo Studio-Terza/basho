@@ -1,0 +1,23 @@
+[package]
+name = "plain_text"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+
+[dev-dependencies]
+laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+serde_json = "1"
+
+[[test]]
+name = "api"
+path = "tests/api/main.rs"
+
+[lints]
+workspace = true

@@ -1,0 +1,53 @@
+number = 3
+date = "2027-05-03"
+arc = 1
+title = ["A → B"]
+japanese = ["{東|ひがし}"]
+why = ["Walk a short fixture day."]
+
+[night]
+name = "Mill Inn"
+english = "Mill Inn"
+short = "Mill"
+at = { lat = 38.0, lon = 140.012 }
+evidence = { source = { url = "https://example.org", checked = "2026-09-30" } }
+why = ["Sleep here."]
+
+[[legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Road 28"]
+heading = ["east"]
+handrail = ["The river is on your right."]
+km = 0.35
+minutes = 5
+start = { plan = "08:00" }
+end = { plan = "08:05" }
+then = ["Turn left."]
+reach = ["the bridge"]
+why = ["The lane starts at the bridge."]
+road = ["A quiet lane."]
+see = { text = ["A bridge."], evidence = { source = { url = "https://example.org", checked = "2026-09-30" } } }
+at = { lat = 38.0, lon = 140.004 }
+
+[[legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["A lane"]
+heading = ["east"]
+handrail = ["Houses on both sides."]
+km = 0.70
+minutes = 10
+start = { plan = "08:05" }
+end = { plan = "08:15" }
+then = ["Arrive at the inn."]
+reach = ["the inn"]
+why = ["The inn is at the end of the lane."]
+road = ["A quiet lane."]
+see = { text = ["The inn."], evidence = { unverified = ["Not in OSM."] } }
+at = { lat = 38.0, lon = 140.012 }
+
+  [[legs.along]]
+  km = 0.3
+  kind = "shop"
+  name = [{ entry = "A konbini" }]
+  at = { lat = 38.0, lon = 140.0075 }
+  located = { url = "https://example.org", checked = "2026-09-30" }

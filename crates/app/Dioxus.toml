@@ -1,0 +1,56 @@
+[application]
+name = "Basho"
+
+[bundle]
+identifier = "com.cinglein.basho"
+publisher = "Cinglein"
+
+[permissions]
+location = { precision = "fine", description = "Shows where you are on the day's route and how far the next turn is, and warns you when you leave the route. Your location never leaves the phone." }
+
+[ios.raw]
+info_plist = """
+<key>UIApplicationSceneManifest</key>
+<dict>
+  <key>UIApplicationSupportsMultipleScenes</key>
+  <false/>
+  <key>UISceneConfigurations</key>
+  <dict>
+    <key>UIWindowSceneSessionRoleApplication</key>
+    <array>
+      <dict>
+        <key>UISceneConfigurationName</key>
+        <string>Default Configuration</string>
+        <key>UISceneDelegateClassName</key>
+        <string>TaoSceneDelegate</string>
+      </dict>
+    </array>
+  </dict>
+</dict>
+<key>ITSAppUsesNonExemptEncryption</key>
+<false/>
+<key>UIFileSharingEnabled</key>
+<true/>
+<key>LSSupportsOpeningDocumentsInPlace</key>
+<true/>
+<key>UTImportedTypeDeclarations</key>
+<array>
+  <dict>
+    <key>UTTypeIdentifier</key>
+    <string>org.toml.toml</string>
+    <key>UTTypeDescription</key>
+    <string>TOML file</string>
+    <key>UTTypeConformsTo</key>
+    <array>
+      <string>public.plain-text</string>
+    </array>
+    <key>UTTypeTagSpecification</key>
+    <dict>
+      <key>public.filename-extension</key>
+      <array>
+        <string>toml</string>
+      </array>
+    </dict>
+  </dict>
+</array>
+"""

@@ -1,0 +1,19 @@
+[package]
+name = "apple_text"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+sha1_smol = { version = "1", features = ["std"] }
+thiserror = "2"
+
+[dev-dependencies]
+laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+
+[lints]
+workspace = true

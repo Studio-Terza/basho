@@ -1,0 +1,27 @@
+[package]
+name = "osm_items"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+plain_text = { path = "../../crates/plain_text" }
+map_class = { path = "../../crates/map_class" }
+serde = { version = "1", features = ["derive"] }
+jpreprocess = { version = "0.15.0", features = ["naist-jdic"] }
+serde_json = "1"
+tile_draft = { path = "../tile_draft" }
+tile_shapes = { path = "../tile_shapes" }
+
+[dev-dependencies]
+laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+
+[[test]]
+name = "api"
+path = "tests/api/main.rs"
+
+[lints]
+workspace = true

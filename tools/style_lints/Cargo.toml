@@ -1,0 +1,16 @@
+[package]
+name = "style_lints"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+derive_more.workspace = true
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+basho_lints = { path = "../basho_lints" }
+
+[lints]
+workspace = true

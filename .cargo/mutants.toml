@@ -1,0 +1,3 @@
+test_workspace = true
+exclude_globs = ["**/main.rs"]
+minimum_test_timeout = 10.0

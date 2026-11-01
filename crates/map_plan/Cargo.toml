@@ -1,0 +1,26 @@
+[package]
+name = "map_plan"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+dioxus = "0.7.10"
+guide = { path = "../guide" }
+layout = { path = "../layout" }
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+serde = { version = "1", features = ["derive"] }
+strum = { version = "0.28", features = ["derive"] }
+
+[dev-dependencies]
+serde_json = "1"
+
+[[test]]
+name = "api"
+path = "tests/api/main.rs"
+
+[lints]
+workspace = true
