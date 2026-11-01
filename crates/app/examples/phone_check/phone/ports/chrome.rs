@@ -1,9 +1,10 @@
 use std::fmt;
 use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
 use std::process::{Child, ChildStderr, Command, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 static LAUNCHED: AtomicUsize = AtomicUsize::new(0);
 
@@ -49,13 +50,17 @@ impl Chrome {
     }
 
     fn launched(binary: String) -> Chrome {
-        let started = std::time::Instant::now();
         let profile = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(format!(
             "{}-{}-{}",
             Self::PROFILE,
             std::process::id(),
             LAUNCHED.fetch_add(1, Ordering::Relaxed)
         ));
+        let started = Instant::now();
+        println!(
+            "phone check: chrome binary {}",
+            Self::resolved(&binary).display()
+        );
         let mut process = Command::new(binary)
             .args(Self::FLAGS)
             .arg(format!("--user-data-dir={}", profile.display()))
@@ -65,7 +70,7 @@ impl Chrome {
             .expect("the UI checks need Chrome or Chromium: set CHROME to its binary");
         let (found, endpoint) = mpsc::channel();
         let stderr = process.stderr.take();
-        std::thread::spawn(move || Self::listened(stderr, &found));
+        std::thread::spawn(move || Self::listened(stderr, &found, started));
         let endpoint = endpoint
             .recv_timeout(Self::PATIENCE)
             .expect("Chrome reports its DevTools endpoint");
@@ -76,14 +81,27 @@ impl Chrome {
         }
     }
 
-    fn listened(stderr: Option<ChildStderr>, found: &mpsc::Sender<String>) {
+    fn listened(stderr: Option<ChildStderr>, found: &mpsc::Sender<String>, started: Instant) {
         stderr
             .map(BufReader::new)
             .into_iter()
             .flat_map(BufRead::lines)
             .map_while(Result::ok)
+            .inspect(|line| println!("phone check: chrome {:.2?} {line}", started.elapsed()))
             .filter_map(|line| line.strip_prefix(Self::LISTENING).map(str::to_owned))
             .for_each(|endpoint| found.send(endpoint).unwrap_or_default());
+    }
+}
+
+impl Chrome {
+    fn resolved(binary: &str) -> PathBuf {
+        std::env::var_os("PATH")
+            .iter()
+            .flat_map(std::env::split_paths)
+            .map(|folder| folder.join(binary))
+            .find(|path| path.is_file())
+            .and_then(|path| path.canonicalize().ok())
+            .unwrap_or_else(|| PathBuf::from(binary))
     }
 }
 
