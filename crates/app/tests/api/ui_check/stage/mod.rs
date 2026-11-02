@@ -588,6 +588,14 @@ impl Stage {
         Stage { progress, ..self }
     }
 
+    #[cfg(test)]
+    pub fn clocked_at(self, clock: TripTime) -> Stage {
+        Stage {
+            clock: Some(clock),
+            ..self
+        }
+    }
+
     pub fn ticked_before(self, gap: Duration) -> Stage {
         Stage {
             now: self.now.earlier_by(gap),
