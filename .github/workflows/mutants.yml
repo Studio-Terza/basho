@@ -26,6 +26,9 @@ jobs:
       - run: git remote set-head origin --auto
       - uses: dtolnay/rust-toolchain@1.99.0
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: gate
+          save-if: false
       - uses: taiki-e/install-action@v2
         with:
           tool: cargo-mutants@27.1.0
