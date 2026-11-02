@@ -1,9 +1,10 @@
 use std::fmt;
 use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
 use std::process::{Child, ChildStderr, Command, Stdio};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::mpsc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 static LAUNCHED: AtomicUsize = AtomicUsize::new(0);
 
@@ -55,6 +56,11 @@ impl Chrome {
             std::process::id(),
             LAUNCHED.fetch_add(1, Ordering::Relaxed)
         ));
+        let started = Instant::now();
+        println!(
+            "phone check: chrome binary {}",
+            Self::resolved(&binary).display()
+        );
         let mut process = Command::new(binary)
             .args(Self::FLAGS)
             .arg(format!("--user-data-dir={}", profile.display()))
@@ -68,6 +74,7 @@ impl Chrome {
         let endpoint = endpoint
             .recv_timeout(Self::PATIENCE)
             .expect("Chrome reports its DevTools endpoint");
+        println!("phone check: chrome launch {:.2?}", started.elapsed());
         Chrome {
             endpoint,
             process: Some(process),
@@ -82,6 +89,18 @@ impl Chrome {
             .map_while(Result::ok)
             .filter_map(|line| line.strip_prefix(Self::LISTENING).map(str::to_owned))
             .for_each(|endpoint| found.send(endpoint).unwrap_or_default());
+    }
+}
+
+impl Chrome {
+    fn resolved(binary: &str) -> PathBuf {
+        std::env::var_os("PATH")
+            .iter()
+            .flat_map(std::env::split_paths)
+            .map(|folder| folder.join(binary))
+            .find(|path| path.is_file())
+            .and_then(|path| path.canonicalize().ok())
+            .unwrap_or_else(|| PathBuf::from(binary))
     }
 }
 
