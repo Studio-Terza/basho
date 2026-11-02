@@ -265,6 +265,29 @@ impl Day {
             .sum()
     }
 
+    fn apart_legs(&self) -> Vec<Finding> {
+        self.legs
+            .windows(Self::LEG_PAIR_LENGTH)
+            .enumerate()
+            .filter(|(_, pair)| {
+                pair[0]
+                    .segments()
+                    .last()
+                    .zip(pair[1].segments().first())
+                    .is_some_and(|(before, after)| before.run_into(after).is_err())
+            })
+            .map(|(index, _)| {
+                Finding::on_leg(
+                    self.number,
+                    LegIndex::new(index),
+                    Problem::LegsApart {
+                        next: LegIndex::new(index + 1),
+                    },
+                )
+            })
+            .collect()
+    }
+
     fn deadline_problems(&self) -> Vec<Problem> {
         let start = self.legs.first().map(|leg| leg.listed(End::Start));
         let unanchored = self
@@ -390,6 +413,7 @@ impl From<&Day> for Vec<Finding> {
         });
         legs.chain(day.broken_lines.iter().cloned())
             .chain(gaps)
+            .chain(day.apart_legs())
             .chain(overlaps)
             .chain(transfers)
             .chain(goals)
