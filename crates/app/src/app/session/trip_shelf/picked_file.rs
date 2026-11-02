@@ -1,12 +1,11 @@
 use std::borrow::Cow;
 use std::io::{self, ErrorKind};
-use std::path::Path;
+use storage_ports::HomeFolder;
 
 use guide::Trip;
 use guide::words::Spelling;
 use serde::Deserialize;
 
-use crate::app::session::kept_file::KeptFile;
 use crate::app::session::trip_shelf::trip_input::TripInput;
 use crate::app::session::trip_shelf::trip_refusal::TripRefusal;
 use crate::app::session::trip_shelf::trip_text::TripText;
@@ -38,20 +37,20 @@ impl PickedFile {
         self.text.as_ref()
     }
 
-    fn kept(chosen: &KeptFile, text: &TripText) -> io::Result<()> {
+    fn kept(home: &HomeFolder, text: &TripText) -> io::Result<()> {
+        let chosen = TripInput::chosen_under(home);
         if *text == TripInput::built_in() {
-            chosen.replaced(TripInput::OWN_COPY)
+            home.replace(chosen.as_ref(), &TripInput::OWN_COPY)
         } else {
-            chosen.replaced(text)
+            home.replace(chosen.as_ref(), text)
         }
     }
 
-    pub fn keep_under(&self, home: Option<&Path>) -> Result<(), TripRefusal> {
-        home.map(TripInput::chosen_under)
-            .zip(self.text.as_ref())
+    pub fn keep_under(&self, home: Option<&HomeFolder>) -> Result<(), TripRefusal> {
+        home.zip(self.text.as_ref())
             .map_or_else(
                 || Err(ErrorKind::NotFound.into()),
-                |(chosen, text)| Self::kept(&chosen, text),
+                |(home, text)| Self::kept(home, text),
             )
             .map_err(|error| TripRefusal::NotKept {
                 file: self.file.clone(),

@@ -102,7 +102,9 @@ impl SessionEvent {
             SessionEvent::SwitchDark => {
                 let mut dark = session.dark;
                 let switched = dark.peek().switched();
-                switched.store();
+                switched
+                    .kept_in(session.shelf().home().as_ref())
+                    .unwrap_or_default();
                 dark.set(switched);
             }
         }

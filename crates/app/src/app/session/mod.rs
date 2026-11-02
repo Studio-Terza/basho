@@ -19,7 +19,6 @@ mod wakes;
 mod walked;
 pub mod wall_clock;
 use std::cell::Cell;
-use std::path::Path;
 use std::rc::Rc;
 use std::sync::Arc;
 use wiki::{EntryId, Wiki};
@@ -36,6 +35,7 @@ use guide::{PlaceCatalog, Trip};
 use layout::scale::Viewport;
 use map_plan::{KeyEntry, MapHealth, MapLevel, MapMode, PickedMark, PinchWay};
 use report::{ReportBook, ReportNumber, ReportStore, ReportText};
+use storage_ports::HomeFolder;
 
 use crate::app::history::{Fold, History, ScrollTop, StepFolds};
 use crate::app::screen::{Appearance, Screen, Turning};
@@ -126,10 +126,13 @@ impl Session {
         let visit = use_signal(|| Visit::restored(kept.focus()));
         let history = use_signal(|| kept.history().clone());
         let today = itinerary.day_on(now.peek().trip_date());
+        let home = shelf.home();
         let progress = use_signal(|| {
-            ProgressFile::in_home().map_or(kept.progress(), |file| {
-                file.restored(kept.progress(), today)
-            })
+            home.as_ref()
+                .map(ProgressFile::under)
+                .map_or(kept.progress(), |file| {
+                    file.restored(kept.progress(), today)
+                })
         });
         let session = Session {
             places,
@@ -161,9 +164,9 @@ impl Session {
             now,
             clock,
             wakes: use_signal(Wakes::default),
-            reports: use_signal(|| ReportBook::opened(ReportStore::in_home())),
+            reports: use_signal(|| ReportBook::opened(home.clone().map(ReportStore::in_home))),
             decisions: use_signal(|| walked.decisions().clone()),
-            dark: use_signal(DarkAfterSunset::restored),
+            dark: use_signal(|| DarkAfterSunset::restored_in(home.as_ref())),
             itinerary,
             shelf,
         };
@@ -188,7 +191,7 @@ impl Session {
             now.read();
             let latest = *progress.peek();
             (written.replace(Some(latest)) != Some(latest))
-                .then(|| ProgressFile::keep_at_home(latest, &trip));
+                .then(|| ProgressFile::keep_in(shelf.home().as_ref(), latest, &trip));
         });
         let tracker = session.clone();
         use_effect(move || SessionEvent::TrackWalk.applied(&tracker));
@@ -207,12 +210,12 @@ impl Session {
 
     #[must_use]
     pub fn launch_shelf(page: TripPage) -> TripShelf {
-        let shelf = TripShelf::open(std::env::args_os().nth(1), std::env::var_os("HOME"), page);
+        let shelf = TripShelf::open(std::env::args_os().nth(1), HomeFolder::of_user(), page);
         use_hook(|| shelf.listen(document::eval(TripShelf::LISTENER)));
         shelf
     }
 
-    pub fn forget_trip(home: Option<&Path>) {
+    pub fn forget_trip(home: Option<&HomeFolder>) {
         Place::default().keep();
         Walked::default().keep();
         home.map(ProgressFile::under)

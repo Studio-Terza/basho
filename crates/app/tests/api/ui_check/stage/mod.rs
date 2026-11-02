@@ -3,7 +3,6 @@ mod walk_scene;
 mod wanted;
 
 use std::borrow::Cow;
-use std::path::Path;
 use std::time::Duration;
 
 use dioxus::prelude::*;
@@ -36,9 +35,10 @@ use basho::app::step::{GoalNumber, Step, StepNumber};
 use layout::scale::Viewport;
 use map_plan::{KeyEntry, MapLevel, MapMode, PickedMark};
 use menu::Menu;
-use report::ReportStore;
+use report::{Report, ReportStore};
 use situation::Situation;
 use std::sync::Arc;
+use storage_fake::MemoryStorage;
 use walk_scene::WalkScene;
 use wanted::Wanted;
 use wiki::Wiki;
@@ -86,7 +86,10 @@ impl Stage {
     const OFF_ROUTE: Distance = Distance::new(400.0);
     const SPREAD: Distance = Distance::new(20.0);
     const KEY: [KeyEntry; 3] = [KeyEntry::RoadMajor, KeyEntry::Goal, KeyEntry::PoiKonbini];
-    const SAVED_REPORTS: &str = "tests/api/ui_check/saved_reports";
+    const SAVED_REPORTS: [&str; 2] = [
+        include_str!("../saved_reports/report-0001.toml"),
+        include_str!("../saved_reports/report-0002.toml"),
+    ];
     const WEEK: Duration = Duration::from_hours(7 * 24);
     const FACING_SOUTH_WEST: Degrees = Degrees::new(225.0);
     const TRAIL_STEP: Distance = Distance::new(40.0);
@@ -516,8 +519,12 @@ impl Stage {
     }
 
     fn saved_reports() -> ReportStore {
-        let folder = Path::new(env!("CARGO_MANIFEST_DIR")).join(Self::SAVED_REPORTS);
-        ReportStore::located_at(folder.clone(), folder)
+        let store = ReportStore::in_home(MemoryStorage::home());
+        Self::SAVED_REPORTS
+            .iter()
+            .map(|text| toml::from_str::<Report>(text).expect("a saved report"))
+            .for_each(|report| store.keep(&report).expect("a kept report"));
+        store
     }
 
     pub fn keeping_reports_in(self, reports: ReportStore) -> Stage {

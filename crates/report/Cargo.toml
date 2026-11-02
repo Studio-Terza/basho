@@ -9,6 +9,7 @@ publish = false
 
 [dependencies]
 plain_text = { path = "../plain_text" }
+storage_ports = { path = "../storage_ports" }
 newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
@@ -17,7 +18,7 @@ toml = "0.9"
 [dev-dependencies]
 laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
 serde_json = "1"
-tempfile = "3"
+storage_fake = { path = "../storage_fake" }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 objc2-foundation = { version = "0.3", features = ["NSError", "NSString", "NSURL", "NSValue"] }

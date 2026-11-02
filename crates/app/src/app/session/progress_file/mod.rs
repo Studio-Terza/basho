@@ -1,9 +1,7 @@
 pub mod kept_progress;
 
-use std::fs;
-use std::path::Path;
-
 use guide::itinerary::{Day, Itinerary};
+use storage_ports::HomeFolder;
 
 use guide::guidance::LegProgress;
 
@@ -13,26 +11,22 @@ use kept_progress::KeptProgress;
 
 pub struct ProgressFile {
     file: KeptFile,
+    home: HomeFolder,
 }
 
 impl ProgressFile {
     pub const NAME: &str = "progress.txt";
-    pub const PART: &str = KeptFile::PART;
 
     #[must_use]
-    pub fn in_home() -> Option<ProgressFile> {
-        Some(Self::under(Path::new(&std::env::var_os("HOME")?)))
-    }
-
-    #[must_use]
-    pub fn under(home: &Path) -> ProgressFile {
+    pub fn under(home: &HomeFolder) -> ProgressFile {
         ProgressFile {
             file: KeptFile::under(home, Label::new(Self::NAME)),
+            home: home.clone(),
         }
     }
 
     pub fn forget(&self) {
-        self.file.forget();
+        self.home.forget(self.file.as_ref()).unwrap_or_default();
     }
 
     #[must_use]
@@ -42,8 +36,8 @@ impl ProgressFile {
             .unwrap_or_default()
     }
 
-    pub fn keep_at_home(progress: LegProgress, trip: &Itinerary) {
-        Self::in_home()
+    pub fn keep_in(home: Option<&HomeFolder>, progress: LegProgress, trip: &Itinerary) {
+        home.map(Self::under)
             .and_then(|file| file.keep(progress, trip))
             .unwrap_or_default();
     }
@@ -54,14 +48,10 @@ impl ProgressFile {
             .iter()
             .find(|day| progress.for_day(day.number()).is_some())
             .map(|day| KeptProgress::new(progress, day))
-            .and_then(|kept| self.file.replaced(kept).ok())
+            .and_then(|kept| self.home.replace(self.file.as_ref(), &kept).ok())
     }
 
     fn read_for(&self, day: &Day) -> Option<LegProgress> {
-        fs::read_to_string(AsRef::<Path>::as_ref(&self.file))
-            .ok()?
-            .parse::<KeptProgress>()
-            .ok()?
-            .for_day(day)
+        self.file.read::<KeptProgress>(&self.home)?.for_day(day)
     }
 }

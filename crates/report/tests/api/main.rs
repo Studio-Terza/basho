@@ -1,15 +1,15 @@
-use std::collections::BTreeSet;
-use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use report::{Capture, Fact, Report, ReportBook, ReportNumber, ReportStore, ReportText};
 use serde::Deserialize;
-use tempfile::TempDir;
+use storage_fake::MemoryStorage;
+use storage_ports::HomeFolder;
 
 mod laws_of_types;
 
 const FIRST: ReportNumber = ReportNumber::new(1);
 const SECOND: ReportNumber = ReportNumber::new(2);
+const FOLDER: [&str; 4] = ["Library", "Application Support", "basho", "reports"];
 
 #[derive(Deserialize)]
 struct Exported {
@@ -17,26 +17,26 @@ struct Exported {
 }
 
 struct Shelf {
-    root: TempDir,
+    home: HomeFolder,
 }
 
 impl Shelf {
     fn new() -> Shelf {
         Shelf {
-            root: TempDir::new().unwrap(),
+            home: MemoryStorage::home(),
         }
     }
 
-    fn folder(&self) -> std::path::PathBuf {
-        self.root.path().join("reports")
+    fn folder(&self) -> PathBuf {
+        self.home.joined(FOLDER)
     }
 
-    fn exports(&self) -> std::path::PathBuf {
-        self.root.path().join("Documents")
+    fn exports(&self) -> PathBuf {
+        self.home.joined(["Documents"])
     }
 
     fn book(&self) -> ReportBook {
-        ReportBook::opened(Some(ReportStore::located_at(self.folder(), self.exports())))
+        ReportBook::opened(Some(ReportStore::in_home(self.home.clone())))
     }
 
     fn capture(time: &str) -> Capture {
@@ -58,12 +58,17 @@ impl Shelf {
         book.reports().iter().map(Report::number).collect()
     }
 
-    fn files_in(folder: &Path) -> Vec<String> {
-        let names: BTreeSet<String> = fs::read_dir(folder)
+    fn files_in(&self, folder: &Path) -> Vec<String> {
+        self.home
+            .names_in(folder)
             .unwrap()
-            .map(|entry| entry.unwrap().file_name().into_string().unwrap())
-            .collect();
-        names.into_iter().collect()
+            .into_iter()
+            .map(|name| name.into_string().unwrap())
+            .collect()
+    }
+
+    fn written(&self, name: &str, text: &str) {
+        self.home.replace(&self.folder().join(name), &text).unwrap();
     }
 }
 
@@ -99,14 +104,15 @@ fn a_note_of_several_lines_reaches_only_its_report_and_survives_reopening() {
 fn nothing_appears_in_the_export_folder_until_the_owner_exports() {
     let shelf = Shelf::new();
     let book = shelf.book().captured(Shelf::capture("first"));
-    assert!(!shelf.exports().exists());
+    assert_eq!(shelf.files_in(&shelf.exports()), Vec::<String>::new());
     let exported = book.exported();
     assert!(Shelf::notice_of(&exported).starts_with("Exported 1."));
-    let text = fs::read_to_string(shelf.exports().join(ReportStore::EXPORT_NAME)).unwrap();
+    let path = shelf.exports().join(ReportStore::EXPORT_NAME);
+    let text = shelf.home.read(&path).unwrap();
     let parsed: Exported = toml::from_str(&text).unwrap();
     assert_eq!(parsed.reports, exported.reports());
     assert_eq!(
-        Shelf::files_in(&shelf.exports()),
+        shelf.files_in(&shelf.exports()),
         vec![ReportStore::EXPORT_NAME]
     );
 }
@@ -115,8 +121,7 @@ fn nothing_appears_in_the_export_folder_until_the_owner_exports() {
 fn a_broken_file_is_counted_kept_and_its_number_is_never_reused() {
     let shelf = Shelf::new();
     let _kept = shelf.book().captured(Shelf::capture("first"));
-    let broken = shelf.folder().join("report-0007.toml");
-    fs::write(&broken, "number = ").unwrap();
+    shelf.written("report-0007.toml", "number = ");
     let book = shelf.book();
     assert_eq!(book.reports().len(), 1);
     assert_eq!(
@@ -124,10 +129,11 @@ fn a_broken_file_is_counted_kept_and_its_number_is_never_reused() {
         Some("1".to_owned())
     );
     let after = book.captured(Shelf::capture("second"));
-    assert_eq!(fs::read_to_string(&broken).unwrap(), "number = ");
+    let broken = shelf.folder().join("report-0007.toml");
+    assert_eq!(shelf.home.read(&broken).unwrap(), "number = ");
     assert_eq!(after.reports().len(), 2);
     assert_eq!(
-        Shelf::files_in(&shelf.folder()),
+        shelf.files_in(&shelf.folder()),
         vec!["report-0001.toml", "report-0007.toml", "report-0008.toml"]
     );
 }
@@ -135,7 +141,10 @@ fn a_broken_file_is_counted_kept_and_its_number_is_never_reused() {
 #[test]
 fn a_report_that_cannot_be_written_stays_in_the_list_and_says_so() {
     let shelf = Shelf::new();
-    fs::write(shelf.folder(), "a file where the folder goes").unwrap();
+    shelf
+        .home
+        .replace(&shelf.folder(), &"a file where the folder goes")
+        .unwrap();
     let book = shelf.book().captured(Shelf::capture("first"));
     assert_eq!(book.reports().len(), 1);
     assert!(Shelf::notice_of(&book).starts_with("PROBLEM"));
@@ -145,8 +154,8 @@ fn a_report_that_cannot_be_written_stays_in_the_list_and_says_so() {
 fn a_stray_file_in_the_folder_is_not_a_report() {
     let shelf = Shelf::new();
     let _kept = shelf.book().captured(Shelf::capture("first"));
-    fs::write(shelf.folder().join("report-.toml"), "number = 9").unwrap();
-    fs::write(shelf.folder().join("notes.toml"), "number = 9").unwrap();
+    shelf.written("report-.toml", "number = 9");
+    shelf.written("notes.toml", "number = 9");
     let book = shelf.book();
     assert_eq!(Shelf::numbers(&book), vec![FIRST]);
     assert_eq!(book.unreadable(), None);
