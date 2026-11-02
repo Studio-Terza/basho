@@ -100,7 +100,7 @@ impl IntoDynNode for RowView<'_> {
             {row.excerpt().map(|excerpt| rsx! { {ExcerptView::new(excerpt, self.session)} })}
             {row.disagreement().map(|disagreement| rsx! {
                 div { class: "disagreement",
-                    h3 { "{AsRef::<guide::content::Content>::as_ref(disagreement)}" }
+                    h3 { lang: language.class(), {LinkedView::new(self.session, AsRef::<guide::content::Content>::as_ref(disagreement))} }
                     p { lang: language.class(), {LinkedView::new(self.session, disagreement.detail())} }
                 }
             })}
