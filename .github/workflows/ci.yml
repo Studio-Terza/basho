@@ -29,3 +29,5 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - run: cargo install --git https://github.com/Studio-Terza/meta-dev --rev 363f17718e --locked lint
       - run: cargo xtask ci
+        env:
+          CHROME: chromium
