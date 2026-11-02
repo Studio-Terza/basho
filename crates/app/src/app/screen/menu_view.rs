@@ -16,6 +16,7 @@ use crate::app::screen::ruby_view::RubyView;
 use crate::app::screen::scroll_anchor::ScrollAnchor;
 use crate::app::screen::time_view::TimeView;
 use crate::app::screen::touch_surface::TouchSurface;
+use crate::app::screen::unverified_mark::UnverifiedMark;
 use crate::app::session::{Landing, Session, SessionEvent};
 use crate::app::step::GoalNumber;
 
@@ -59,7 +60,7 @@ impl MenuView<'_> {
                                         session.jump(number, Landing::Goal(goal_number));
                                     },
                                     span { class: "goal-n", "{goal_number}" }
-                                    strong { {RubyView::new(&goal[Caption::Name])} }
+                                    strong { {RubyView::new(&goal[Caption::Name])} {day.goal_evidence(goal).map(UnverifiedMark::new)} }
                                     {day.leg(last).map(|leg| guidance.shifted(last, leg.listed(End::Finish))).map(|by| rsx! { span { class: "by", "by " {TimeView::new(by)} } })}
                                 }
                             }

@@ -172,3 +172,19 @@ fn a_source_in_the_repo_names_a_file_that_is_there() {
         .collect();
     assert_eq!(missing, Vec::<&str>::new());
 }
+
+#[test]
+fn a_fact_with_no_text_fails_at_load() {
+    let written = "see = { text = [\"A bridge.\"]";
+    let refused: Vec<bool> = ["[\"\"]", "[\" \"]", "[]"]
+        .iter()
+        .map(|empty| {
+            SAMPLE
+                .replacen(written, &format!("see = {{ text = {empty}"), 1)
+                .parse::<Trip>()
+                .is_err_and(|error| error.to_string().contains("a fact needs its text"))
+        })
+        .collect();
+    assert!(SAMPLE.contains(written));
+    assert_eq!(refused, [true; 3]);
+}

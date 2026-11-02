@@ -1,6 +1,11 @@
 use guide::Trip;
+use guide::itinerary::Day;
+use guide::leg::conveyance::Platform;
+
+use crate::fixture::Fixture;
 
 const SAMPLE: &str = include_str!("../../../../../data/trips/sample.toml");
+const CHECK_BOARD: &str = "check the board";
 const WALK: &str = "mode = { walk = { reason = \"none_recorded\" } }";
 const WHOLE: &str = r#"mode = { train = { line = "JR {奥羽本線|おううほんせん}", kind = "local", headsign = "{新庄|しんじょう}{行|ゆ}き", platform = "not_published", evidence = { unverified = ["Made up."] } } }"#;
 const SPOILED: [[&str; 3]; 13] = [
@@ -75,4 +80,20 @@ fn each_missing_or_empty_board_fact_is_named_at_load() {
         .map(|[_, bad, _]| *bad)
         .collect();
     assert_eq!(unnamed, Vec::<&str>::new());
+}
+
+#[test]
+fn a_platform_either_keeps_its_evidence_or_says_to_check_the_board() {
+    let trip = Fixture::bundled().unwrap();
+    let platforms: Vec<&Platform> = trip
+        .days()
+        .iter()
+        .flat_map(Day::legs)
+        .filter_map(|leg| leg.conveyance().train())
+        .map(AsRef::as_ref)
+        .collect();
+    assert!(!platforms.is_empty());
+    assert!(platforms.iter().all(
+        |platform| platform.evidence().is_some() != platform.to_string().contains(CHECK_BOARD)
+    ));
 }

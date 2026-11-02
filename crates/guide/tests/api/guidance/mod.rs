@@ -1,6 +1,12 @@
+mod arrival;
 mod leg_progress;
+mod phase;
+mod platform;
+mod ride_search;
 mod schedule;
+mod sighting;
 mod snap;
+mod track;
 mod tracking;
 mod walk_search;
 

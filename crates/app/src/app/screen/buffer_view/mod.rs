@@ -11,6 +11,7 @@ use guide::times::FactSource;
 use crate::app::screen::look::Look;
 use crate::app::screen::ruby_view::RubyView;
 use crate::app::screen::time_view::TimeView;
+use crate::app::screen::unverified_mark::UnverifiedMark;
 pub use buffer_shape::BufferShape;
 use spare_look::SpareLook;
 
@@ -97,7 +98,7 @@ impl<'view> BufferView<'view> {
 
     fn deadline(&self) -> Element {
         let deadline = self.buffer.deadline();
-        let place = RubyView::new(deadline.place());
+        let place = rsx! { {RubyView::new(deadline.place())} {deadline.place_evidence().map(UnverifiedMark::new)} };
         let event = deadline.listed().end;
         let target = TimeView::new(deadline.listed().start);
         match deadline.kind() {

@@ -124,7 +124,12 @@ impl Row {
         let quoted = self
             .excerpt()
             .map(|excerpt| excerpt.text(ExcerptText::Translation));
-        let disputed = self.disagreement().map(Disagreement::detail);
+        let disputed = self.disagreement().into_iter().flat_map(|disagreement| {
+            [
+                AsRef::<Content>::as_ref(disagreement),
+                disagreement.detail(),
+            ]
+        });
         self.text()
             .into_iter()
             .chain(fact)
