@@ -112,6 +112,9 @@ pub enum Problem {
     UnknownStarPoint {
         name: StarName,
     },
+    DuplicateStarName {
+        name: StarName,
+    },
     UnclaimedStarPoint {
         name: StarName,
         off: Distance,
@@ -308,6 +311,9 @@ impl fmt::Display for Problem {
             ),
             Problem::UnknownStarPoint { name } => {
                 write!(formatter, "{name:?} isn't a starred point on this day")
+            }
+            Problem::DuplicateStarName { name } => {
+                write!(formatter, "two starred points share the short name {name:?}")
             }
             Problem::UnclaimedStarPoint { name, off } => write!(
                 formatter,
