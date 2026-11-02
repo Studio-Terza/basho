@@ -28,17 +28,25 @@ impl Ci {
         flags: impl Iterator<Item = Flag>,
         chromium: Option<&Chromium>,
     ) -> Result<(), Failure> {
-        let flags: Vec<String> = flags.map(Flag::into_inner).collect();
+        let flags: Vec<Flag> = flags.collect();
+        Self::compile_checks(workspace, &flags)?;
+        Shared::TestTime
+            .run(flags.into_iter().map(Flag::into_inner))
+            .map_err(Failure::shared)?;
+        Self::source_checks(workspace)?;
+        Self::browser(workspace, chromium)
+    }
+
+    pub fn compile_checks(workspace: &Workspace, flags: &[Flag]) -> Result<(), Failure> {
         CargoStep::new(&Self::FORMATTED).ran_in(workspace)?;
         Shared::Clippy
-            .run(flags.iter().cloned())
-            .map_err(Failure::shared)?;
-        Shared::TestTime
-            .run(flags.into_iter())
-            .map_err(Failure::shared)?;
+            .run(flags.iter().cloned().map(Flag::into_inner))
+            .map_err(Failure::shared)
+    }
+
+    pub fn source_checks(workspace: &Workspace) -> Result<(), Failure> {
         Lint::all(workspace)?;
-        TripCheck::every_file_in(&workspace.root().join(TripCheck::FOLDER))?;
-        Self::browser(workspace, chromium)
+        TripCheck::every_file_in(&workspace.root().join(TripCheck::FOLDER))
     }
 
     pub fn browser(workspace: &Workspace, chromium: Option<&Chromium>) -> Result<(), Failure> {

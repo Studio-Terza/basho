@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  gate:
+  compile:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,7 +27,55 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: compile
+      - run: cargo xtask ci-compile
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git remote set-head origin --auto
+      - uses: dtolnay/rust-toolchain@1.99.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: gate
+      - run: cargo xtask test-time
+
+  source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: git remote set-head origin --auto
+      - uses: dtolnay/rust-toolchain@1.99.0
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: gate
+          save-if: false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cargo/bin/lint
+          key: lint-${{ runner.os }}-363f17718e
       - run: cargo install --git https://github.com/Studio-Terza/meta-dev --rev 363f17718e --locked lint
-      - run: cargo xtask ci
+      - run: cargo xtask ci-source
         env:
           CHROME: chromium
+
+  gate:
+    if: always()
+    needs: [compile, tests, source]
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "$RESULT" = success
+        env:
+          RESULT: ${{ needs.compile.result }}
+      - run: test "$RESULT" = success
+        env:
+          RESULT: ${{ needs.tests.result }}
+      - run: test "$RESULT" = success
+        env:
+          RESULT: ${{ needs.source.result }}

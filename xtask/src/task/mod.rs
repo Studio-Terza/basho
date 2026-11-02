@@ -47,6 +47,8 @@ pub enum Task {
     Browser,
     CatchImport,
     Ci,
+    CiCompile,
+    CiSource,
     FuzzTrip,
     Gate,
     Lint,
@@ -70,6 +72,10 @@ impl Task {
             Task::Browser => Ci::browser(&workspace, None),
             Task::CatchImport => CatchImport::import_catches(&workspace),
             Task::Ci => Ci::run(&workspace, flags),
+            Task::CiCompile => Ci::compile_checks(&workspace, &flags.collect::<Vec<Flag>>()),
+            Task::CiSource => {
+                Ci::source_checks(&workspace).and_then(|()| Ci::browser(&workspace, None))
+            }
             Task::FuzzTrip => FuzzTrip::from_flags(flags).campaign(&workspace),
             Task::Gate => Gate::run(&workspace, flags),
             Task::Lint => Lint::all(&workspace),
