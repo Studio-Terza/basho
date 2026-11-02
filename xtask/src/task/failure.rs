@@ -43,7 +43,7 @@ pub enum Failure {
     #[error("the shared lints found violations")]
     PortedLints,
     #[error(
-        "the shared lints did not start ({0}); install them with cargo install --git https://github.com/Studio-Terza/meta-dev --rev 363f17718e --locked lint"
+        "the shared lints did not start ({0}); install them with cargo install --git https://github.com/Studio-Terza/meta-dev --rev 10eaa06225 --locked lint"
     )]
     LintRunner(io::Error),
     #[error("policy: {0}")]
