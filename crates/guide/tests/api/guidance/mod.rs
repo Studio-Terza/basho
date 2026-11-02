@@ -1,4 +1,7 @@
+mod arrival;
 mod leg_progress;
+mod phase;
+mod platform;
 mod schedule;
 mod snap;
 mod tracking;

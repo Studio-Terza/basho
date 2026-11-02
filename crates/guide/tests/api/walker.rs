@@ -4,6 +4,7 @@ use guide::geo::{Coordinate, Degrees, Distance, Share};
 use guide::guidance::{Guidance, LegProgress, Pointer};
 use guide::itinerary::Day;
 use guide::leg::{Leg, LegIndex, Mode};
+use guide::leg_line::LegLine;
 use guide::reading::Reading;
 use guide::readout::Recovery;
 
@@ -15,6 +16,64 @@ pub struct Walker<'day> {
 impl<'day> Walker<'day> {
     const STRIDE: Distance = Distance::new(10.0);
     const TOWARD: Degrees = Degrees::new(90.0);
+
+    const STEPS: [Share; 4] = [
+        Share::new(0.1),
+        Share::HALF,
+        Share::new(0.9),
+        Share::new(1.0),
+    ];
+
+    pub fn walked(day: &'day Day, walk: LegIndex, arrival: ClockTime) -> Walker<'day> {
+        let leg = day.leg(walk).expect("a walk");
+        let span = leg.time(End::Start).minutes_until(arrival).amount();
+        Self::STEPS
+            .iter()
+            .fold(Walker::fresh(day), |walker, share| {
+                let time = leg
+                    .time(End::Start)
+                    .later_by(Minutes::rounded(span * share.fraction()).unwrap_or_default());
+                let here = leg.line().point_along(leg.length() * share.fraction());
+                walker.stepped(time, here.expect("a point on the walk"))
+            })
+    }
+
+    pub fn reaching(day: &Day, place: &str) -> LegIndex {
+        day.legs()
+            .iter()
+            .position(|leg| {
+                leg.line_text(LegLine::Reach)
+                    .text(Reading::Written)
+                    .contains(place)
+            })
+            .map(LegIndex::new)
+            .expect("a step reaching the place")
+    }
+
+    pub fn strolled(self, walk: LegIndex, until: Distance, late: Minutes) -> Walker<'day> {
+        let leg = self.day.leg(walk).expect("a walk");
+        Self::strides(until).fold(self, |walker, along| {
+            let time = Self::planned(leg, along, late);
+            walker.stepped(time, leg.line().point_along(along).expect("a point"))
+        })
+    }
+
+    pub fn fix_along(&self, walk: LegIndex, along: Distance, late: Minutes) -> Guidance<'day> {
+        let leg = self.day.leg(walk).expect("a walk");
+        let here = leg.line().point_along(along).expect("a point");
+        self.fix(Self::planned(leg, along, late), here)
+    }
+
+    fn strides(until: Distance) -> impl Iterator<Item = Distance> {
+        (0..)
+            .map(|stride| Self::STRIDE * f64::from(stride))
+            .take_while(move |along| *along <= until)
+    }
+
+    pub fn stepped(self, time: ClockTime, here: Coordinate) -> Walker<'day> {
+        let progress = self.fix(time, here).progress().unwrap_or(self.progress);
+        Walker { progress, ..self }
+    }
 
     pub fn fresh(day: &'day Day) -> Walker<'day> {
         Walker::kept(day, LegProgress::default())
