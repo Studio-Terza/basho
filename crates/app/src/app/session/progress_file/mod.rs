@@ -1,5 +1,7 @@
 pub mod kept_progress;
 
+use std::cell::Cell;
+
 use guide::itinerary::{Day, Itinerary};
 use storage_ports::HomeFolder;
 
@@ -40,6 +42,15 @@ impl ProgressFile {
         home.map(Self::under)
             .and_then(|file| file.keep(progress, trip))
             .unwrap_or_default();
+    }
+
+    pub fn keep_if_changed(
+        home: Option<&HomeFolder>,
+        written: &Cell<Option<LegProgress>>,
+        latest: LegProgress,
+        trip: &Itinerary,
+    ) {
+        (written.replace(Some(latest)) != Some(latest)).then(|| Self::keep_in(home, latest, trip));
     }
 
     #[must_use]

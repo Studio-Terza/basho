@@ -190,8 +190,7 @@ impl Session {
         use_effect(move || {
             now.read();
             let latest = *progress.peek();
-            (written.replace(Some(latest)) != Some(latest))
-                .then(|| ProgressFile::keep_in(shelf.home().as_ref(), latest, &trip));
+            ProgressFile::keep_if_changed(shelf.home().as_ref(), &written, latest, &trip);
         });
         let tracker = session.clone();
         use_effect(move || SessionEvent::TrackWalk.applied(&tracker));
