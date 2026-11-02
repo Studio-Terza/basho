@@ -117,16 +117,12 @@ impl Walk {
 
 #[test]
 fn a_report_filed_from_a_wiki_page_names_it_and_back_returns_to_it() {
-    let reports = tempfile::tempdir().unwrap();
     let trip = Drawing::BuiltIn.itinerary();
     let wiki = Drawing::BuiltIn.wiki();
     let day = trip.day_number(DAY).expect("a day");
     let page = wiki.find(&EntryKey::Shops).expect("the shops page");
     let stage = Stage::on_screen(day, Screen::Wiki(page)).keeping_reports_in(
-        report::ReportStore::located_at(
-            reports.path().join("reports"),
-            reports.path().join("Documents"),
-        ),
+        report::ReportStore::in_home(storage_fake::MemoryStorage::home()),
     );
     let seen = Walk::seen(stage, Visit::ReportFromAWikiPage);
     assert_eq!(seen.on_reports, Some(Screen::Reports));

@@ -1,9 +1,10 @@
 use std::fmt;
-use std::fs;
-use std::io;
-use std::path::Path;
+use std::io::{self, ErrorKind};
+use std::str::FromStr;
 
 use guide::words::Label;
+use storage_ports::HomeFolder;
+use thiserror::Error;
 
 use crate::app::session::kept_file::KeptFile;
 
@@ -13,6 +14,10 @@ pub enum DarkAfterSunset {
     Off,
     On,
 }
+
+#[derive(Debug, Error)]
+#[error("the dark setting is neither on nor off")]
+pub struct UnknownSetting;
 
 impl DarkAfterSunset {
     pub const NAME: &str = "dark-after-sunset.txt";
@@ -28,37 +33,30 @@ impl DarkAfterSunset {
     }
 
     #[must_use]
-    pub fn restored_under(home: &Path) -> DarkAfterSunset {
-        fs::read_to_string(AsRef::<Path>::as_ref(&KeptFile::under(
-            home,
-            Label::new(Self::NAME),
-        )))
-        .ok()
-        .and_then(|text| Self::read(text.trim()))
-        .unwrap_or_default()
+    pub fn restored_in(home: Option<&HomeFolder>) -> DarkAfterSunset {
+        home.and_then(|home| KeptFile::under(home, Label::new(Self::NAME)).read(home))
+            .unwrap_or_default()
     }
 
-    pub fn kept_under(self, home: &Path) -> io::Result<()> {
-        KeptFile::under(home, Label::new(Self::NAME)).replaced(self)
+    pub fn kept_in(self, home: Option<&HomeFolder>) -> io::Result<()> {
+        home.ok_or_else(|| io::Error::from(ErrorKind::NotFound))
+            .and_then(|home| {
+                home.replace(
+                    KeptFile::under(home, Label::new(Self::NAME)).as_ref(),
+                    &self,
+                )
+            })
     }
+}
 
-    #[must_use]
-    pub fn restored() -> DarkAfterSunset {
-        std::env::var_os("HOME").map_or_else(DarkAfterSunset::default, |home| {
-            Self::restored_under(Path::new(&home))
-        })
-    }
+impl FromStr for DarkAfterSunset {
+    type Err = UnknownSetting;
 
-    pub fn store(self) {
-        std::env::var_os("HOME")
-            .map(|home| self.kept_under(Path::new(&home)).unwrap_or_default())
-            .unwrap_or_default();
-    }
-
-    fn read(word: &str) -> Option<DarkAfterSunset> {
+    fn from_str(text: &str) -> Result<DarkAfterSunset, UnknownSetting> {
         [DarkAfterSunset::Off, DarkAfterSunset::On]
             .into_iter()
-            .find(|setting| setting.to_string() == word)
+            .find(|setting| setting.to_string() == text.trim())
+            .ok_or(UnknownSetting)
     }
 }
 

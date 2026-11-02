@@ -48,7 +48,11 @@ impl PinEvent {
             .filter(|day| day.number() == self.spot().day())
             .into_iter()
             .for_each(|day| self.pin_in(session, day, now));
-        ProgressFile::keep_at_home(*session.progress.peek(), session.itinerary());
+        ProgressFile::keep_in(
+            session.shelf().home().as_ref(),
+            *session.progress.peek(),
+            session.itinerary(),
+        );
         ScrollEvent::BackToNow.scrolled(session);
     }
 }

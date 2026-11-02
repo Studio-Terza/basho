@@ -255,8 +255,9 @@ dependencies = [
  "serde",
  "serde_json",
  "sha1_smol",
+ "storage_fake",
+ "storage_ports",
  "strum",
- "tempfile",
  "thiserror 2.0.20",
  "tiles",
  "tokio",
@@ -5203,7 +5204,8 @@ dependencies = [
  "plain_text",
  "serde",
  "serde_json",
- "tempfile",
+ "storage_fake",
+ "storage_ports",
  "thiserror 2.0.20",
  "toml 0.9.12+spec-1.1.0",
 ]
@@ -5880,6 +5882,22 @@ dependencies = [
  "quote",
  "syn 2.0.119",
  "task",
+]
+
+[[package]]
+name = "storage_fake"
+version = "0.1.0"
+dependencies = [
+ "storage_ports",
+]
+
+[[package]]
+name = "storage_ports"
+version = "0.1.0"
+dependencies = [
+ "derive_more 2.1.1",
+ "laws",
+ "tempfile",
 ]
 
 [[package]]

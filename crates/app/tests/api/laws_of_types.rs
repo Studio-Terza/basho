@@ -1,8 +1,8 @@
 use std::cell::Cell;
 
-use basho::app::session::Session;
 use basho::app::session::progress_file::kept_progress::KeptProgress;
 use basho::app::session::progress_file::kept_progress::legs_stamp::LegsStamp;
+use basho::app::session::{DarkAfterSunset, Session};
 use dioxus::prelude::*;
 use guide::clock::Minutes;
 use guide::guidance::LegProgress;
@@ -60,6 +60,18 @@ laws::law!(
     {
         prop_assert_eq!(SessionPair::compared(shared, Session::eq), Some(shared));
     }
+);
+
+laws::roundtrip!(
+    the_dark_setting_reads_back_from_its_text,
+    any::<bool>().prop_map(|on| if on {
+        DarkAfterSunset::On
+    } else {
+        DarkAfterSunset::Off
+    }),
+    DarkAfterSunset::to_string,
+    |text: &String| text.parse::<DarkAfterSunset>().ok(),
+    Some,
 );
 
 laws::roundtrip!(

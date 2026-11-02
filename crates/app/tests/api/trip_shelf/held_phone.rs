@@ -1,7 +1,6 @@
 use std::borrow::Cow;
 use std::cell::Cell;
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use dioxus::dioxus_core::Mutation;
 use dioxus::prelude::*;
@@ -11,6 +10,7 @@ use basho::app::session::kept_file::KeptFile;
 use basho::app::session::progress_file::ProgressFile;
 use basho::app::session::trip_shelf::{PickedFile, TripInput, TripShelf, TripText};
 use guide::words::{Label, Spelling};
+use storage_ports::HomeFolder;
 use tokio::runtime::{Builder, Runtime};
 
 thread_local! {
@@ -19,7 +19,7 @@ thread_local! {
 
 #[derive(Props, Clone, PartialEq)]
 struct Home {
-    path: PathBuf,
+    folder: HomeFolder,
 }
 
 pub struct HeldPhone {
@@ -50,23 +50,21 @@ impl HeldPhone {
         )
     }
 
-    pub fn on_the_sample(home: &Path) -> HeldPhone {
-        let folder = home.join(TripInput::ON_THE_PHONE[0]);
-        fs::create_dir_all(&folder).expect("a Documents folder");
-        fs::write(folder.join(TripInput::ON_THE_PHONE[1]), Self::SAMPLE).expect("a trip file");
+    pub fn on_the_sample(home: &HomeFolder) -> HeldPhone {
+        home.replace(&home.joined(TripInput::ON_THE_PHONE), &Self::SAMPLE)
+            .expect("a trip file");
         Self::opened(home)
     }
 
-    pub fn progress_kept_under(home: &Path) -> PathBuf {
+    pub fn progress_kept_under(home: &HomeFolder) -> PathBuf {
         let path: PathBuf = KeptFile::under(home, Label::new(ProgressFile::NAME))
             .as_ref()
             .to_path_buf();
-        fs::create_dir_all(path.parent().expect("the file has a folder")).expect("a folder");
-        fs::write(&path, "kept").expect("a progress file");
+        home.replace(&path, &"kept").expect("a progress file");
         path
     }
 
-    pub fn opened(home: &Path) -> HeldPhone {
+    pub fn opened(home: &HomeFolder) -> HeldPhone {
         let runtime = Builder::new_current_thread()
             .enable_time()
             .build()
@@ -75,7 +73,7 @@ impl HeldPhone {
         let mut dom = VirtualDom::new_with_props(
             Self::render,
             Home {
-                path: home.to_path_buf(),
+                folder: home.clone(),
             },
         );
         dom.rebuild_in_place();
@@ -118,11 +116,7 @@ impl HeldPhone {
         reason = "dioxus hands root props by value"
     )]
     fn render(home: Home) -> Element {
-        let shelf = TripShelf::open(
-            None,
-            Some(home.path.clone().into_os_string()),
-            App::trip_page,
-        );
+        let shelf = TripShelf::open(None, Some(home.folder.clone()), App::trip_page);
         SHELF.set(Some(shelf));
         shelf.view()
     }
