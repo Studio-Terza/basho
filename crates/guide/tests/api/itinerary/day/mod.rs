@@ -1,10 +1,15 @@
 mod goal;
 
+use std::time::SystemTime;
+
+use chrono::NaiveDate;
+
 use crate::fixture::Fixture;
 use newtype::Counter;
 use rayon::prelude::*;
 
 use guide::ArrivalMark;
+use guide::clock::CalendarDate;
 use guide::clock::ClockTime;
 use guide::clock::Minutes;
 use guide::clock::Pause;
@@ -24,6 +29,12 @@ use guide::timeline::Stop;
 const ON_PLAN: Minutes = Minutes::new(1);
 const LATE_TRAIN: Minutes = Minutes::new(10);
 const LATENESS: [Minutes; 3] = [Minutes::new(15), Minutes::new(45), Minutes::new(60 + 30)];
+const FIRST_DAY: usize = 1;
+const RIDES_DAY: usize = 4;
+const HOURS_PER_DAY: u16 = 24;
+const READY_UTC_HOUR: u32 = 11;
+const READY_UTC_MINUTE: u32 = 22;
+const READY_SPARE: Minutes = Minutes::new(8);
 
 struct Sample {
     leg: LegIndex,
@@ -502,4 +513,39 @@ fn a_walker_on_plan_is_shown_the_planned_spare_and_never_short() {
         })
         .collect();
     assert_eq!(wrong, Vec::<String>::new());
+}
+
+#[test]
+fn the_day_before_the_trip_shows_no_buffer_and_no_lateness() {
+    let trip = Fixture::bundled_days(&[FIRST_DAY]);
+    let first = trip.day(FIRST_DAY);
+    let here = first.legs().first().map(|leg| leg.point(End::Start));
+    let eve = NaiveDate::from(first.date())
+        .pred_opt()
+        .map(CalendarDate::from)
+        .unwrap();
+    let shown: Vec<TripTime> = (0..HOURS_PER_DAY)
+        .map(|hour| TripTime::on_date_at(first.zone(), eve, ClockTime::at_hour(hour)))
+        .filter(|now| {
+            let guidance = Guidance::new(first, LegProgress::default(), *now, here);
+            guidance.buffer().is_some() || guidance.time_check().is_some()
+        })
+        .collect();
+    assert_eq!(shown, Vec::<TripTime>::new());
+}
+
+#[test]
+fn a_utc_moment_at_the_first_bus_shows_its_spare_in_trip_time() {
+    let trip = Fixture::bundled_days(&[RIDES_DAY]);
+    let day = trip.day(RIDES_DAY);
+    let bus = day.legs().first().unwrap();
+    let utc = NaiveDate::from(day.date())
+        .and_hms_opt(READY_UTC_HOUR, READY_UTC_MINUTE, u32::default())
+        .unwrap()
+        .and_utc();
+    let now = TripTime::at_instant(SystemTime::from(utc), day.zone());
+    let guidance = Guidance::new(day, LegProgress::default(), now, bus.boarding());
+    let buffer = guidance.buffer().unwrap();
+    assert_eq!(buffer.deadline().event(), bus.time(End::Start));
+    assert_eq!(buffer.spare(), READY_SPARE);
 }
