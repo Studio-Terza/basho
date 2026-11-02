@@ -2,7 +2,7 @@ use guide::english_name::EnglishName;
 use guide::itinerary::day::goal::LoopNumber;
 use guide::landmark::Elevation;
 use guide::times::{ListedTime, PlanTime};
-use guide::words::Spelling;
+use guide::words::{Label, Spelling};
 use serde::{Serialize, Serializer};
 use std::fmt;
 
@@ -23,6 +23,11 @@ impl MapText {
             lead: None,
             text: text.to_string(),
         }
+    }
+
+    #[must_use]
+    pub fn marked(text: impl fmt::Display, mark: Option<Label>) -> MapText {
+        MapText::plain(mark.map_or_else(|| text.to_string(), |mark| format!("{text} {mark}")))
     }
 
     #[must_use]

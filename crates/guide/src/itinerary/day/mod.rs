@@ -19,7 +19,7 @@ use crate::geo::Distance;
 use crate::itinerary::DayNumber;
 use crate::itinerary::Problem;
 use crate::itinerary::arc_number::ArcNumber;
-use crate::itinerary::day::goal::{Aim, Goal, GoalPlan};
+use crate::itinerary::day::goal::{Aim, Goal, GoalPlan, Purpose};
 use crate::itinerary::finding::Finding;
 use crate::leg::LegIndex;
 use crate::leg::{Leg, Mode};
@@ -223,6 +223,14 @@ impl Day {
     #[must_use]
     pub fn goal_holding(&self, leg: LegIndex) -> Option<&Goal> {
         self.goals.iter().find(|goal| goal.holds(leg))
+    }
+
+    #[must_use]
+    pub fn goal_evidence(&self, goal: &Goal) -> Option<&Evidence> {
+        self.night
+            .as_ref()
+            .filter(|_| matches!(goal.purpose(), Purpose::Inn))
+            .map(AsRef::as_ref)
     }
 
     #[must_use]

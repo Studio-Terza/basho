@@ -233,6 +233,7 @@ impl<'day> Course<'day> {
         Some(
             Deadline::fixed(DeadlineKind::CheckIn, &night[Caption::Name], last)
                 .timed(night.listed_check_in(), night.listed_check_in())
+                .vouched_by(night.as_ref())
                 .reached_at(self.finish(), Mode::Walk),
         )
     }
