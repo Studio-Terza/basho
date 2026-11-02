@@ -73,7 +73,28 @@ impl Landmarks {
                     .day_number(DayNumber::from(point))
                     .and_then(|day| Self::unclaimed(point, day))
             }))
+            .chain(self.repeated_names())
             .collect()
+    }
+
+    fn repeated_names(&self) -> impl Iterator<Item = Finding> + '_ {
+        self.stars
+            .iter()
+            .enumerate()
+            .filter(|(index, point)| {
+                self.stars[..*index].iter().any(|earlier| {
+                    DayNumber::from(earlier) == DayNumber::from(*point)
+                        && earlier.short() == point.short()
+                })
+            })
+            .map(|(_, point)| {
+                Finding::on_day(
+                    DayNumber::from(point),
+                    Problem::DuplicateStarName {
+                        name: point.short().clone(),
+                    },
+                )
+            })
     }
 
     fn unknown_claims<'day>(&'day self, day: &'day Day) -> impl Iterator<Item = Finding> + 'day {
