@@ -31,3 +31,22 @@ fn where_the_accounts_differ_the_names_of_other_pages_are_links() {
             .contains(LINK)
     }));
 }
+
+#[test]
+fn the_topic_of_a_disagreement_links_the_names_it_holds() {
+    let drawing = Drawing::BuiltIn;
+    let trip = drawing.itinerary();
+    let day = trip.day_number(DAY).expect("a day");
+    let page = drawing
+        .wiki()
+        .find(&EntryKey::Place(Slug::new(PLACE.to_owned())))
+        .expect("the place has a page");
+    let html = Harness::page(&Stage::on_screen(day, Screen::Wiki(page)));
+    let topics: Vec<&str> = html
+        .split(BLOCK)
+        .skip(1)
+        .filter_map(|block| block.split("</h3>").next())
+        .collect();
+    assert_ne!(topics.len(), 0);
+    assert!(topics.iter().all(|topic| topic.contains(LINK)));
+}

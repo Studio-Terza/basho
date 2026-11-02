@@ -1,4 +1,5 @@
 mod disagreement_links;
+mod inn_marks;
 mod inn_page;
 mod wording;
 

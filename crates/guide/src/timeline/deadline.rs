@@ -1,6 +1,7 @@
 use std::ops::Range;
 
 use crate::clock::{ClockTime, Minutes};
+use crate::evidence::Evidence;
 use crate::leg::{Cutoff, LegIndex, Mode};
 use crate::place::RubyText;
 use crate::timeline::deadline_kind::DeadlineKind;
@@ -12,6 +13,7 @@ pub struct Deadline<'day> {
     kind: DeadlineKind,
     mode: Mode,
     place: &'day RubyText,
+    vouched: Option<&'day Evidence>,
     event: ListedTime,
     target: ListedTime,
     leg: LegIndex,
@@ -31,6 +33,7 @@ impl<'day> Deadline<'day> {
             kind: cutoff.kind().deadline_kind(),
             mode: Mode::Walk,
             place: cutoff.name().unwrap_or(place),
+            vouched: None,
             event: cutoff.listed_at(),
             target: cutoff.listed_at(),
             leg,
@@ -45,6 +48,7 @@ impl<'day> Deadline<'day> {
             kind,
             mode: Mode::Walk,
             place,
+            vouched: None,
             event: ListedTime::Planned(PlanTime::new(ClockTime::MIDNIGHT)),
             target: ListedTime::Planned(PlanTime::new(ClockTime::MIDNIGHT)),
             leg,
@@ -72,6 +76,14 @@ impl<'day> Deadline<'day> {
     }
 
     #[must_use]
+    pub fn vouched_by(self, evidence: &'day Evidence) -> Deadline<'day> {
+        Deadline {
+            vouched: Some(evidence),
+            ..self
+        }
+    }
+
+    #[must_use]
     pub fn urged(self, haste: Haste) -> Deadline<'day> {
         Deadline { haste, ..self }
     }
@@ -89,6 +101,11 @@ impl<'day> Deadline<'day> {
     #[must_use]
     pub fn place(&self) -> &'day RubyText {
         self.place
+    }
+
+    #[must_use]
+    pub fn place_evidence(&self) -> Option<&'day Evidence> {
+        self.vouched
     }
 
     #[must_use]

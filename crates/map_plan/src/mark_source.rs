@@ -1,5 +1,6 @@
 use guide::content::Content;
 use guide::end::End;
+use guide::evidence::Evidence;
 use guide::geo::{Coordinate, RouteLine, Share};
 use guide::guidance::Guidance;
 use guide::itinerary::day::goal::LoopStop;
@@ -92,7 +93,10 @@ impl MarkSource for GoalMarks {
                 .iter()
                 .filter(|goal| plan.level != MapLevel::Goal || goal.purpose().stops().is_empty())
                 .filter_map(|goal| {
-                    let name = MapText::plain(goal[Caption::Name].text(Reading::Spoken));
+                    let name = MapText::marked(
+                        goal[Caption::Name].text(Reading::Spoken),
+                        plan.day.goal_evidence(goal).and_then(Evidence::mark),
+                    );
                     Self::named_at(plan, goal.leg(End::Finish), name)
                 })
                 .collect()
