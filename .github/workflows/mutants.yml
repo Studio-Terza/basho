@@ -54,7 +54,7 @@ jobs:
           - guide
           - basho
           - wiki
-          - map_plan+map_class+menu+layout+tiles+report+plain_text
+          - map_plan+map_class+menu+layout+tiles+report+plain_text+storage_ports+storage_fake
           - xtask+day_print+basho_lints+style_lints+osm_items+tile_draft+tile_shapes+apple_text+sim_ports+sim_suite+testflight_ports
     env:
       MUTANTS_SHARD: ${{ matrix.crates }}

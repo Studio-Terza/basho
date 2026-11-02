@@ -1,10 +1,11 @@
 use std::borrow::Cow;
 use std::ffi::OsString;
-use std::fs;
+use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
 use guide::words::Label;
 use guide::{Trip, TripError};
+use storage_ports::HomeFolder;
 
 use crate::app::session::kept_file::KeptFile;
 use crate::app::session::trip_shelf::trip_text::TripText;
@@ -23,34 +24,56 @@ impl TripInput {
     }
 
     #[must_use]
-    pub fn chosen_under(home: &Path) -> KeptFile {
+    pub fn chosen_under(home: &HomeFolder) -> KeptFile {
         KeptFile::under(home, Self::CHOSEN)
     }
 
-    pub fn loaded(named: Option<OsString>, home: Option<OsString>) -> Result<Trip, TripError> {
+    pub fn loaded(named: Option<OsString>, home: Option<&HomeFolder>) -> Result<Trip, TripError> {
         Self::read(named, home)?.trip()
     }
 
-    pub fn read(named: Option<OsString>, home: Option<OsString>) -> Result<TripText, TripError> {
-        let chosen = home
-            .as_ref()
-            .map(|home| AsRef::<Path>::as_ref(&Self::chosen_under(Path::new(home))).to_path_buf());
+    pub fn read(named: Option<OsString>, home: Option<&HomeFolder>) -> Result<TripText, TripError> {
+        let reader = home
+            .cloned()
+            .unwrap_or_else(|| HomeFolder::on_disk(PathBuf::new()));
+        let chosen =
+            home.map(|home| AsRef::<Path>::as_ref(&Self::chosen_under(home)).to_path_buf());
         named
             .map(PathBuf::from)
-            .or_else(|| {
-                let on_the_phone = Self::ON_THE_PHONE
-                    .iter()
-                    .fold(PathBuf::from(home?), |path, part| path.join(part));
-                [chosen.clone()?, on_the_phone]
-                    .into_iter()
-                    .find(|path| path.exists())
-            })
-            .map_or(Ok(Cow::Borrowed(Self::BUILT_IN)), |path| {
-                fs::read_to_string(&path)
-                    .map(|text| Self::resolved(text, chosen.as_ref(), &path))
-                    .map_err(|error| TripError::Unreadable { path, error })
-            })
+            .map_or_else(
+                || Self::kept(&reader, home, chosen.as_ref()),
+                |path| Self::opened(&reader, path, chosen.as_ref()),
+            )
             .map(TripText::new)
+    }
+
+    fn kept(
+        reader: &HomeFolder,
+        home: Option<&HomeFolder>,
+        chosen: Option<&PathBuf>,
+    ) -> Result<Cow<'static, str>, TripError> {
+        chosen
+            .cloned()
+            .into_iter()
+            .chain(home.map(|home| home.joined(Self::ON_THE_PHONE)))
+            .map(|path| Self::opened(reader, path, chosen))
+            .find(Self::found)
+            .unwrap_or(Ok(Cow::Borrowed(Self::BUILT_IN)))
+    }
+
+    fn found(read: &Result<Cow<'static, str>, TripError>) -> bool {
+        !matches!(read, Err(TripError::Unreadable { error, .. }) if error.kind() == ErrorKind::NotFound)
+    }
+
+    fn opened(
+        reader: &HomeFolder,
+        path: PathBuf,
+        chosen: Option<&PathBuf>,
+    ) -> Result<Cow<'static, str>, TripError> {
+        reader
+            .read(&path)
+            .map(|text| Self::resolved(text, chosen, &path))
+            .map_err(|error| TripError::Unreadable { path, error })
     }
 
     fn resolved(text: String, chosen: Option<&PathBuf>, path: &PathBuf) -> Cow<'static, str> {

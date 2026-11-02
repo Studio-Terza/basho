@@ -20,6 +20,7 @@ layout = { path = "../layout" }
 map_plan = { path = "../map_plan" }
 menu = { path = "../menu" }
 report = { path = "../report" }
+storage_ports = { path = "../storage_ports" }
 tiles = { path = "../tiles" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"
@@ -31,7 +32,7 @@ dioxus-ssr = "0.7.10"
 rayon = "1"
 serde_json = "1"
 sha1_smol = { version = "1", features = ["std"] }
-tempfile = "3"
+storage_fake = { path = "../storage_fake" }
 toml = "0.9"
 tokio = { version = "1", features = ["rt", "time"] }
 tungstenite = "0.29"

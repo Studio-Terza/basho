@@ -1,5 +1,4 @@
 use std::cell::RefCell;
-use std::fs;
 use std::path::PathBuf;
 
 use dioxus::prelude::*;
@@ -9,7 +8,8 @@ use guide::map_frame::{Pixels, PlanePoint};
 use layout::Touch;
 use report::{Fact, Report, ReportBook, ReportStore, ReportText};
 use serde::Deserialize;
-use tempfile::TempDir;
+use storage_fake::MemoryStorage;
+use storage_ports::HomeFolder;
 
 use basho::app::screen::Screen;
 use basho::app::session::gesture::Gesture;
@@ -179,22 +179,22 @@ struct Exported {
 }
 
 struct Shelf {
-    root: TempDir,
+    home: HomeFolder,
 }
 
 impl Shelf {
     fn new() -> Shelf {
         Shelf {
-            root: TempDir::new().unwrap(),
+            home: MemoryStorage::home(),
         }
     }
 
-    fn exports(&self) -> PathBuf {
-        self.root.path().join("Documents")
+    fn export_file(&self) -> PathBuf {
+        self.home.joined(["Documents", ReportStore::EXPORT_NAME])
     }
 
     fn store(&self) -> ReportStore {
-        ReportStore::located_at(self.root.path().join("reports"), self.exports())
+        ReportStore::in_home(self.home.clone())
     }
 
     fn after(&self, act: Act) -> After {
@@ -281,10 +281,10 @@ fn one_hold_captures_one_report_however_often_its_timer_fires() {
 fn reports_reach_the_export_folder_only_through_export() {
     let captured = Shelf::new();
     let _kept = captured.after(Act::CaptureAfterTwoDecisions);
-    assert!(!captured.exports().exists());
+    assert!(captured.home.read(&captured.export_file()).is_err());
     let exporting = Shelf::new();
     let after = exporting.after(Act::CaptureAndExport);
-    let text = fs::read_to_string(exporting.exports().join(ReportStore::EXPORT_NAME)).unwrap();
+    let text = exporting.home.read(&exporting.export_file()).unwrap();
     let exported: Exported = toml::from_str(&text).unwrap();
     assert_eq!(exported.reports, after.book.reports());
 }

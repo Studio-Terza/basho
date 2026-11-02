@@ -6,11 +6,11 @@ mod trip_refusal;
 mod trip_text;
 
 use std::ffi::OsString;
-use std::path::PathBuf;
 use std::rc::Rc;
 
 use dioxus::prelude::*;
 use guide::Trip;
+use storage_ports::HomeFolder;
 
 use crate::app::session::Session;
 
@@ -24,7 +24,7 @@ pub type TripPage = fn(&Trip, TripShelf) -> Element;
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct TripShelf {
-    home: Signal<Option<PathBuf>>,
+    home: Signal<Option<HomeFolder>>,
     shown: Signal<ShownTrip>,
     refusal: Signal<Option<Rc<TripRefusal>>>,
     page: Signal<Option<TripPage>>,
@@ -33,11 +33,10 @@ pub struct TripShelf {
 impl TripShelf {
     pub const LISTENER: &str = "window.addEventListener('click', (event) => { if (event.target.closest && event.target.closest('.trip-file')) { event.stopPropagation(); } }, true); document.addEventListener('change', async (event) => { const input = event.target; const chosen = input.matches && input.matches('.trip-file') && input.files[0]; if (!chosen) { return; } const text = await chosen.arrayBuffer().then((bytes) => new TextDecoder('utf-8', { fatal: true }).decode(bytes)).catch(() => null); input.value = ''; dioxus.send({ file: chosen.name, text }); }); await new Promise(() => {});";
 
-    pub fn open(named: Option<OsString>, home: Option<OsString>, page: TripPage) -> TripShelf {
-        let kept_home = home.clone().map(PathBuf::from);
+    pub fn open(named: Option<OsString>, home: Option<HomeFolder>, page: TripPage) -> TripShelf {
         TripShelf {
-            home: use_signal(|| kept_home),
-            shown: use_signal(|| ShownTrip::first(TripInput::read(named, home))),
+            shown: use_signal(|| ShownTrip::first(TripInput::read(named, home.as_ref()))),
+            home: use_signal(|| home),
             refusal: use_signal(|| None),
             page: use_signal(|| Some(page)),
         }
@@ -72,6 +71,11 @@ impl TripShelf {
     }
 
     #[must_use]
+    pub fn home(&self) -> Option<HomeFolder> {
+        self.home.peek().clone()
+    }
+
+    #[must_use]
     pub fn trip(&self) -> Option<Rc<Trip>> {
         self.shown.peek().trip()
     }
@@ -96,8 +100,8 @@ impl TripShelf {
 
     fn switched(self, picked: &PickedFile, before: &ShownTrip) -> Result<(), TripRefusal> {
         let trip = picked.trip()?;
-        picked.keep_under(self.home.peek().as_deref())?;
-        Session::forget_trip(self.home.peek().as_deref());
+        picked.keep_under(self.home().as_ref())?;
+        Session::forget_trip(self.home().as_ref());
         let mut shown = self.shown;
         shown.set(
             picked
