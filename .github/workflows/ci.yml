@@ -30,6 +30,8 @@ jobs:
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - run: cargo install --git https://github.com/Studio-Terza/meta-dev --rev 363f17718e --locked lint
+      - run: chromium --headless --no-sandbox --dump-dom about:blank
+        timeout-minutes: 2
       - run: cargo xtask ci
         env:
           CHROME: chromium
