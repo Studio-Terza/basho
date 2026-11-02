@@ -1,3 +1,6 @@
+use std::cell::Cell;
+use std::ops::Range;
+
 use guide::clock::{ClockTime, Minutes, TripTime};
 use guide::end::End;
 use guide::geo::{Coordinate, Degrees, Distance, Share};
@@ -6,7 +9,7 @@ use guide::itinerary::Day;
 use guide::leg::{Leg, LegIndex, Mode};
 use guide::leg_line::LegLine;
 use guide::reading::Reading;
-use guide::readout::Recovery;
+use guide::readout::{Arrow, Recovery, Status};
 
 pub struct Walker<'day> {
     day: &'day Day,
@@ -15,6 +18,8 @@ pub struct Walker<'day> {
 
 impl<'day> Walker<'day> {
     const STRIDE: Distance = Distance::new(10.0);
+    const NEAR_END: Distance = Distance::new(60.0);
+    const WRONG_WAY: Degrees = Degrees::new(100.0);
     const TOWARD: Degrees = Degrees::new(90.0);
 
     const STEPS: [Share; 4] = [
@@ -58,10 +63,84 @@ impl<'day> Walker<'day> {
         })
     }
 
+    pub fn wrong_turns(
+        self,
+        walk: LegIndex,
+        late: Minutes,
+        aside: Distance,
+        settle: Distance,
+    ) -> Vec<String> {
+        let leg = self.day.leg(walk).expect("a walk");
+        let kept = Cell::new(self.progress);
+        Self::strides(leg.length())
+            .filter_map(|along| {
+                let here = Self::beside(leg, along, aside)?;
+                let walker = Walker::kept(self.day, kept.get());
+                let guidance = walker.fix(Self::planned(leg, along, late), here);
+                kept.set(guidance.progress().unwrap_or(kept.get()));
+                let ahead = leg.line().point_along(along + Arrow::LOOK_AHEAD)?;
+                let truth = leg.line().point_along(along)?.bearing_to(ahead);
+                let left = leg.length() - along;
+                let gap = guidance
+                    .arrow()
+                    .map_or(0.0, |arrow| arrow.pointer().bearing().gap_to(truth));
+                let misplaced = (guidance.leg_index() != walk
+                    && (left > Self::NEAR_END || guidance.leg_index() < walk))
+                    .then_some("step");
+                let reversed = (left > Self::NEAR_END
+                    && along >= Self::STRIDE
+                    && gap > Self::WRONG_WAY.degrees())
+                .then_some("arrow");
+                let alarmed = (left > Self::NEAR_END && guidance.status() != Some(Status::OnRoute))
+                    .then_some("status");
+                misplaced
+                    .or(reversed)
+                    .or(alarmed)
+                    .filter(|_| along >= settle)
+                    .map(|wrong| {
+                        format!(
+                            "day {} leg {walk} at {along}: {wrong}, leg {} arrow {gap:.0}° {:?}",
+                            self.day.number(),
+                            guidance.leg_index(),
+                            guidance.status()
+                        )
+                    })
+            })
+            .collect()
+    }
+
     pub fn fix_along(&self, walk: LegIndex, along: Distance, late: Minutes) -> Guidance<'day> {
         let leg = self.day.leg(walk).expect("a walk");
         let here = leg.line().point_along(along).expect("a point");
         self.fix(Self::planned(leg, along, late), here)
+    }
+
+    pub fn fixes_on(&self, walk: LegIndex) -> usize {
+        self.day
+            .leg(walk)
+            .map_or(0, |leg| Self::strides(leg.length()).count())
+    }
+
+    pub fn strayed(
+        self,
+        walk: LegIndex,
+        onto: LegIndex,
+        off: &Range<f64>,
+    ) -> Option<Guidance<'day>> {
+        let leg = self.day.leg(walk)?;
+        let road = self.day.leg(onto)?.line();
+        let half = leg.length() * Share::HALF;
+        let astray = Self::strides(road.length())
+            .filter_map(|along| road.point_along(along))
+            .find(|point| {
+                leg.line()
+                    .fix(*point)
+                    .is_some_and(|fix| off.contains(&Distance::from(fix.off_route()).meters()))
+            })?;
+        Some(
+            self.strolled(walk, half, Minutes::ZERO)
+                .fix(Self::planned(leg, half, Minutes::ZERO), astray),
+        )
     }
 
     fn strides(until: Distance) -> impl Iterator<Item = Distance> {
