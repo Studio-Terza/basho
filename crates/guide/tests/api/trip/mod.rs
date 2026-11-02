@@ -14,7 +14,7 @@ const WITHIN_THE_HOUR: Range<i64> = 0..60;
 const UNMAPPED_END: &str = "{ no_mapped_path = { via = [[-77.988, 38.0]] } }";
 const GAP_METERS: Range<f64> = 80.0..90.0;
 const PART_WAY: Coordinate = Coordinate::new(Degrees::new(38.0), Degrees::new(-77.987));
-const SPOILED: [[&str; 3]; 27] = [
+const SPOILED: [[&str; 3]; 28] = [
     ["name = \"Sample\"", "name = ", "line 2"],
     [
         "utc_offset = \"-04:00\"",
@@ -88,6 +88,11 @@ const SPOILED: [[&str; 3]; 27] = [
         "date = \"2027-05-04\"",
         "date = \"2027-05-05\"",
         "day 2: day numbers and dates must rise",
+    ],
+    [
+        "[[routes]]\nday = 1",
+        "[[landmarks.stars]]\nname = \"The new oak\"\nenglish = \"The new oak\"\nshort = \"The old oak\"\nday = 2\nwhat = [\"Another tree.\"]\nat = { lat = 38.0, lon = -77.983 }\nlocated = { url = \"https://example.org\", checked = \"2026-10-31\" }\nsource = { url = \"https://example.org\", checked = \"2026-10-31\" }\n\n[[routes]]\nday = 1",
+        "day 2: two starred points share the short name \"The old oak\"",
     ],
     [
         "nodes = [101, 102, 103]",
@@ -228,4 +233,17 @@ fn a_file_that_is_not_there_is_named_in_the_error() {
 fn a_time_without_its_fact_or_plan_mark_fails_at_load() {
     let bare = SAMPLE.replace("start = { plan = \"09:00\" }", "start = \"09:00\"");
     assert!(bare.parse::<Trip>().is_err());
+}
+
+#[test]
+fn starred_points_on_different_days_may_share_a_short_name() {
+    let shared = SAMPLE.replacen(
+        "[[routes]]\nday = 1",
+        "[[landmarks.stars]]\nname = \"The far oak\"\nenglish = \"The far oak\"\nshort = \"The old oak\"\nday = 1\nwhat = [\"Another tree.\"]\nat = { lat = 39.0, lon = -77.983 }\nlocated = { url = \"https://example.org\", checked = \"2026-10-31\" }\nsource = { url = \"https://example.org\", checked = \"2026-10-31\" }\n\n[[routes]]\nday = 1",
+        1,
+    );
+    assert_eq!(
+        shared.parse::<Trip>().err().map(|error| error.to_string()),
+        None
+    );
 }

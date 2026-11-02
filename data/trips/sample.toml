@@ -7,7 +7,7 @@ lang = "en"
 number = 1
 title = [{ entry = "Eastfield" }, " → Oakford"]
 start = "Eastfield"
-days = [1, 2]
+days = [1, 2, 3, 4]
 
 [[places]]
 slug = "eastfield"
@@ -152,6 +152,531 @@ name = "The old oak"
 for = { star = ["The old oak"] }
 why = ["The trip is built around this tree."]
 
+[[days]]
+number = 3
+date = "2027-05-05"
+arc = 1
+title = [{ entry = "Oak Inn" }, " → ", { entry = "Pine Inn" }]
+japanese = ["The ", { entry = "Oak Inn" }, " to the ", { entry = "Pine Inn" }, " ({宿|やど})"]
+why = ["Climb to a shrine, ride a train and a boat, then walk a loop of sights to the inn."]
+
+[days.night]
+name = "Pine Inn"
+english = "Pine Inn"
+short = "Pine"
+at = { lat = 37.991007, lon = -77.797343 }
+evidence = { unverified = ["This place is not real."] }
+why = ["Sleep here."]
+check_in_by = { fact = "15:00", source = "check_in", evidence = { unverified = ["This inn is not real."] } }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Inn Lane"]
+heading = ["east"]
+handrail = ["The hedge is on your left."]
+km = 0.80
+minutes = 11
+start = { plan = "08:54" }
+end = { plan = "09:05" }
+then = ["Turn left onto the zigzag path."]
+reach = ["the zigzag path"]
+why = ["The lane leads to the hill."]
+road = ["A quiet lane."]
+see = { text = ["A gate at the foot of the hill."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 38.0, lon = -77.93087 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Zigzag path"]
+heading = ["north, uphill"]
+handrail = ["The path turns back on itself four times."]
+km = 1.27
+minutes = 20
+start = { plan = "09:05" }
+end = { plan = "09:25" }
+then = ["Go straight on up the shrine path."]
+reach = ["the top of the zigzags"]
+why = ["The zigzags climb the steep side of the hill."]
+road = ["A steep earth path."]
+see = { text = ["A bench at the top."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 38.003777, lon = -77.93087 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Shrine path"]
+heading = ["north, uphill"]
+handrail = ["The woods are on both sides."]
+km = 0.60
+minutes = 12
+start = { plan = "09:25" }
+end = { plan = "09:37" }
+dwell = 30
+then = ["Arrive at the ", { entry = "Hill Shrine" }, " car park. The hall is up the steps."]
+reach = ["the shrine car park"]
+why = ["The hall is up the steps from the car park."]
+road = ["A gravel path."]
+see = { text = ["A map board by the steps."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 38.009173, lon = -77.93087 }
+
+  [[days.legs.along]]
+  km = 0.60
+  kind = "sight"
+  name = [{ entry = "Hill Shrine" }]
+  expected = { plan = "09:37" }
+  detail = { text = ["The hall is up the steps, a short walk from the car park."], evidence = { unverified = ["This place is not real."] } }
+  at = { lat = 38.009533, lon = -77.929957 }
+  located = { url = "https://example.org", checked = "2026-10-31" }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Shrine path"]
+heading = ["south, downhill"]
+handrail = ["The woods are on both sides."]
+km = 0.60
+minutes = 10
+start = { plan = "10:07" }
+end = { plan = "10:17" }
+then = ["Turn left onto the ridge road."]
+reach = ["the top of the zigzags"]
+why = ["Go back down the way you came."]
+road = ["A gravel path."]
+see = { text = ["The bench at the top of the zigzags."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 38.003777, lon = -77.93087 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Ridge road"]
+heading = ["east"]
+handrail = ["The valley is on your right."]
+km = 0.80
+minutes = 11
+start = { plan = "10:17" }
+end = { plan = "10:28" }
+then = ["Turn right onto the mill race path."]
+reach = ["the mill race"]
+why = ["The road follows the ridge."]
+road = ["A narrow road with no sidewalk."]
+see = { text = ["A stone channel of water."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 38.003777, lon = -77.92174 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Mill race path"]
+heading = ["south, then west"]
+handrail = ["The water channel is on your right."]
+km = 2.02
+minutes = 28
+start = { plan = "10:28" }
+end = { plan = "10:56" }
+then = ["Turn left onto the station road."]
+reach = ["the station road"]
+why = ["The path follows the water channel."]
+road = ["A paved path beside the channel."]
+see = { text = ["A footbridge over the channel."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.998201, lon = -77.937717 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Station road"]
+heading = ["south"]
+handrail = ["Shops are on both sides."]
+km = 0.40
+minutes = 6
+start = { plan = "10:56" }
+end = { plan = "11:02" }
+then = ["Go into Fern station."]
+reach = ["Fern station"]
+why = ["The station is at the end of the road."]
+road = ["A street with sidewalks."]
+see = { text = ["The station clock."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.994604, lon = -77.937717 }
+
+[[days.legs]]
+mode = { train = { platform = { published = { number = 2, evidence = { source = { url = "https://example.org", checked = "2026-10-31" } } } }, headsign = "ホロウ{行|ゆ}き", line = "Fern Line", kind = "local", evidence = { unverified = ["This train is not real."] } } }
+way = ["Fern Line local"]
+heading = ["toward Hollow"]
+handrail = ["Buy a ticket at the machine."]
+km = 6.0
+minutes = 10
+start = { fact = "11:17", source = "train", evidence = { unverified = ["This train is not real."] } }
+end = { fact = "11:27", source = "train", evidence = { unverified = ["This train is not real."] } }
+then = ["Get off at Hollow."]
+pay = "buy"
+reach = ["Hollow station"]
+why = ["The train crosses the valley."]
+see = { text = ["The river from the bridge."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.994604, lon = -77.937717 }
+to = "Hollow"
+at = { lat = 37.994604, lon = -77.869242 }
+
+  [[days.legs.branches]]
+  where = ["At the platform"]
+  trigger = ["the time is already after ", { fact = { at = "11:17", source = "train", evidence = { unverified = ["This train is not real."] } } }, "."]
+  when = "departed"
+  main = ["Get on the local train."]
+  backup = ["Get on the next local train (", { fact = { at = "12:17", source = "train", evidence = { unverified = ["This train is not real."] } } }, " → ", { fact = { at = "12:27", source = "train", evidence = { unverified = ["This train is not real."] } } }, ")."]
+  backup_ride = { leaves = { fact = "12:17", source = "train", evidence = { unverified = ["This train is not real."] } }, arrives = { fact = "12:27", source = "train", evidence = { unverified = ["This train is not real."] } } }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Pier lane"]
+heading = ["south"]
+handrail = ["The river is ahead."]
+km = 0.40
+minutes = 6
+start = { plan = "11:27" }
+end = { plan = "11:33" }
+then = ["Wait at the boat landing."]
+reach = ["the boat landing"]
+why = ["The boat leaves from the landing."]
+road = ["A lane down to the river."]
+see = { text = ["The ticket hut."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.869242 }
+
+[[days.legs]]
+mode = "boat"
+way = ["Hollow river boat"]
+heading = ["downstream"]
+handrail = ["The boat stops once."]
+km = 3.0
+minutes = 30
+start = { fact = "11:45", source = "boat", evidence = { unverified = ["This boat is not real."] } }
+end = { plan = "12:15" }
+then = ["Get off at the next landing."]
+pay = "buy"
+margin = "boat_check_in"
+reach = ["the lower landing"]
+why = ["The boat is the only way down the gorge."]
+see = { text = ["Cliffs on both banks."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.991007, lon = -77.869242 }
+to = "Lower landing"
+at = { lat = 37.991007, lon = -77.835005 }
+
+  [[days.legs.branches]]
+  where = ["At the boat landing"]
+  trigger = ["the time is already after ", { fact = { at = "11:45", source = "boat", evidence = { unverified = ["This boat is not real."] } } }, "."]
+  when = "departed"
+  main = ["Get on the boat."]
+  backup = ["Get on the next boat (", { fact = { at = "14:45", source = "boat", evidence = { unverified = ["This boat is not real."] } } }, " → ", { fact = { at = "15:15", source = "boat", evidence = { unverified = ["This boat is not real."] } } }, ")."]
+  backup_ride = { leaves = { fact = "14:45", source = "boat", evidence = { unverified = ["This boat is not real."] } }, arrives = { fact = "15:15", source = "boat", evidence = { unverified = ["This boat is not real."] } } }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["River path"]
+heading = ["east"]
+handrail = ["The river is on your right."]
+km = 1.40
+minutes = 20
+start = { plan = "12:15" }
+end = { plan = "12:35" }
+then = ["Go straight on into the market street."]
+reach = ["the market street"]
+why = ["The path follows the river into town."]
+road = ["A paved riverside path."]
+see = { text = ["A weir across the river."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.819027 }
+
+  [[days.legs.along]]
+  km = 0.70
+  kind = "sight"
+  name = [{ entry = "Weir Museum" }]
+  expected = { plan = "12:25" }
+  cutoff = { kind = "closes", at = { fact = "12:35", source = "closes", evidence = { unverified = ["This museum is not real."] } } }
+  detail = { text = ["A small museum about the weir."], evidence = { unverified = ["This place is not real."] } }
+  at = { lat = 37.991007, lon = -77.827016 }
+  located = { url = "https://example.org", checked = "2026-10-31" }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Market street"]
+heading = ["east"]
+handrail = ["Stalls are on both sides."]
+km = 0.70
+minutes = 10
+start = { plan = "12:35" }
+end = { plan = "13:25" }
+then = ["Turn left into the garden."]
+reach = ["the garden gate"]
+why = ["Lunch is on this street."]
+road = ["A busy street with sidewalks."]
+see = { text = ["The garden wall."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.811038 }
+
+  [[days.legs.along]]
+  km = 0.70
+  kind = "food"
+  name = [{ entry = "Pine Café" }]
+  expected = { plan = "12:45" }
+  dwell = 40
+  detail = { text = ["Lunch."], evidence = { unverified = ["This place is not real."] } }
+  at = { lat = 37.991007, lon = -77.811038 }
+  located = { url = "https://example.org", checked = "2026-10-31" }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Garden walk"]
+heading = ["north"]
+handrail = ["The garden wall is on your left."]
+km = 0.70
+minutes = 10
+start = { plan = "13:25" }
+end = { plan = "13:35" }
+dwell = 10
+then = ["Stop at the north gate."]
+reach = ["the north gate"]
+why = ["The first sight of the garden."]
+road = ["A gravel garden path."]
+see = { text = ["The north gate."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.997302, lon = -77.811038 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Garden walk"]
+heading = ["east"]
+handrail = ["The garden wall is on your left."]
+km = 0.70
+minutes = 10
+start = { plan = "13:45" }
+end = { plan = "13:55" }
+dwell = 10
+then = ["Stop at the pond."]
+reach = ["the pond"]
+why = ["The second sight of the garden."]
+road = ["A gravel garden path."]
+see = { text = ["The pond."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.997302, lon = -77.80305 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Garden walk"]
+heading = ["south"]
+handrail = ["The garden wall is on your left."]
+km = 0.70
+minutes = 10
+start = { plan = "14:05" }
+end = { plan = "14:15" }
+dwell = 10
+then = ["Stop at the tea house."]
+reach = ["the tea house"]
+why = ["The last sight of the garden."]
+road = ["A gravel garden path."]
+see = { text = ["The tea house."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.80305 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Inn road"]
+heading = ["east"]
+handrail = ["The garden wall is behind you."]
+km = 0.50
+minutes = 7
+start = { plan = "14:25" }
+end = { plan = "14:32" }
+then = ["Arrive at the inn."]
+reach = ["the inn"]
+why = ["The inn is at the end of the road."]
+road = ["A quiet road."]
+see = { text = ["The inn."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.797343 }
+
+[[days.goals]]
+until = 3
+name = "Hill Shrine"
+for = { star = ["Hill Shrine"] }
+why = ["The shrine on the hill is the reason for the climb."]
+
+[[days.goals]]
+until = 15
+name = "Garden loop"
+for = { loop = { sights = [{ leg = 13, name = ["The north gate"], at = { plan = "13:35" } }, { leg = 14, name = ["The pond"], at = { plan = "13:55" } }, { leg = 15, name = ["The tea house"], at = { plan = "14:15" } }], stars = [] } }
+why = ["Walk round the garden past three sights."]
+
+[[days]]
+number = 4
+date = "2027-05-06"
+arc = 1
+title = [{ entry = "Pine Inn" }, " → ", { entry = "Elm Inn" }]
+japanese = ["The ", { entry = "Pine Inn" }, " to the ", { entry = "Elm Inn" }, " ({宿|やど})"]
+why = ["Ride buses and trains, with two short walks between them."]
+leave_from = { plan = "07:20" }
+
+[days.night]
+name = "Elm Inn"
+english = "Elm Inn"
+short = "Elm"
+at = { lat = 37.991007, lon = -76.883199 }
+evidence = { unverified = ["This place is not real."] }
+why = ["Sleep here."]
+check_in_by = { fact = "18:00", source = "check_in", evidence = { unverified = ["This inn is not real."] } }
+
+[[days.legs]]
+mode = "bus"
+way = ["Valley bus"]
+heading = ["east"]
+handrail = ["The bus has no timetable; it waits for the walkers."]
+km = 5.0
+minutes = 30
+start = { plan = "07:30" }
+end = { plan = "08:00" }
+then = ["Get off at the hall."]
+pay = "on_board"
+reach = ["the hall stop"]
+why = ["The bus saves a long road walk."]
+see = { text = ["The valley floor."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.991007, lon = -77.797343 }
+to = "Hall stop"
+at = { lat = 37.991007, lon = -77.740281 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Hall lane"]
+heading = ["east"]
+handrail = ["The fields are on your right."]
+km = 0.70
+minutes = 10
+start = { plan = "08:00" }
+end = { plan = "08:10" }
+dwell = 20
+then = ["Visit the hall, then wait at the stop outside."]
+reach = ["the hall"]
+why = ["The hall is on the way."]
+road = ["A farm lane."]
+see = { text = ["The hall roof."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.732292 }
+
+[[days.legs]]
+mode = "bus"
+way = ["Hall bus"]
+heading = ["east"]
+handrail = ["The bus runs twice a day."]
+km = 3.0
+minutes = 15
+start = { fact = "08:35", source = "bus", evidence = { unverified = ["This bus is not real."] } }
+end = { fact = "08:50", source = "bus", evidence = { unverified = ["This bus is not real."] } }
+then = ["Get off at the shrine lane."]
+pay = "on_board"
+reach = ["the shrine lane stop"]
+why = ["The bus crosses the river."]
+see = { text = ["The river bridge."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.991007, lon = -77.732292 }
+to = "Shrine lane stop"
+at = { lat = 37.991007, lon = -77.698054 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Shrine lane"]
+heading = ["east"]
+handrail = ["The stream is on your left."]
+km = 0.70
+minutes = 10
+start = { plan = "08:50" }
+end = { plan = "09:00" }
+dwell = 20
+then = ["Visit the shrine, then wait at the stop outside."]
+reach = ["the river shrine"]
+why = ["The shrine is beside the stop."]
+road = ["A lane by the stream."]
+see = { text = ["The shrine gate."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.690065 }
+
+[[days.legs]]
+mode = "bus"
+way = ["Station shuttle"]
+heading = ["east"]
+handrail = ["The shuttle meets the train."]
+km = 3.0
+minutes = 10
+start = { fact = "09:30", source = "bus", evidence = { unverified = ["This bus is not real."] } }
+end = { fact = "09:40", source = "bus", evidence = { unverified = ["This bus is not real."] } }
+then = ["Get off at the station."]
+pay = "on_board"
+reach = ["Elm Junction"]
+why = ["The shuttle meets the train."]
+see = { text = ["The station square."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.991007, lon = -77.690065 }
+to = "Elm Junction"
+at = { lat = 37.991007, lon = -77.655828 }
+
+[[days.legs]]
+mode = { train = { platform = "not_published", headsign = "エルム{行|ゆ}き", line = "Elm Line", kind = "rapid", evidence = { unverified = ["This train is not real."] } } }
+way = ["Elm Line rapid"]
+heading = ["toward Elm"]
+handrail = ["Buy a ticket at the machine first."]
+km = 15.0
+minutes = 30
+start = { fact = "10:00", source = "train", evidence = { unverified = ["This train is not real."] } }
+end = { fact = "10:30", source = "train", evidence = { unverified = ["This train is not real."] } }
+then = ["Get off at Elm Market."]
+pay = "buy"
+transfer = "cross_gate"
+reach = ["Elm Market station"]
+why = ["The train is the only way to the town."]
+see = { text = ["The town from the train."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.991007, lon = -77.655828 }
+to = "Elm Market"
+at = { lat = 37.991007, lon = -77.48464 }
+
+[[days.legs]]
+mode = { walk = { reason = "none_recorded" } }
+way = ["Market square"]
+heading = ["east"]
+handrail = ["The market hall is on your left."]
+km = 0.70
+minutes = 10
+start = { plan = "10:30" }
+end = { plan = "10:40" }
+then = ["Spend the day in town, then go into Elm Central station."]
+reach = ["Elm Central station"]
+why = ["The fast train leaves from the other station."]
+road = ["A square with no traffic."]
+see = { text = ["The market hall."], evidence = { unverified = ["This place is not real."] } }
+at = { lat = 37.991007, lon = -77.476651 }
+
+[[days.legs]]
+mode = { train = { platform = { published = { number = 1, evidence = { source = { url = "https://example.org", checked = "2026-10-31" } } } }, headsign = "エルム{行|ゆ}き", line = "Elm Line", kind = "local", evidence = { unverified = ["This train is not real."] } } }
+way = ["Elm Line local"]
+heading = ["toward Elm"]
+handrail = ["Change at Elm for the fast train."]
+km = 12.0
+minutes = 20
+start = { fact = "17:00", source = "train", evidence = { unverified = ["This train is not real."] } }
+end = { fact = "17:20", source = "train", evidence = { unverified = ["This train is not real."] } }
+then = ["Change to the fast train at Elm."]
+pay = "stored_value"
+reach = ["Elm station"]
+why = ["The local train reaches the fast line."]
+see = { text = ["The fields from the train."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.991007, lon = -77.476651 }
+to = "Elm"
+at = { lat = 37.991007, lon = -77.3397 }
+
+[[days.legs]]
+mode = { train = { platform = "not_published", headsign = "イースト{方面|ほうめん}", line = "Swift Line", kind = "shinkansen", evidence = { unverified = ["This train is not real."] } } }
+way = ["Swift 7"]
+heading = ["east"]
+handrail = ["The seat is booked."]
+km = 40.0
+minutes = 25
+start = { fact = "17:30", source = "train", evidence = { unverified = ["This train is not real."] } }
+end = { fact = "17:55", source = "train", evidence = { unverified = ["This train is not real."] } }
+then = ["Get off at the last stop. The inn is by the station."]
+pay = "stored_value"
+transfer = "same_operator"
+reach = ["East station"]
+why = ["The fast train ends the day."]
+see = { text = ["The coast from the train."], evidence = { unverified = ["This place is not real."] } }
+from = { lat = 37.991007, lon = -77.3397 }
+to = "East"
+at = { lat = 37.991007, lon = -76.883199 }
+
+  [[days.legs.branches]]
+  where = ["At the platform"]
+  trigger = ["the time is already after ", { fact = { at = "17:30", source = "train", evidence = { unverified = ["This train is not real."] } } }, "."]
+  when = "departed"
+  main = ["Get on the fast train."]
+  backup = ["Get on the next fast train (", { fact = { at = "18:30", source = "train", evidence = { unverified = ["This train is not real."] } } }, " → ", { fact = { at = "18:55", source = "train", evidence = { unverified = ["This train is not real."] } } }, ")."]
+  backup_ride = { leaves = { fact = "18:30", source = "train", evidence = { unverified = ["This train is not real."] } }, arrives = { fact = "18:55", source = "train", evidence = { unverified = ["This train is not real."] } } }
+
 [landmarks]
 
 [[landmarks.stars]]
@@ -161,6 +686,17 @@ short = "The old oak"
 day = 2
 what = ["The tree the walk is named for."]
 at = { lat = 38.0, lon = -77.984 }
+located = { url = "https://example.org", checked = "2026-10-31" }
+source = { url = "https://example.org", checked = "2026-10-31" }
+
+
+[[landmarks.stars]]
+name = "Hill Shrine"
+english = "Hill Shrine"
+short = "Hill Shrine"
+day = 3
+what = ["A shrine at the top of the hill."]
+at = { lat = 38.009533, lon = -77.929957 }
 located = { url = "https://example.org", checked = "2026-10-31" }
 source = { url = "https://example.org", checked = "2026-10-31" }
 
@@ -182,3 +718,64 @@ ways = [
 [routes.legs]
 1 = { segments = [{ mapped = { nodes = [201, 202] } }] }
 2 = { coords = [[-77.980, 38.0], [-77.960, 38.0], [-77.940, 38.0]] }
+[[routes]]
+day = 3
+ways = [
+{ id = 4, nodes = [[301, -77.94, 38.0], [302, -77.93087, 38.0]] },
+{ id = 5, nodes = [[302, -77.93087, 38.0], [303, -77.927446, 38.000809], [304, -77.93087, 38.001799], [305, -77.927446, 38.002788], [306, -77.93087, 38.003777]] },
+{ id = 6, nodes = [[306, -77.93087, 38.003777], [307, -77.93087, 38.009173]] },
+{ id = 7, nodes = [[306, -77.93087, 38.003777], [308, -77.92174, 38.003777]] },
+{ id = 8, nodes = [[308, -77.92174, 38.003777], [309, -77.92174, 37.998201], [310, -77.937717, 37.998201]] },
+{ id = 9, nodes = [[310, -77.937717, 37.998201], [311, -77.937717, 37.994604]] },
+{ id = 10, nodes = [[312, -77.869242, 37.994604], [313, -77.869242, 37.991007]] },
+{ id = 11, nodes = [[314, -77.835005, 37.991007], [315, -77.819027, 37.991007]] },
+{ id = 12, nodes = [[315, -77.819027, 37.991007], [316, -77.811038, 37.991007]] },
+{ id = 13, nodes = [[316, -77.811038, 37.991007], [317, -77.811038, 37.997302], [318, -77.80305, 37.997302], [319, -77.80305, 37.991007]] },
+{ id = 14, nodes = [[319, -77.80305, 37.991007], [320, -77.797343, 37.991007]] },
+]
+[routes.legs]
+1 = { segments = [{ mapped = { nodes = [301, 302] } }] }
+2 = { segments = [{ mapped = { nodes = [302, 303, 304, 305, 306] } }] }
+3 = { segments = [{ mapped = { nodes = [306, 307] } }] }
+4 = { segments = [{ mapped = { nodes = [307, 306] } }] }
+5 = { segments = [{ mapped = { nodes = [306, 308] } }] }
+6 = { segments = [{ mapped = { nodes = [308, 309, 310] } }] }
+7 = { segments = [{ mapped = { nodes = [310, 311] } }] }
+8 = { coords = [[-77.937717, 37.994604], [-77.90348, 37.994604], [-77.869242, 37.994604]] }
+9 = { segments = [{ mapped = { nodes = [312, 313] } }] }
+10 = { coords = [[-77.869242, 37.991007], [-77.852124, 37.991007], [-77.835005, 37.991007]] }
+11 = { segments = [{ mapped = { nodes = [314, 315] } }] }
+12 = { segments = [{ mapped = { nodes = [315, 316] } }] }
+13 = { segments = [{ mapped = { nodes = [316, 317] } }] }
+14 = { segments = [{ mapped = { nodes = [317, 318] } }] }
+15 = { segments = [{ mapped = { nodes = [318, 319] } }] }
+16 = { segments = [{ mapped = { nodes = [319, 320] } }] }
+
+[[routes]]
+day = 4
+ways = [
+{ id = 15, nodes = [[401, -77.740281, 37.991007], [402, -77.732292, 37.991007]] },
+{ id = 16, nodes = [[403, -77.698054, 37.991007], [404, -77.690065, 37.991007]] },
+{ id = 17, nodes = [[405, -77.48464, 37.991007], [406, -77.476651, 37.991007]] },
+]
+[routes.legs]
+1 = { coords = [[-77.797343, 37.991007], [-77.740281, 37.991007]] }
+2 = { segments = [{ mapped = { nodes = [401, 402] } }] }
+3 = { coords = [[-77.732292, 37.991007], [-77.698054, 37.991007]] }
+4 = { segments = [{ mapped = { nodes = [403, 404] } }] }
+5 = { coords = [[-77.690065, 37.991007], [-77.655828, 37.991007]] }
+6 = { coords = [[-77.655828, 37.991007], [-77.48464, 37.991007]] }
+7 = { segments = [{ mapped = { nodes = [405, 406] } }] }
+8 = { coords = [[-77.476651, 37.991007], [-77.3397, 37.991007]] }
+9 = { coords = [[-77.3397, 37.991007], [-76.883199, 37.991007]] }
+
+[kana]
+readings = {}
+
+[[catches]]
+day = 3
+features = [
+{geometry={coordinates=[-77.937717,37.994604],type="Point"},id="f1",kind="station",name_en="Fern"},
+{geometry={coordinates=[[-77.94,37.994604],[-77.869242,37.994604]],type="LineString"},id="f2",kind="railway",name_en="Fern Line"},
+]
+legs = []
