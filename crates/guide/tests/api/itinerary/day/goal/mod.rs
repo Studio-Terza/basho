@@ -8,6 +8,8 @@ const AIMED: &str =
     "[[goals]]\nuntil = 1\nname = \"The ridge\"\nfor = \"landmark\"\nwhy = [\"See the road.\"]\n";
 const MISAIMED: &str = "[[goals]]\nuntil = 2\nname = \"The door\"\nfor = \"sight\"\nwhy = [\"See it.\"]\n\n[[goals]]\nuntil = 9\nname = \"Nowhere\"\nfor = \"meal\"\nwhy = [\"Eat.\"]\n";
 const MISSES: usize = 2;
+const GARDEN_DAY: usize = 3;
+const SIGHTS_OF_THE_GARDEN: usize = 3;
 
 #[test]
 fn goals_end_at_each_aim_and_the_inn_and_cover_every_leg_once() {
@@ -79,4 +81,18 @@ fn a_loop_of_one_sight_in_the_wrong_order_or_at_the_wrong_time_is_reported() {
     assert_eq!(Looped::findings(&[FIRST_SIGHT]), 1);
     assert_eq!(Looped::findings(&[SECOND_SIGHT, FIRST_SIGHT]), 1);
     assert_eq!(Looped::findings(&[&late, SECOND_SIGHT]), 1);
+}
+
+#[test]
+fn the_garden_is_one_loop_of_three_sights_whose_times_never_go_back() {
+    let days = Fixture::bundled_days(&[GARDEN_DAY]);
+    let stops = days
+        .day(GARDEN_DAY)
+        .goals()
+        .iter()
+        .flat_map(|goal| goal.purpose().stops())
+        .map(|stop| *AsRef::<PlanTime>::as_ref(&stop))
+        .collect::<Vec<PlanTime>>();
+    assert_eq!(stops.len(), SIGHTS_OF_THE_GARDEN);
+    assert!(stops.is_sorted());
 }

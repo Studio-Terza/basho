@@ -2,6 +2,7 @@ use std::cell::RefCell;
 
 use dioxus::prelude::*;
 use guide::itinerary::DayNumber;
+use guide::leg::LegIndex;
 use guide::map_frame::Pixels;
 use report::{Fact, ReportText};
 use wiki::EntryKey;
@@ -9,11 +10,13 @@ use wiki::EntryKey;
 use basho::app::history::{Fold, ScrollTop};
 use basho::app::screen::Screen;
 use basho::app::session::{Session, SessionEvent};
+use basho::app::step::{DayPoint, Step, StepNumber, Toward};
 
 use crate::ui_check::{Drawing, Stage};
 
 const DAY: DayNumber = DayNumber::new(1);
 const READ_TO: f64 = 90.0;
+const LATER_STEP: usize = 1;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 struct Seen {
@@ -31,6 +34,7 @@ thread_local! {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Visit {
     ReportFromAWikiPage,
+    FollowAStepAndGoBack,
 }
 
 #[derive(Props, Clone, PartialEq)]
@@ -48,6 +52,14 @@ impl Walk {
 
     fn scrolled() -> ScrollTop {
         ScrollTop::new(Pixels::new(READ_TO))
+    }
+
+    fn fold_of(session: &Session, step: StepNumber) -> Fold {
+        let day = session.itinerary().day_number(DAY).expect("a day");
+        let state = DayPoint::locate(&session.guidance(day), &Step::of_day(day))
+            .seen_from(day, session.day_at(session.now()))
+            .state_of(step);
+        session.fold(DAY, step, state)
     }
 
     fn render(walk: Walk) -> Element {
@@ -72,6 +84,29 @@ impl Walk {
                         .and_then(|report| report.capture().fact(Fact::Screen).cloned());
                     session.leave(Self::scrolled());
                     seen.after_back = Some(session.screen());
+                }
+                Visit::FollowAStepAndGoBack => {
+                    let step = session
+                        .wiki()
+                        .find(&EntryKey::Step {
+                            day: DAY,
+                            leg: LegIndex::new(LATER_STEP),
+                        })
+                        .expect("the later step has a page");
+                    let later = StepNumber::from_position(LATER_STEP);
+                    seen.folds.push(Self::fold_of(&session, later));
+                    SessionEvent::Follow {
+                        entry: step,
+                        top: Self::scrolled(),
+                    }
+                    .applied(&session);
+                    seen.folds.push(Self::fold_of(&session, later));
+                    SessionEvent::TurnHistory {
+                        toward: Toward::Previous,
+                        top: Self::scrolled(),
+                    }
+                    .applied(&session);
+                    seen.folds.push(Self::fold_of(&session, later));
                 }
             }
             SEEN.set(seen);
@@ -98,4 +133,19 @@ fn a_report_filed_from_a_wiki_page_names_it_and_back_returns_to_it() {
     assert_eq!(seen.after_back, seen.wiki_page);
     let said = seen.reported_screen.expect("the report names the screen");
     assert!(said.to_string().contains("Shops"), "{said}");
+}
+
+#[test]
+fn back_after_following_a_step_link_puts_the_step_fold_as_it_was() {
+    let trip = Drawing::BuiltIn.itinerary();
+    let day = trip.day_number(DAY).expect("a day");
+    let seen = Walk::seen(
+        Stage::on_screen(day, Screen::Today),
+        Visit::FollowAStepAndGoBack,
+    );
+    let [before, during, after] = seen.folds[..] else {
+        panic!("three folds, not {:?}", seen.folds);
+    };
+    assert_ne!(before, during);
+    assert_eq!(after, before);
 }

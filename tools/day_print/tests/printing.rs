@@ -6,12 +6,15 @@ use sha1_smol::Sha1;
 use day_print::DaysHtml;
 
 const SAMPLE: &str = include_str!("../../../data/trips/sample.toml");
-const GOLDEN: &str = "f19261cd21bfbc7d484242a832c7967525f1c3bc";
+const GOLDEN: &str = "c3065e389bdee78f98cdf6d32a3d61f3d91be45e";
 const HANDRAIL: &str = "The stream is on your right.";
 const MARKUP: &str = "<a & b>";
 const ESCAPED: &str = "&lt;a &amp; b&gt;";
 const NO_PATH_WORDS: &str = "<b>⚠ No mapped path</b>";
 const NO_PATH_LINE: &str = "class=\"no-mapped-path\"";
+const ROW: &str = "<tr>";
+const TRAIN_ROW: &str = "<b>Train · ";
+const CELL_THEN_PLATFORM: &str = "<td><b>Platform ";
 const UNVERIFIED_MARK: &str = " <span class=\"unverified\">?</span>";
 
 static BUNDLED: LazyLock<Trip> = LazyLock::new(|| SAMPLE.parse::<Trip>().expect("the trip loads"));
@@ -20,6 +23,30 @@ static BUNDLED: LazyLock<Trip> = LazyLock::new(|| SAMPLE.parse::<Trip>().expect(
 fn the_existing_trip_prints_as_it_did() {
     let printed = DaysHtml::new(BUNDLED.itinerary()).to_string();
     assert_eq!(Sha1::from(printed).hexdigest(), GOLDEN);
+}
+
+#[test]
+fn a_printed_train_row_opens_with_its_board_facts_and_marks_them_if_unverified() {
+    let train = SAMPLE
+        .lines()
+        .find(|line| line.starts_with("mode = { train"))
+        .expect("the trip has a train");
+    let unverified = train
+        .rsplit_once(", evidence = ")
+        .map(|(board, _)| format!("{board}, evidence = {{ unverified = [\"Made up.\"] }} }} }}"))
+        .expect("a train has evidence");
+    let trip = SAMPLE
+        .replacen(train, &unverified, 1)
+        .parse::<Trip>()
+        .expect("the trip loads");
+    let printed = DaysHtml::new(trip.itinerary()).to_string();
+    let rows: Vec<&str> = printed
+        .split(ROW)
+        .filter(|row| row.contains(TRAIN_ROW))
+        .collect();
+    assert_ne!(rows, Vec::<&str>::new());
+    assert!(rows.iter().all(|row| row.contains(CELL_THEN_PLATFORM)));
+    assert!(printed.contains(&format!("{UNVERIFIED_MARK}<br>")));
 }
 
 #[test]
