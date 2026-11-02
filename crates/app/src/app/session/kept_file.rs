@@ -28,6 +28,7 @@ impl KeptFile {
         self.0.parent().map_or(Ok(()), fs::create_dir_all)?;
         let mut file = File::create(&part)?;
         write!(file, "{contents}")?;
+        file.sync_all()?;
         fs::rename(&part, &self.0)
     }
 
