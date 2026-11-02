@@ -88,7 +88,6 @@ impl ReportStore {
         let part = path.with_extension(Self::PART);
         let mut file = File::create(&part)?;
         write!(file, "{shown}")?;
-        file.sync_all()?;
         fs::rename(&part, path)?;
         Ok(())
     }
