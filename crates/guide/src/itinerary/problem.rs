@@ -39,6 +39,9 @@ pub enum Problem {
     SegmentsOnRide,
     ShortMappedSegment,
     SegmentsApart,
+    LegsApart {
+        next: LegIndex,
+    },
     NodeOnNoWay {
         node: NodeId,
     },
@@ -193,6 +196,10 @@ impl fmt::Display for Problem {
             Problem::ShortMappedSegment => formatter.write_str("a mapped segment needs two nodes"),
             Problem::SegmentsApart => formatter.write_str(
                 "two segments do not meet; put a no_mapped_path segment between them",
+            ),
+            Problem::LegsApart { next } => write!(
+                formatter,
+                "its line does not meet leg {next}'s line; put a no_mapped_path segment between them"
             ),
             Problem::NodeOnNoWay { node } => write!(formatter, "node {node} is on no way"),
             Problem::NoConnection { from, to } => {
