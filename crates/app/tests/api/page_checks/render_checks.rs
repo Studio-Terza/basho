@@ -2,6 +2,8 @@ use rayon::prelude::*;
 use std::collections::BTreeSet;
 
 use basho::app::screen::Screen;
+use guide::evidence::Evidence;
+use guide::itinerary::Day;
 use wiki::EntryKey;
 
 use crate::page_checks::PageTree;
@@ -13,6 +15,15 @@ pub struct RenderChecks;
 
 impl RenderChecks {
     const FIRST_TRIP_WORD: &str = Drawing::FIRST_NAME;
+    const STEP_OPEN: &str = "<li id=";
+    const HEAD_END: &str = "</button>";
+    const BOARD_TITLE: &str = ">Get on the ";
+    const TRAIN_TITLE: &str = " train";
+    const APPROXIMATE: char = '≈';
+    const LIVE_OPEN: &str = "class=\"time-live\">";
+    const CARD_OPEN: &str = "<dl class=\"rows\">";
+    const TRAIN_ROW: &str = "<dt>TRAIN</dt>";
+    const ROW_END: &str = "</dd>";
     const NO_PATH_WORDS: &str = "<strong>No mapped path</strong>";
     const UNVERIFIED: &str = "class=\"unverified\"";
     const INN_OPEN: &str = "Inn: <strong>";
@@ -41,6 +52,25 @@ impl RenderChecks {
             .into_iter()
             .filter(|part| page.contains(part))
             .map(ToOwned::to_owned)
+            .collect()
+    }
+
+    pub fn stray_approximates(page: &str) -> Vec<String> {
+        page.match_indices(Self::APPROXIMATE)
+            .filter(|(at, _)| !page[..*at].ends_with(Self::LIVE_OPEN))
+            .map(|_| page.to_owned())
+            .collect()
+    }
+
+    pub fn train_cards(page: &str) -> Vec<String> {
+        page.split(Self::STEP_OPEN)
+            .filter(|step| {
+                step.split(Self::HEAD_END).next().is_some_and(|head| {
+                    head.contains(Self::BOARD_TITLE) && head.contains(Self::TRAIN_TITLE)
+                })
+            })
+            .filter_map(|step| step.split_once(Self::CARD_OPEN))
+            .map(|(_, card)| card.to_owned())
             .collect()
     }
 
@@ -83,6 +113,38 @@ fn every_stage_renders_what_it_should() {
         problems.len(),
         problems.join("\n")
     );
+}
+
+#[test]
+fn every_page_opens_train_steps_with_their_marked_board_facts_and_keeps_approximates_live() {
+    let itinerary = Drawing::BuiltIn.itinerary();
+    let wiki = Drawing::BuiltIn.wiki();
+    let pages = RenderChecks::across(&Stage::all(&itinerary, &wiki), RenderChecks::page_of);
+    let cards: Vec<String> = pages
+        .iter()
+        .flat_map(|page| RenderChecks::train_cards(page))
+        .collect();
+    let buried = cards
+        .iter()
+        .filter(|card| !card.starts_with(RenderChecks::TRAIN_ROW))
+        .count();
+    let stray = pages
+        .iter()
+        .flat_map(|page| RenderChecks::stray_approximates(page))
+        .count();
+    let unverified = itinerary
+        .days()
+        .iter()
+        .flat_map(Day::legs)
+        .filter_map(|leg| leg.conveyance().train())
+        .any(|train| AsRef::<Evidence>::as_ref(train).mark().is_some());
+    let marked = cards
+        .iter()
+        .filter_map(|card| card.split(RenderChecks::ROW_END).next())
+        .any(|row| row.contains(RenderChecks::UNVERIFIED));
+    assert_ne!(cards, Vec::<String>::new());
+    assert_eq!([buried, stray], [0, 0]);
+    assert_eq!(marked, unverified);
 }
 
 #[test]

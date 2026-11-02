@@ -187,3 +187,12 @@ fn a_mark_with_no_source_word_or_with_both_marks_fails_at_load() {
             .all(|mark| SAMPLE.replace(MARKED, mark).parse::<Trip>().is_err())
     );
 }
+
+#[test]
+fn the_bundled_trip_marks_a_ride_by_its_source_or_says_it_is_a_plan() {
+    let trip = Fixture::bundled().unwrap();
+    let train = trip.days()[1].legs()[1].listed(End::Start);
+    let bus_with_no_timetable = trip.days()[3].legs()[0].listed(End::Start);
+    assert_eq!(train.to_string(), "9:30 train ?");
+    assert_eq!(bus_with_no_timetable.to_string(), "plan 7:30");
+}

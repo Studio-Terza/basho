@@ -3,7 +3,7 @@ use std::sync::{Arc, OnceLock};
 
 use guide::Trip;
 use guide::TripError;
-use guide::clock::TripZone;
+use guide::clock::{ClockTime, TripTime, TripZone};
 use guide::itinerary::Finding;
 use guide::itinerary::{Day, Itinerary};
 use toml::{Table, Value};
@@ -24,6 +24,17 @@ impl<'source> DaySource<'source> {
         let mut table: Table = serde_json::from_str(json).expect("a fixture section");
         table.insert(Fixture::DAY_KEY.to_owned(), number.clone());
         Value::Table(table)
+    }
+}
+
+pub trait WrittenTime {
+    fn at_written(&self, time: &str) -> TripTime;
+}
+
+impl WrittenTime for Day {
+    fn at_written(&self, time: &str) -> TripTime {
+        let time = ClockTime::try_from(time.to_owned()).expect("a written time");
+        TripTime::on_date_at(self.zone(), self.date(), time)
     }
 }
 

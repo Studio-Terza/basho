@@ -9,6 +9,7 @@ use guide::geo::{Coordinate, Distance};
 use guide::guidance::{Guidance, LegProgress};
 use guide::itinerary::Day;
 use guide::leg::{LegIndex, Mode};
+use guide::times::PlanTime;
 use guide::words::Spelling;
 
 use map_plan::{KeyEntry, MapLevel, MapMode, MapPlan, MapSent, MapSight, PinchWay};
@@ -166,4 +167,45 @@ fn the_key_reads_what_the_engine_names_and_ignores_the_rest() {
     assert_eq!(heard[2], KeyEntry::Unlisted);
     assert_eq!(words[0], "Major road");
     assert_eq!(words[1], "The place at the end of this step");
+}
+
+#[test]
+fn a_loop_shows_numbered_stops_in_order_on_the_goal_map_and_nowhere_else() {
+    let place = Spelling::new("Town".to_owned());
+    let looped = Walking::all()
+        .into_iter()
+        .find(|walking| {
+            walking
+                .day
+                .goal_holding(LegIndex::new(walking.position))
+                .is_some_and(|goal| !goal.purpose().stops().is_empty())
+        })
+        .expect("the trip holds a loop");
+    let guidance = looped.guidance(None);
+    let marks = |level| {
+        serde_json::to_string(
+            &Walking::plan(&guidance, looped.sight(&guidance), level).marks(&place),
+        )
+        .expect("marks serialize")
+    };
+    let goal = marks(MapLevel::Goal);
+    let labels: Vec<String> = looped
+        .day
+        .goal_holding(LegIndex::new(looped.position))
+        .into_iter()
+        .flat_map(|goal| goal.purpose().stops())
+        .map(|stop| {
+            let planned = AsRef::<PlanTime>::as_ref(&stop);
+            format!(r#""label":"{} · {planned} "#, stop.number())
+        })
+        .collect();
+    let places: Vec<usize> = labels
+        .iter()
+        .filter_map(|label| goal.find(label.as_str()))
+        .collect();
+    assert_eq!(places.len(), labels.len());
+    assert!(places.is_sorted());
+    assert_eq!(goal.matches("loop_stop").count(), labels.len());
+    assert!(!marks(MapLevel::Leg).contains("loop_stop"));
+    assert!(!marks(MapLevel::Day).contains("loop_stop"));
 }
