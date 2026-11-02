@@ -14,7 +14,7 @@ const WITHIN_THE_HOUR: Range<i64> = 0..60;
 const UNMAPPED_END: &str = "{ no_mapped_path = { via = [[-77.988, 38.0]] } }";
 const GAP_METERS: Range<f64> = 80.0..90.0;
 const PART_WAY: Coordinate = Coordinate::new(Degrees::new(38.0), Degrees::new(-77.987));
-const SPOILED: [[&str; 3]; 28] = [
+const SPOILED: [[&str; 3]; 29] = [
     ["name = \"Sample\"", "name = ", "line 2"],
     [
         "utc_offset = \"-04:00\"",
@@ -128,6 +128,11 @@ const SPOILED: [[&str; 3]; 28] = [
         "{ id = 2, nodes = [[103, -77.996, 38.0], [104, -77.990, 38.0]] },\n]\n[routes.legs]\n1 = { segments = [{ mapped = { nodes = [101, 102, 103] } }] }\n2 = { segments = [{ mapped = { nodes = [103, 104] } }, { no_mapped_path = { via = [[-77.988, 38.0]] } }] }",
         "{ id = 2, nodes = [[103, -77.996, 38.0], [110, -77.992, 38.0]] },\n{ id = 5, nodes = [[111, -77.993, 37.999], [112, -77.993, 38.001], [104, -77.990, 38.0]] },\n]\n[routes.legs]\n1 = { segments = [{ mapped = { nodes = [101, 102, 103] } }] }\n2 = { segments = [{ mapped = { nodes = [103, 110], to = [-77.993, 38.0] } }, { mapped = { nodes = [111, 112, 104], from = [-77.993, 38.0] } }, { no_mapped_path = { via = [[-77.988, 38.0]] } }] }",
         "day 1 leg 2: two segments do not meet",
+    ],
+    [
+        "{ id = 2, nodes = [[103, -77.996, 38.0], [104, -77.990, 38.0]] },\n]\n[routes.legs]\n1 = { segments = [{ mapped = { nodes = [101, 102, 103] } }] }\n2 = { segments = [{ mapped = { nodes = [103, 104] }",
+        "{ id = 2, nodes = [[120, -77.9949, 38.0], [104, -77.990, 38.0]] },\n]\n[routes.legs]\n1 = { segments = [{ mapped = { nodes = [101, 102, 103] } }] }\n2 = { segments = [{ mapped = { nodes = [120, 104] }",
+        "day 1 leg 1: its line does not meet leg 2's line",
     ],
     [
         "1 = { segments = [{ mapped = { nodes = [101, 102, 103] } }] }",
