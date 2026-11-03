@@ -7,9 +7,9 @@ use guide::guidance::LegProgress;
 use guide::guidance::PositionSource;
 use guide::guidance::Sighting;
 use guide::guidance::marker::Marker;
+use guide::guidance::time_check::TimeCheck;
 use guide::leg::LegIndex;
 use guide::readout::Status;
-use guide::readout::TimeCheck;
 
 const DAY_THREE: usize = 3;
 const FIRST_WALK: LegIndex = LegIndex::new(0);

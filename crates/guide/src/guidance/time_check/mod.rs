@@ -4,7 +4,7 @@ use std::fmt;
 
 use crate::clock::{Minutes, TripTime};
 use crate::leg::Leg;
-use crate::readout::emphasis::Emphasis;
+use crate::readout::Emphasis;
 use crate::times::{FactTime, ShownTime};
 use crate::words::Spelling;
 use allowance::Allowance;

@@ -5,7 +5,7 @@ use crate::clock::Minutes;
 use crate::end::End;
 use crate::geo::{Bearing, Coordinate, Distance, RouteFix};
 use crate::leg::{Leg, Mode};
-use crate::readout::pointer::Pointer;
+use crate::readout::Pointer;
 use crate::times::FactTime;
 
 pub use aim::Aim;

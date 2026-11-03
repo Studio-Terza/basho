@@ -1,8 +1,8 @@
 use crate::fixture::Fixture;
 use guide::clock::Minutes;
 use guide::end::End;
+use guide::guidance::time_check::allowance::Allowance;
 use guide::leg::LegIndex;
-use guide::readout::time_check::allowance::Allowance;
 
 const SAMPLE_DAY: usize = 3;
 const MILL_RACE: LegIndex = LegIndex::new(5);

@@ -12,7 +12,7 @@ use serde::de::IgnoredAny;
 use crate::day_number::DayNumber;
 use crate::geo::{Coordinate, Degrees, Distance};
 use crate::leg::LegIndex;
-use crate::readout::pointer::Pointer;
+use crate::readout::Pointer;
 use crate::words::Spelling;
 use feature::Feature;
 use leg_catch::LegCatch;

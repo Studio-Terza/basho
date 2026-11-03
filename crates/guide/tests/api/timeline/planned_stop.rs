@@ -8,10 +8,10 @@ use guide::geo::Distance;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
 use guide::guidance::Sighting;
+use guide::guidance::time_check::TimeCheck;
 use guide::guidance::timeline::Halt;
 use guide::itinerary::Day;
 use guide::leg::LegIndex;
-use guide::readout::TimeCheck;
 
 const DAY_THREE: usize = 3;
 const DAY_FOUR: usize = 4;

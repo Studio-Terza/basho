@@ -10,9 +10,9 @@ use guide::geo::Share;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
 use guide::guidance::Sighting;
+use guide::guidance::arrow::Arrow;
+use guide::guidance::time_check::TimeCheck;
 use guide::leg::LegIndex;
-use guide::readout::Arrow;
-use guide::readout::TimeCheck;
 use guide::times::{FactTime, ShownTime};
 
 const SAMPLE_DAY: usize = 3;

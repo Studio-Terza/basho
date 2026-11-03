@@ -1,12 +1,10 @@
-pub mod day_catch;
+use crate::readout::CatchSight;
 
 use crate::geo::Coordinate;
 use crate::itinerary::Day;
 use crate::leg::LegIndex;
-use crate::readout::pointer::Pointer;
+use crate::readout::Pointer;
 use crate::times::FactTime;
-
-pub use day_catch::{CatchSight, DayCatch};
 
 #[derive(Clone, Debug)]
 pub struct Recovery<'catch> {

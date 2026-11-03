@@ -6,9 +6,9 @@ use guide::geo::Bearing;
 use guide::geo::Distance;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
+use guide::guidance::arrow::Aim;
+use guide::guidance::arrow::Arrow;
 use guide::leg::LegIndex;
-use guide::readout::Arrow;
-use guide::readout::arrow::Aim;
 use guide::readout::pointer::Pointer;
 
 const SAMPLE_DAY: usize = 3;
