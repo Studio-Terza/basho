@@ -5,7 +5,7 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-use guide::evidence::EvidenceCounts;
+use guide::EvidenceCounts;
 use sim_suite::SimFindings;
 
 use crate::task::chromium::Chromium;

@@ -1,6 +1,8 @@
 use std::path::Path;
 
-use guide::evidence::{Evidence, EvidenceCounts, EvidenceKind, FactCount};
+use guide::EvidenceCounts;
+use guide::evidence::FactCount;
+use guide::evidence::{Evidence, EvidenceKind};
 use guide::times::{FactSource, FactTime};
 use guide::{Trip, TripSource};
 

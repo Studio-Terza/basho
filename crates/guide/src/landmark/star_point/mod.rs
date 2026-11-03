@@ -4,9 +4,9 @@ use crate::words::StarName;
 use serde::Deserialize;
 use serde::de::IgnoredAny;
 
+use crate::Source;
 use crate::day_number::DayNumber;
 use crate::english_name::EnglishName;
-use crate::evidence::Source;
 use crate::geo::Coordinate;
 use crate::naming::Naming;
 use crate::ruby_text::RubyText;

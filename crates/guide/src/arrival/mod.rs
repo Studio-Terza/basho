@@ -1,6 +1,7 @@
-use crate::arrival_mark::ArrivalMark;
+mod arrival_mark;
 use crate::clock::{ClockTime, TripTime};
 use crate::times::{Basis, LiveTime};
+pub use arrival_mark::ArrivalMark;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Arrival {

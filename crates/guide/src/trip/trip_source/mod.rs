@@ -1,6 +1,8 @@
-use crate::evidence::{EvidenceCounts, EvidenceTally};
+mod evidence_tally;
+use crate::EvidenceCounts;
 use crate::itinerary::Finding;
 use crate::trip::{Trip, TripError};
+pub use evidence_tally::EvidenceTally;
 
 #[derive(newtype::Newtype, Clone, Copy, Debug)]
 pub struct TripSource<'text>(&'text str);

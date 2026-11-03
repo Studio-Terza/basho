@@ -1,7 +1,12 @@
 #[macro_use]
 mod operators;
+mod arrival;
+mod evidence_counts;
+mod source;
+pub use arrival::ArrivalMark;
+pub use evidence_counts::EvidenceCounts;
+use source::Source;
 
-mod arrival_mark;
 mod backup_mark;
 pub mod classed;
 pub mod clock;
@@ -32,7 +37,6 @@ mod trip_head;
 mod way;
 pub mod words;
 
-pub use arrival_mark::ArrivalMark;
 pub use backup_mark::BackupMark;
 pub use map_frame::Scale;
 pub use overview::Overview;

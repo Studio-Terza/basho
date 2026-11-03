@@ -1,10 +1,12 @@
+mod fact_count;
+pub use fact_count::FactCount;
 use std::fmt;
 use std::iter::Sum;
 use std::ops::Add;
 
 use serde::Serialize;
 
-use crate::evidence::{EvidenceKind, FactCount};
+use crate::evidence::EvidenceKind;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
 pub struct EvidenceCounts {

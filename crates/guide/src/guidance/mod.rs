@@ -1,4 +1,3 @@
-mod arrival;
 mod leg_progress;
 pub mod marker;
 mod nearness;
@@ -36,7 +35,7 @@ use track::Track;
 use tracking::Tracking;
 use walk_search::WalkSearch;
 
-pub use arrival::Arrival;
+pub use crate::arrival::Arrival;
 pub use leg_progress::LegProgress;
 pub use phase::Phase;
 pub use plan::Plan;

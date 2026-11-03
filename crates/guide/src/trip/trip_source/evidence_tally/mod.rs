@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 use serde::{Deserialize, Deserializer};
 
-use crate::evidence::EvidenceCounts;
+use crate::EvidenceCounts;
 use counting_visitor::CountingVisitor;
 
 #[derive(derive_more::From, derive_more::Into, Clone, Copy, Debug)]
