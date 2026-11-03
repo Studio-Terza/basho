@@ -1,11 +1,11 @@
+use guide::StarPoint;
 use guide::geo::{Coordinate, Distance};
-use guide::landmark::StarPoint;
 use guide::naming::Naming;
 use guide::ruby_text::RubyText;
 
 use crate::draft::stop_ref::StopRef;
 use crate::entry::EntryKind;
-use guide::trip::NameForms;
+use guide::NameForms;
 
 #[derive(Clone, Debug)]
 pub struct StopGroup<'trip> {

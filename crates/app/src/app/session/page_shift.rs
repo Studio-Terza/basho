@@ -1,7 +1,7 @@
 use std::fmt;
 use std::time::Duration;
 
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use layout::Motion;
 use layout::scale::Viewport;
 

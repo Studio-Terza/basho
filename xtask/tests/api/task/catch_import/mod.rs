@@ -4,7 +4,7 @@ mod day_file;
 use std::collections::BTreeMap;
 
 use guide::TripSource;
-use guide::readout::recovery::catch_words::{FeatureName, Readings};
+use guide::catch_words::{FeatureName, Readings};
 use xtask::task::catch_import::CatchImport;
 
 const TRIP: &str = "[trip]\nname = \"T\"\n\n[kana]\nunsourced = [\"A\"]\n\n[kana.readings.B]\nkana = \"い\"\nsource = \"s\"\n";

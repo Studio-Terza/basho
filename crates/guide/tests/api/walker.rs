@@ -4,13 +4,16 @@ use std::ops::Range;
 use guide::clock::{ClockTime, Minutes, TripTime};
 use guide::end::End;
 use guide::geo::{Coordinate, Degrees, Distance, Share};
+use guide::guidance::arrow::Arrow;
+use guide::guidance::recovery::Recovery;
+use guide::guidance::time_check::TimeCheck;
 use guide::guidance::{Guidance, LegProgress};
 use guide::itinerary::Day;
 use guide::leg::{Leg, LegIndex, Mode};
 use guide::leg_line::LegLine;
 use guide::reading::Reading;
+use guide::readout::Status;
 use guide::readout::pointer::Pointer;
-use guide::readout::{Arrow, Recovery, Status, TimeCheck};
 use newtype::Counter;
 
 pub struct Walker<'day> {

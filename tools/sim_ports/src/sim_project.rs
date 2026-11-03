@@ -6,7 +6,7 @@ use std::time::Duration;
 use crate::bounded::Bounded;
 use crate::device::Udid;
 use crate::failure::Failure;
-use sim_suite::map_phase::PhaseLength;
+use crate::phase_length::PhaseLength;
 
 pub struct SimProject {
     unpacked: PathBuf,

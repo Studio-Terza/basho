@@ -1,18 +1,19 @@
-mod axis;
-mod pixels;
-mod plane_point;
-mod scale;
+mod svg_path;
 mod tenths;
 
-use crate::words::SvgPath;
+use crate::plane::Scale;
+
+use crate::plane::PlanePoint;
+
+use crate::plane::Pixels;
+
+use crate::plane::Axis;
+pub use svg_path::SvgPath;
+
 use std::fmt::Write;
 
 use crate::geo::{Coordinate, Degrees, Distance, Share};
 
-pub use axis::Axis;
-pub use pixels::Pixels;
-pub use plane_point::PlanePoint;
-pub use scale::Scale;
 use tenths::Tenths;
 
 #[derive(Clone, Copy, Debug, PartialEq)]

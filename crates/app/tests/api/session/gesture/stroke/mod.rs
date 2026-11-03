@@ -1,6 +1,7 @@
 use std::time::Instant;
 
-use guide::map_frame::{Pixels, PlanePoint};
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 use layout::scale::Viewport;
 
 use basho::app::session::gesture::TouchSample;
@@ -20,8 +21,8 @@ impl Drag {
             .iter()
             .map(|[across, down]| {
                 let end = PlanePoint::new(
-                    origin.point()[guide::map_frame::Axis::Across] + Pixels::new(*across),
-                    origin.point()[guide::map_frame::Axis::Down] + Pixels::new(*down),
+                    origin.point()[guide::plane::Axis::Across] + Pixels::new(*across),
+                    origin.point()[guide::plane::Axis::Down] + Pixels::new(*down),
                 );
                 Stroke::between(origin, TouchSample::new(end, start)).swipe(Viewport::default())
             })

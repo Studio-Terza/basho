@@ -1,6 +1,6 @@
 mod travel;
 
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use layout::Touch;
 use layout::scale::Viewport;
 
@@ -19,10 +19,9 @@ impl Stroke {
     #[must_use]
     pub fn between(start: TouchSample, end: TouchSample) -> Stroke {
         Stroke {
-            across: end.point()[guide::map_frame::Axis::Across]
-                - start.point()[guide::map_frame::Axis::Across],
-            down: end.point()[guide::map_frame::Axis::Down]
-                - start.point()[guide::map_frame::Axis::Down],
+            across: end.point()[guide::plane::Axis::Across]
+                - start.point()[guide::plane::Axis::Across],
+            down: end.point()[guide::plane::Axis::Down] - start.point()[guide::plane::Axis::Down],
         }
     }
 

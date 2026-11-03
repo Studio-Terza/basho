@@ -4,7 +4,8 @@ use std::path::PathBuf;
 use dioxus::prelude::*;
 use guide::clock::{ClockTime, Minutes, TripTime};
 use guide::guidance::{Guidance, LegProgress};
-use guide::map_frame::{Pixels, PlanePoint};
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 use layout::Touch;
 use report::{Fact, Report, ReportBook, ReportStore, ReportText};
 use serde::Deserialize;
@@ -12,7 +13,8 @@ use storage_fake::MemoryStorage;
 use storage_ports::HomeFolder;
 
 use basho::app::session::gesture::Gesture;
-use basho::app::session::tracker_log::{DecisionLog, TrackerDecision};
+use basho::app::session::tracker_decision::TrackerDecision;
+use basho::app::session::tracker_log::DecisionLog;
 use basho::app::session::{Session, SessionEvent};
 use basho::app::step::{Spot, StepNumber};
 use basho::app::visit::Screen;
@@ -132,10 +134,10 @@ impl Act {
             Act::MoveTwoFingers => {
                 Self::touch_two_fingers(session);
                 let start = Self::held(session);
-                let far = Self::TOUCHED[guide::map_frame::Axis::Across] + Touch::Slop.extent();
+                let far = Self::TOUCHED[guide::plane::Axis::Across] + Touch::Slop.extent();
                 SessionEvent::TouchMoved(PlanePoint::new(
                     far,
-                    Self::TOUCHED[guide::map_frame::Axis::Down],
+                    Self::TOUCHED[guide::plane::Axis::Down],
                 ))
                 .applied(session);
                 Self::timer_fires_on(session, start);

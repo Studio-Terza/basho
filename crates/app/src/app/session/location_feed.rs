@@ -11,7 +11,7 @@ use objc2_core_location::{
     kCLLocationAccuracyBest, kCLLocationAccuracyHundredMeters,
 };
 
-use layout::measure::Ground;
+use guide::geo::distance::Ground;
 
 use crate::app::session::Session;
 use crate::app::session::location_access::LocationAccess;

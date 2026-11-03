@@ -3,7 +3,8 @@ use std::str::FromStr;
 
 use thiserror::Error;
 
-use map_class::{GridAxis, Zoom};
+use crate::bits::GridAxis;
+use map_class::Zoom;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TileId {

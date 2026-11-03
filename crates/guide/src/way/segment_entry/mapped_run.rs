@@ -1,8 +1,9 @@
 use serde::Deserialize;
 
+use crate::NodeId;
 use crate::geo::{Coordinate, Degrees, Distance, RouteFix, RouteLine};
 use crate::itinerary::Problem;
-use crate::way::{MappedSegment, NodeId, RoadNetwork};
+use crate::way::{MappedSegment, RoadNetwork};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

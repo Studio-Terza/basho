@@ -1,8 +1,8 @@
 use serde::Deserialize;
 
+use crate::Source;
 use crate::clock::Minutes;
 use crate::content::Content;
-use crate::evidence::Source;
 use crate::geo::{Coordinate, Distance};
 use crate::leg::cutoff::Cutoff;
 use crate::leg::stop_kind::StopKind;

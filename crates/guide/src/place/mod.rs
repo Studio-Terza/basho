@@ -3,7 +3,8 @@ mod excerpt;
 mod fact;
 mod place_fact;
 
-use crate::content::{Content, ContentList};
+use crate::content::Content;
+use crate::trip::ContentList;
 use crate::words::Slug;
 use serde::Deserialize;
 

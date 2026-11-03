@@ -1,15 +1,18 @@
 mod corner;
+mod line;
 mod screen_share;
 mod span;
+mod target;
+mod text;
+pub use line::Line;
+pub use target::Target;
+pub use text::Text;
 
 use newtype::Newtype;
 use std::fmt;
 
-use crate::scale::Extent;
+use crate::measure::Extent;
 use crate::scale::Gap;
-use crate::scale::Line;
-use crate::scale::Target;
-use crate::scale::Text;
 use crate::scale::Token;
 use crate::scale::Viewport;
 use corner::Corner;

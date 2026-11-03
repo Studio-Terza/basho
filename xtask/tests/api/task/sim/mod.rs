@@ -4,7 +4,8 @@ use std::time::{Duration, UNIX_EPOCH};
 
 use tempfile::TempDir;
 
-use sim_suite::map_phase::{PhaseFigures, TopSample};
+use sim_suite::TopSample;
+use sim_suite::map_phase::PhaseFigures;
 use sim_suite::{CrashReports, SimFindings, Standing, SuiteEar, SuiteLine, SuiteWord, TestName};
 
 const PASSED: &str = "Test Case '-[BashoUITests.MapTests testPinch]' passed (20.1 seconds).";

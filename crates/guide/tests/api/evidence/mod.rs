@@ -1,7 +1,10 @@
 use std::path::Path;
 
-use guide::evidence::{Evidence, EvidenceCounts, EvidenceKind, FactCount};
-use guide::times::{FactSource, FactTime};
+use guide::EvidenceCounts;
+use guide::FactSource;
+use guide::evidence::FactCount;
+use guide::evidence::{Evidence, EvidenceKind};
+use guide::times::FactTime;
 use guide::{Trip, TripSource};
 
 const SAMPLE: &str = include_str!("../../../../../data/trips/sample.toml");

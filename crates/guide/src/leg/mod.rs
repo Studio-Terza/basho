@@ -1,13 +1,16 @@
 pub mod along;
 mod branch;
-pub mod card;
-mod card_fill;
+
+use crate::CardLine;
+
+use crate::Card;
 pub mod conveyance;
 mod cue;
 mod cutoff;
 mod gait;
 mod leg_check;
 mod leg_index;
+pub mod margin;
 mod margin_rule;
 mod pay;
 mod road;
@@ -15,10 +18,11 @@ mod stop_kind;
 mod tour;
 mod transfer;
 use crate::words::Slug;
+use margin::Margin;
 use serde::Deserialize;
 
 use crate::clock::{ClockTime, Minutes};
-use crate::content::{Content, ContentList};
+use crate::content::Content;
 use crate::day_number::DayNumber;
 use crate::end::End;
 use crate::geo::{Coordinate, Distance, RouteLine};
@@ -26,8 +30,8 @@ use crate::itinerary::Finding;
 use crate::leg_line::LegLine;
 use crate::place::Fact;
 use crate::ruby_text::RubyText;
-use crate::timeline::Margin;
 use crate::times::ListedTime;
+use crate::trip::ContentList;
 use crate::way::{LegPath, NoMappedPath, WalkSegment};
 use along::Along;
 use conveyance::{Conveyance, RouteReason, TrainKind};
@@ -41,9 +45,6 @@ use transfer::Transfer;
 
 use crate::clock::Pause;
 pub use branch::{Branch, BranchLine};
-pub use card::Card;
-use card::CardLine;
-pub use card_fill::CardFill;
 pub use conveyance::Mode;
 pub use cutoff::Cutoff;
 pub use leg_index::LegIndex;

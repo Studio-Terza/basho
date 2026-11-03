@@ -1,5 +1,5 @@
 use guide::geo::{Degrees, Share};
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use layout::Panel;
 use layout::Touch;
 use layout::scale::{Gap, Token, Viewport};

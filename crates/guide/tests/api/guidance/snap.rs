@@ -7,11 +7,11 @@ use guide::end::End;
 use guide::geo::Distance;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
+use guide::guidance::time_check::TimeCheck;
 use guide::itinerary::Day;
 use guide::leg::Leg;
 use guide::leg::LegIndex;
 use guide::leg::Mode;
-use guide::readout::TimeCheck;
 
 const LATE: Minutes = Minutes::new(60);
 const VISITS: [[usize; 2]; 4] = [[3, 2], [3, 12], [3, 13], [4, 1]];

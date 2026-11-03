@@ -1,7 +1,8 @@
+use guide::BufferState;
+use guide::DeadlineKind;
 use guide::classed::Classed;
 use guide::pressing::Pressing;
 use guide::readout::Emphasis;
-use guide::timeline::{BufferState, DeadlineKind};
 
 use crate::app::visit::Screen;
 

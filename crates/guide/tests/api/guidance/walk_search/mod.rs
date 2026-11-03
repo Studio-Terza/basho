@@ -9,8 +9,8 @@ use guide::clock::Minutes;
 use guide::end::End;
 use guide::geo::Degrees;
 use guide::geo::Distance;
+use guide::guidance::arrow::Arrow;
 use guide::leg::LegIndex;
-use guide::readout::Arrow;
 
 const HILL_DAY: usize = 3;
 const LATE: Minutes = Minutes::new(45);

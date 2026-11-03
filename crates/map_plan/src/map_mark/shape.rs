@@ -2,9 +2,10 @@ use guide::classed::Classed;
 use std::fmt::Write;
 
 use dioxus::prelude::*;
-use guide::map_frame::{Pixels, PlanePoint};
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 
-use layout::Halving;
+use guide::plane::Halving;
 use layout::measure::MarkSize;
 
 use super::look::Look;
@@ -28,8 +29,8 @@ pub enum Shape {
 
 impl Shape {
     pub fn draw(self, at: PlanePoint, size: Pixels, look: Look) -> Element {
-        let across = at[guide::map_frame::Axis::Across].pixels();
-        let down = at[guide::map_frame::Axis::Down].pixels();
+        let across = at[guide::plane::Axis::Across].pixels();
+        let down = at[guide::plane::Axis::Down].pixels();
         let half = size.pixels();
         let tone = look.tone();
         let mark_size = look.size();
@@ -92,8 +93,8 @@ impl Shape {
                 let _ = write!(
                     corners,
                     "{:.1},{:.1} ",
-                    at[guide::map_frame::Axis::Across].pixels() + radius * angle.cos(),
-                    at[guide::map_frame::Axis::Down].pixels() + radius * angle.sin()
+                    at[guide::plane::Axis::Across].pixels() + radius * angle.cos(),
+                    at[guide::plane::Axis::Down].pixels() + radius * angle.sin()
                 );
                 corners
             })

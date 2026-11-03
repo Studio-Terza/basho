@@ -10,7 +10,8 @@ use std::fmt;
 
 use guide::geo::{Bearing, Coordinate, Degrees, Distance, Share};
 
-use guide::timeline::{BufferState, Halt};
+use guide::BufferState;
+use guide::guidance::timeline::Halt;
 
 use guide::clock::{ClockTime, Minutes, TripTime};
 

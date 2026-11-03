@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use dioxus::prelude::*;
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use wiki::{EntryId, EntryKey, Home};
 
 use basho::app::history::StepFolds;

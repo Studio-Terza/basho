@@ -1,4 +1,4 @@
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use layout::scale::Viewport;
 
 pub struct Handset;

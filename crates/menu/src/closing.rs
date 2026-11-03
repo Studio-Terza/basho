@@ -1,5 +1,5 @@
 use guide::geo::Share;
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 
 use crate::closed::Closed;
 use crate::open::Open;

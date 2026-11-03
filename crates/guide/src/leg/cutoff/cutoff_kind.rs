@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::timeline::DeadlineKind;
+use crate::DeadlineKind;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]

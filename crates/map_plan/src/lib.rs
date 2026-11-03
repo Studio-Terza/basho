@@ -19,7 +19,7 @@ use guide::words::Spelling;
 
 use bits::MapBounds;
 pub use key_entry::KeyEntry;
-pub use map_level::{MapHealth, MapLevel, MapMode, PinchWay};
+pub use map_level::{MapLevel, MapMode, PinchWay};
 pub use map_sent::{MapSent, MapUpdate};
 pub use map_sight::MapSight;
 use mark_source::{

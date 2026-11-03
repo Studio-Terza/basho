@@ -1,6 +1,5 @@
-use map_class::{
-    LandKind, PlaceRank, PoiGroup, RoadRank, RoadSurface, SurfaceTag, TileLayer, Zoom,
-};
+use map_class::{LandKind, PlaceRank, PoiGroup, RoadRank, RoadSurface, SurfaceTag, Zoom};
+use tile_draft::TileLayer;
 use tile_draft::{DrawnAs, TagKey, TileTag};
 
 use crate::osm_tags::{OsmKey, OsmTags};
@@ -139,7 +138,7 @@ impl TagReader for SolidArea {
                     .find_map(|key| tags.parsed::<LandKind>(key))
                     .map(|kind| {
                         let class = TileTag::new(TagKey::Class, <&str>::from(kind).into());
-                        DrawnAs::new(TileLayer::Land, Zoom::LOCAL_ROADS, vec![class])
+                        DrawnAs::new(TileLayer::Land, kind.into(), vec![class])
                     })
             })
     }

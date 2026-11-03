@@ -1,8 +1,4 @@
-mod backing;
-mod evidence_counts;
-mod evidence_tally;
-mod fact_count;
-mod source;
+use crate::source::Source;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -15,11 +11,7 @@ use crate::clock::CalendarDate;
 use crate::content::Content;
 use crate::words::Label;
 
-pub use backing::Backing;
-pub use evidence_counts::EvidenceCounts;
-pub use evidence_tally::EvidenceTally;
-pub use fact_count::FactCount;
-pub use source::Source;
+pub use crate::evidence_counts::FactCount;
 
 #[derive(Clone, Debug, Deserialize, EnumDiscriminants)]
 #[strum_discriminants(name(EvidenceKind), derive(PartialOrd, Ord))]

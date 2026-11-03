@@ -3369,6 +3369,7 @@ name = "map_plan"
 version = "0.1.0"
 dependencies = [
  "dioxus",
+ "dioxus-ssr",
  "guide",
  "layout",
  "newtype",

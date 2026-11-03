@@ -1,5 +1,5 @@
+use guide::BufferState;
 use guide::classed::Classed;
-use guide::timeline::BufferState;
 
 #[derive(strum::IntoStaticStr, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SpareLook {

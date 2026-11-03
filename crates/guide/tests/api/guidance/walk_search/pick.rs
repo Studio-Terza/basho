@@ -6,9 +6,9 @@ use guide::end::End;
 use guide::geo::Degrees;
 use guide::geo::Distance;
 use guide::geo::Share;
+use guide::guidance::arrow::Arrow;
+use guide::guidance::time_check::TimeCheck;
 use guide::leg::LegIndex;
-use guide::readout::Arrow;
-use guide::readout::TimeCheck;
 
 const HILL_DAY: usize = 3;
 const CLIMB: LegIndex = LegIndex::new(2);

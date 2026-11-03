@@ -1,6 +1,6 @@
 use std::fmt;
 
-use guide::readout::recovery::catch_words::FeatureName;
+use guide::catch_words::FeatureName;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Piece {

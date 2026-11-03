@@ -1,4 +1,5 @@
-use guide::map_frame::{Pixels, Scale};
+use guide::plane::Pixels;
+use guide::plane::Scale;
 use guide::words::Label;
 
 use crate::scale::token::Token;

@@ -1,15 +1,12 @@
 mod content_error;
-mod content_list;
+mod distance_unit;
 mod figure;
-mod measure;
 mod name_kind;
 mod part;
-mod price;
 mod said_clock;
-mod said_fact;
-mod scheduled_train;
 mod typed_part;
 mod words;
+pub use distance_unit::DistanceUnit;
 
 use std::fmt;
 
@@ -19,15 +16,10 @@ use crate::reading::Reading;
 use crate::ruby_text::RubyText;
 
 use content_error::ContentError;
-pub use content_list::ContentList;
 use figure::Figure;
-use measure::{DistanceUnit, Measure, SpanUnit};
 pub use name_kind::NameKind;
 pub use part::Part;
-use price::Price;
 use said_clock::SaidClock;
-use said_fact::SaidFact;
-use scheduled_train::ScheduledTrain;
 pub use typed_part::TypedPart;
 use words::Words;
 pub use words::{StretchKind, TypedStretch};

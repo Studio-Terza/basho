@@ -1,6 +1,7 @@
 mod top_probe;
 
-use sim_suite::map_phase::{PhaseFigures, PhaseLength};
+use crate::phase_length::PhaseLength;
+use sim_suite::map_phase::PhaseFigures;
 use sim_suite::{CrashReports, SimFindings, Standing, SuiteEar, SuiteLine, SuiteWord, TestName};
 
 use crate::device::Udid;

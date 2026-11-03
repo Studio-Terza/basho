@@ -1,16 +1,18 @@
 use std::collections::BTreeSet;
 
 mod notice;
+mod report_count;
 mod report_error;
 mod report_store;
 
 use notice::Notice;
+use report_count::ReportCount;
 use report_error::ReportError;
 pub use report_store::ReportStore;
 
 use newtype::Counter;
 
-use crate::{Capture, Report, ReportCount, ReportNumber, ReportText};
+use crate::{Capture, Report, ReportNumber, ReportText};
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct ReportBook {

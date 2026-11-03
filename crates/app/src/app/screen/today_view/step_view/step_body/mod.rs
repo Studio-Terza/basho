@@ -6,6 +6,7 @@ mod route_row;
 
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
+use guide::FactSource;
 use guide::classed::Classed;
 use guide::content::Content;
 use guide::geo::{Distance, RouteLine};
@@ -15,7 +16,6 @@ use guide::leg::along::Along;
 use guide::leg::conveyance::{Headsign, LineName, Platform, TrainKind};
 use guide::leg_line::LegLine;
 use guide::place::NoteKind;
-use guide::times::FactSource;
 use guide::words::Label;
 use newtype::Counter;
 use wiki::{EntryId, EntryKey, StopIndex};

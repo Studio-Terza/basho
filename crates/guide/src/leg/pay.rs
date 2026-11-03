@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::timeline::Margin;
+use crate::leg::Margin;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]

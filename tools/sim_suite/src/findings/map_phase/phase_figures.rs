@@ -1,5 +1,5 @@
-use crate::findings::map_phase::TopSample;
 use crate::suite::SuiteWord;
+use crate::top_sample::TopSample;
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize)]
 pub struct PhaseFigures {

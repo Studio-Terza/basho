@@ -3,7 +3,8 @@ use std::fs::File;
 use std::io::{self, ErrorKind};
 use std::os::unix::fs::FileExt;
 
-use map_class::{GridAxis, Zoom};
+use crate::bits::GridAxis;
+use map_class::Zoom;
 
 use super::TileId;
 

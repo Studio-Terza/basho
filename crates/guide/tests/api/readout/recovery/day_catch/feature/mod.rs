@@ -1,9 +1,9 @@
-use guide::readout::recovery::catch_words::{FeatureName, Readings};
+use guide::catch_words::{FeatureName, Readings};
 use guide::ruby_text::RubyText;
 use std::collections::BTreeMap;
 
 use guide::reading::Reading;
-use guide::readout::recovery::day_catch::feature::Feature;
+use guide::readout::day_catch::feature::Feature;
 
 const UNREAD: &str = r#"{"id":"f1","kind":"river","name":"最上川","name_kana":null,"name_en":null,"ref":null,"geometry":{"type":"Point","coordinates":[140.0,38.0]}}"#;
 const ROAD: &str = r#"{"id":"f2","kind":"road","name":"大石田畑線","name_kana":null,"name_en":null,"ref":"30;121","geometry":{"type":"LineString","coordinates":[[140.0,38.0],[140.01,38.0]]}}"#;

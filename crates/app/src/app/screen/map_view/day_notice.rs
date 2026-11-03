@@ -1,10 +1,10 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
+use guide::FactSource;
 use guide::classed::Classed;
 use guide::clock::DayTense;
 use guide::end::End;
 use guide::leg_line::LegLine;
-use guide::times::FactSource;
 
 use crate::app::screen::map_view::narration::Narration;
 use crate::app::screen::ruby_view::RubyView;

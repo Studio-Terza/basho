@@ -1,5 +1,5 @@
 use guide::geo::Share;
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 
 use crate::open::Open;
 use crate::pose::{Follow, Pose, Reach};

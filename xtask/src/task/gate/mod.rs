@@ -1,4 +1,3 @@
-mod chromium;
 mod commit;
 mod detail;
 mod outcome;
@@ -15,20 +14,20 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime};
 
+use crate::task::chromium::Chromium;
 use crate::task::ci::Ci;
 use crate::task::failure::Failure;
 use crate::task::flag::Flag;
 use crate::task::trip_text::TripText;
 use crate::task::workspace::Workspace;
 use basho_lints::Site;
+use guide::EvidenceCounts;
 use guide::TripSource;
-use guide::evidence::EvidenceCounts;
 use guide::words::Label;
 pub(crate) use ports::Git;
 use ports::Status;
 use sim_ports::Sim;
 
-pub use chromium::Chromium;
 pub use commit::Commit;
 pub use detail::Detail;
 pub use outcome::Outcome;

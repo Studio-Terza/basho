@@ -1,6 +1,6 @@
 use guide::content::Content;
-use guide::itinerary::day::goal::{LoopNumber, LoopStop};
 use guide::times::{ListedTime, PlanTime};
+use guide::{LoopNumber, LoopStop};
 
 #[derive(Clone, Debug)]
 pub struct LoopRow {

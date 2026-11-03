@@ -2,7 +2,8 @@ mod mountain_range;
 mod peak;
 mod river;
 mod sea;
-mod star_point;
+
+use crate::StarPoint;
 use crate::day_number::DayNumber;
 use crate::geo::Coordinate;
 use crate::words::StarName;
@@ -14,10 +15,9 @@ use crate::itinerary::{Day, Finding, Itinerary, Problem};
 use crate::leg::Mode;
 
 pub use mountain_range::MountainRange;
-pub use peak::{Elevation, Peak};
+pub use peak::Peak;
 pub use river::River;
 pub use sea::Sea;
-pub use star_point::StarPoint;
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]

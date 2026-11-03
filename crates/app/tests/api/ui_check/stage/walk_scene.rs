@@ -1,10 +1,11 @@
+use guide::BufferState;
 use guide::clock::{ClockTime, Minutes, TripTime};
 use guide::end::End;
 use guide::geo::{Coordinate, Share};
+use guide::guidance::timeline::{Buffer, Halt};
 use guide::guidance::{Guidance, LegProgress};
 use guide::itinerary::{Day, Itinerary};
 use guide::leg::{Leg, LegIndex};
-use guide::timeline::{Buffer, BufferState, Halt};
 
 use super::Wanted;
 

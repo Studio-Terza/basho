@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use guide::readout::recovery::catch_words::{FeatureName, Readings};
-use guide::trip::KnownNames;
+use guide::KnownNames;
+use guide::catch_words::{FeatureName, Readings};
 use newtype::Newtype;
 use serde::Serialize;
 use serde_json::Value;

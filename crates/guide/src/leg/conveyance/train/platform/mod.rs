@@ -1,9 +1,10 @@
+mod backing;
 mod platform_number;
+pub use backing::Backing;
 
 use serde::Deserialize;
 use std::fmt;
 
-use crate::evidence::Backing;
 use platform_number::PlatformNumber;
 
 #[derive(Debug, Deserialize)]

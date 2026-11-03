@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use guide::readout::recovery::catch_words::{FeatureName, Readings};
+use guide::catch_words::{FeatureName, Readings};
 use xtask::task::catch_import::day_file::note_text::NoteText;
 
 struct Note;

@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use wiki::EntryKey;
 use wiki::entry::Heading;
 
-use crate::app::screen::wiki_view::RowView;
+use crate::app::screen::row_view::RowView;
 use crate::app::session::Session;
 
 pub struct LinkedHere<'view> {

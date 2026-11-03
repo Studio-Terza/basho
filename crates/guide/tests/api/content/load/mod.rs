@@ -2,8 +2,8 @@ use guide::TripSource;
 use guide::content::Content;
 use guide::itinerary::Arc;
 use guide::ruby_text::RubyText;
-use guide::trip::{DraftPart, KnownNames};
 use guide::words::Spelling;
+use guide::{DraftPart, KnownNames};
 
 const SAMPLE: &str = include_str!("../../../../../../data/trips/sample.toml");
 const STOP_HERE: &str = "reach = [\"the inn\"]\n";

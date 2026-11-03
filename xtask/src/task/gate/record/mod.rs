@@ -5,10 +5,11 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
-use guide::evidence::EvidenceCounts;
+use guide::EvidenceCounts;
 use sim_suite::SimFindings;
 
-use crate::task::gate::{Chromium, Commit, Outcome, StatusResult, Tree};
+use crate::task::chromium::Chromium;
+use crate::task::gate::{Commit, Outcome, StatusResult, Tree};
 use milliseconds::Milliseconds;
 use unix_seconds::UnixSeconds;
 

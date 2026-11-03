@@ -12,9 +12,9 @@ use guide::landmark::Landmarks;
 use guide::place::{Fact, NoteKind, Place};
 use guide::words::Spelling;
 
+use crate::claim::Claim;
 use crate::entry::EntryKind;
 use crate::entry::{Entry, Row};
-use crate::name_table::Claim;
 use crate::{EntryId, EntryKey};
 use pages::Pages;
 use planned_meal::PlannedMeal;

@@ -1,8 +1,8 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
-use guide::map_frame::PlanePoint;
-use layout::Halving;
+use guide::plane::Halving;
+use guide::plane::PlanePoint;
 use layout::measure::MarkSize;
 use map_plan::KeyEntry;
 use map_plan::map_mark::MarkAt;

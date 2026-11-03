@@ -1,6 +1,7 @@
 mod bounded;
 mod device;
 mod failure;
+mod phase_length;
 mod sim_project;
 mod suite_run;
 

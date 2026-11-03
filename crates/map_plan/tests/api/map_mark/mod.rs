@@ -1,6 +1,9 @@
 use std::collections::BTreeMap;
 
-use map_plan::map_mark::MapMark;
+use dioxus::prelude::*;
+use guide::plane::{Pixels, PlanePoint};
+use layout::measure::MarkSize;
+use map_plan::map_mark::{MapMark, MarkAt};
 
 #[test]
 fn every_mark_looks_different_in_greyscale() {
@@ -33,4 +36,27 @@ fn every_mark_is_listed_once() {
         .map(|(_, mark)| *mark)
         .collect();
     assert!(listed.is_empty(), "listed twice: {listed:?}");
+}
+
+struct StarMark;
+
+impl StarMark {
+    fn drawn() -> Element {
+        rsx! {
+            svg { {MarkAt::new(MapMark::Star, PlanePoint::new(Pixels::new(50.0), Pixels::new(50.0)))} }
+        }
+    }
+}
+
+#[test]
+fn a_star_mark_draws_a_corner_for_every_point_of_the_star() {
+    let mut dom = VirtualDom::new(StarMark::drawn);
+    dom.rebuild_in_place();
+    let markup = dioxus_ssr::render(&dom);
+    let corners = markup
+        .split("points=\"")
+        .nth(1)
+        .and_then(|rest| rest.split('"').next())
+        .map_or(0, |points| points.split_whitespace().count());
+    assert_eq!(corners, MarkSize::star_corners().len());
 }

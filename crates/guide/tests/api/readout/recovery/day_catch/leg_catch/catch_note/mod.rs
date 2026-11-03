@@ -1,4 +1,4 @@
-use guide::readout::recovery::day_catch::leg_catch::catch_note::CatchNote;
+use guide::readout::day_catch::leg_catch::catch_note::CatchNote;
 
 const UNREAD: &str = r#"{"feature":"f1","ste":"The 仙石線 railway is north."}"#;
 const FROM_THE_LINE: &str =

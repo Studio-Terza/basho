@@ -1,11 +1,12 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
+use guide::Card;
 use guide::Language;
+use guide::card::CardFill;
+use guide::card::CardLine;
 use guide::classed::Classed;
 use guide::english_name::EnglishName;
 use guide::itinerary::{Caption, Day};
-use guide::leg::card::CardLine;
-use guide::leg::{Card, CardFill};
 
 use crate::app::screen::ruby_view::RubyView;
 

@@ -1,9 +1,9 @@
 use crate::fixture::Fixture;
-use guide::ArrivalMark;
 use guide::clock::ClockTime;
 use guide::clock::Minutes;
 use guide::clock::TripTime;
 use guide::end::End;
+use guide::guidance::ArrivalMark;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
 use guide::leg::LegIndex;

@@ -1,4 +1,3 @@
-mod claim;
 mod run;
 mod scan;
 
@@ -10,8 +9,8 @@ use guide::ruby_text::RubyText;
 use guide::words::Spelling;
 
 use crate::EntryId;
+use crate::claim::Claim;
 use crate::entry::{Entry, Section};
-pub use claim::Claim;
 use run::Run;
 use scan::Scan;
 

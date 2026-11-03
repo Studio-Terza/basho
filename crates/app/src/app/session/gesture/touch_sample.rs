@@ -1,6 +1,6 @@
 use std::time::Instant;
 
-use guide::map_frame::PlanePoint;
+use guide::plane::PlanePoint;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TouchSample {

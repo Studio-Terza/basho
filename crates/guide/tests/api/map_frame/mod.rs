@@ -2,9 +2,9 @@ use guide::Scale;
 use guide::geo::Coordinate;
 use guide::geo::Degrees;
 use guide::geo::Share;
-use guide::map_frame::Axis;
 use guide::map_frame::MapFrame;
-use guide::map_frame::Pixels;
+use guide::plane::Axis;
+use guide::plane::Pixels;
 
 const WIDTH: Pixels = Pixels::new(400.0);
 const SOUTH_WEST: Coordinate = Coordinate::new(Degrees::new(38.0), Degrees::new(140.0));

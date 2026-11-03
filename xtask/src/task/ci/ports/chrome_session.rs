@@ -9,8 +9,8 @@ use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
 
+use crate::task::chromium::Chromium;
 use crate::task::failure::Failure;
-use crate::task::gate::Chromium;
 use crate::task::workspace::Workspace;
 use basho_lints::Site;
 use guide::words::Label;

@@ -1,8 +1,8 @@
 use std::fmt;
 
 use crate::clock::ClockTime;
+use crate::clock_digits::ClockDigits;
 use crate::times::basis::Basis;
-use crate::times::clock_digits::ClockDigits;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct LiveTime {

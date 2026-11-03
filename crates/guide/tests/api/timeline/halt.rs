@@ -6,7 +6,7 @@ use guide::clock::TripTime;
 use guide::geo::Coordinate;
 use guide::geo::Degrees;
 use guide::geo::Distance;
-use guide::timeline::Halt;
+use guide::guidance::timeline::Halt;
 
 const START: Coordinate = Coordinate::new(Degrees::new(38.0), Degrees::new(140.0));
 const WALK: Distance = Distance::new(80.0);

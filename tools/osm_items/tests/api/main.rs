@@ -80,3 +80,14 @@ fn bridge_no_and_tunnel_no_draw_no_structure() {
         ["class=trail", "surface=trail", "structure=tunnel"]
     );
 }
+
+#[test]
+fn a_wood_is_drawn_as_forest_land() {
+    assert_eq!(
+        Item::tags(
+            r#"{"type":"MultiPolygon","coordinates":[[[[140.0,38.0],[140.01,38.0],[140.01,38.01],[140.0,38.0]]]]}"#,
+            r#"{"natural":"wood"}"#,
+        ),
+        ["class=forest"]
+    );
+}

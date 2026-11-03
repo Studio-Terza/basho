@@ -1,13 +1,13 @@
 use crate::fixture::Fixture;
+use guide::FactSource;
 use guide::Trip;
 use guide::classed::Classed;
 use guide::clock::{ClockTime, Minutes};
 use guide::end::End;
 use guide::evidence::Evidence;
+use guide::guidance::timeline::LiveGap;
 use guide::itinerary::Day;
-use guide::times::{
-    Basis, FactSource, FactTime, ListedTime, LiveGap, LiveTime, PlanTime, ShownTime,
-};
+use guide::times::{Basis, FactTime, ListedTime, LiveTime, PlanTime, ShownTime};
 use guide::words::Spelling;
 
 const APPROXIMATE: char = '≈';

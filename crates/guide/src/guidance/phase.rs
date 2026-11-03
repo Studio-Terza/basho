@@ -1,9 +1,9 @@
+use crate::Stance;
 use crate::clock::Minutes;
 use crate::end::End;
 use crate::guidance::tracking::Stage;
 use crate::leg::{Leg, Mode};
 use crate::readout::Status;
-use crate::timeline::Stance;
 use crate::times::ShownTime;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

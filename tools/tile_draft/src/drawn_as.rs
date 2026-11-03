@@ -1,4 +1,4 @@
-use map_class::TileLayer;
+use crate::TileLayer;
 use map_class::Zoom;
 
 use crate::tile_tag::TileTag;

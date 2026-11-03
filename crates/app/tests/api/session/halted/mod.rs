@@ -2,7 +2,7 @@ use std::cell::Cell;
 
 use dioxus::prelude::*;
 use guide::clock::Minutes;
-use guide::timeline::Halt;
+use guide::guidance::timeline::Halt;
 
 use basho::app::session::staged::Staged;
 use basho::app::session::{Session, SessionEvent};

@@ -3,7 +3,7 @@ use std::fmt;
 use crate::clock::Minutes;
 use crate::geo::Distance;
 use crate::leg::Mode;
-use crate::readout::emphasis::Emphasis;
+use crate::readout::Emphasis;
 use crate::times::ListedTime;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
