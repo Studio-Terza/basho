@@ -8,3 +8,4 @@ mod step;
 mod trip_input;
 mod trip_shelf;
 mod ui_check;
+mod visit;

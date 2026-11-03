@@ -8,9 +8,9 @@ use report::{Fact, ReportText};
 use wiki::EntryKey;
 
 use basho::app::history::{Fold, ScrollTop};
-use basho::app::screen::Screen;
 use basho::app::session::{Session, SessionEvent};
 use basho::app::step::{DayPoint, Step, StepNumber, Toward};
+use basho::app::visit::Screen;
 
 use crate::ui_check::{Drawing, Stage};
 

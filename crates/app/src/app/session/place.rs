@@ -3,8 +3,8 @@ use std::cell::RefCell;
 use guide::guidance::LegProgress;
 
 use crate::app::history::History;
-use crate::app::screen::Screen;
-use crate::app::session::visit::Focus;
+use crate::app::visit::Focus;
+use crate::app::visit::Screen;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Place {

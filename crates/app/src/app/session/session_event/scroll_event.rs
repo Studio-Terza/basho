@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
 
 use crate::app::history::StepFolds;
-use crate::app::screen::Screen;
-use crate::app::session::visit::Scroll;
-use crate::app::session::{Landing, Session};
+use crate::app::session::Session;
+use crate::app::visit::Landing;
+use crate::app::visit::Screen;
+use crate::app::visit::Scroll;
 
 use super::menu_event::MenuEvent;
 

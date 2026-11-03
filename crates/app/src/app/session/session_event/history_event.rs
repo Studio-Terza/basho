@@ -4,9 +4,10 @@ use wiki::{EntryId, Home};
 
 use crate::app::history::Fold;
 use crate::app::history::{Mark, ScrollTop};
-use crate::app::screen::Screen;
-use crate::app::session::{Landing, Session};
+use crate::app::session::Session;
 use crate::app::step::{DayPoint, Spot, Step, Toward};
+use crate::app::visit::Landing;
+use crate::app::visit::Screen;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum HistoryEvent {

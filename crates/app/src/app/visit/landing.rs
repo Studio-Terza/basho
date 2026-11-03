@@ -2,8 +2,8 @@ use guide::end::End;
 use guide::itinerary::{Day, Itinerary};
 use wiki::Home;
 
-use crate::app::session::visit::scroll::Scroll;
 use crate::app::step::{GoalNumber, Spot, Step, StepNumber, Toward};
+use crate::app::visit::scroll::Scroll;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum Landing {

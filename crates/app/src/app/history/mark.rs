@@ -1,8 +1,8 @@
 use guide::map_frame::Pixels;
 
 use crate::app::history::{ScrollTop, StepFolds};
-use crate::app::screen::Screen;
-use crate::app::session::Visit;
+use crate::app::visit::Screen;
+use crate::app::visit::Visit;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Mark {

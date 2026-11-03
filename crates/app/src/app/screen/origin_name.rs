@@ -1,9 +1,9 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 
-use crate::app::screen::Screen;
 use crate::app::screen::ruby_view::RubyView;
 use crate::app::session::Session;
+use crate::app::visit::Screen;
 
 pub struct OriginName<'view> {
     session: &'view Session,
@@ -22,7 +22,7 @@ impl IntoDynNode for OriginName<'_> {
             .wiki_entry()
             .and_then(|id| self.session.wiki().entry(id))
             .map_or_else(
-                || rsx! { "{self.screen.tab_label()}" },
+                || rsx! { "{self.screen.tab()}" },
                 |entry| rsx! { {RubyView::new(entry.name())} },
             )
             .into_dyn_node()

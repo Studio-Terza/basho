@@ -17,12 +17,9 @@ mod time_view;
 mod today_view;
 mod touch_surface;
 mod trip_view;
-mod turning;
 mod unverified_mark;
 mod wiki_view;
 pub mod wording;
-
-use std::fmt;
 
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
@@ -32,10 +29,10 @@ use guide::map_frame::Pixels;
 use layout::RootStyle;
 use layout::scale::Viewport;
 use map_plan::{MapSent, MapUpdate};
-use wiki::EntryId;
 
 use crate::app::history::ScrollTop;
-use crate::app::session::{PageShift, Session, SessionEvent, Visit};
+use crate::app::session::{PageShift, Session, SessionEvent};
+use crate::app::visit::{Pane, Screen, Visit};
 pub use appearance::Appearance;
 use back_chip::BackChip;
 use dark_switch::DarkSwitch;
@@ -47,60 +44,7 @@ use reports_view::ReportsView;
 use today_view::TodayView;
 use touch_surface::TouchSurface;
 use trip_view::TripView;
-pub use turning::Turning;
 use wiki_view::WikiView;
-
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
-pub enum Screen {
-    #[default]
-    Map,
-    Today,
-    Wiki(EntryId),
-    Reports,
-    Trip,
-}
-
-impl Screen {
-    pub const STYLE: Asset = asset!("/assets/main.css");
-    const TABS: [Screen; 2] = [Screen::Map, Screen::Today];
-
-    #[must_use]
-    pub fn wiki_entry(&self) -> Option<EntryId> {
-        match self {
-            Screen::Wiki(id) => Some(*id),
-            Screen::Map | Screen::Today | Screen::Reports | Screen::Trip => None,
-        }
-    }
-
-    #[must_use]
-    pub fn turning(&self) -> Turning {
-        match self {
-            Screen::Map => Turning::Steps,
-            Screen::Today => Turning::Days,
-            Screen::Wiki(_) => Turning::History,
-            Screen::Reports | Screen::Trip => Turning::Still,
-        }
-    }
-
-    fn tab_label(&self) -> &'static str {
-        match self {
-            Screen::Map => "Map",
-            Screen::Today | Screen::Wiki(_) | Screen::Reports | Screen::Trip => "Today",
-        }
-    }
-}
-
-impl fmt::Display for Screen {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Screen::Map => formatter.write_str("map"),
-            Screen::Today => formatter.write_str("today"),
-            Screen::Wiki(id) => write!(formatter, "wiki page {}", usize::from(*id)),
-            Screen::Reports => formatter.write_str("bug reports"),
-            Screen::Trip => formatter.write_str("trip"),
-        }
-    }
-}
 
 pub struct ScreenFrame<'view> {
     screen: Screen,
@@ -128,11 +72,11 @@ impl<'view> ScreenFrame<'view> {
                 .map(|entry| WikiView::new(session, id, entry))
         });
         entry.map_or_else(
-            || match self.screen {
-                Screen::Map => rsx! { {MapView::new(session)} },
-                Screen::Today | Screen::Wiki(_) => rsx! { {TodayView::new(session)} },
-                Screen::Trip => Self::trip_page(session),
-                Screen::Reports => rsx! { {ReportsView::new(session)} },
+            || match self.screen.pane() {
+                Pane::Map => rsx! { {MapView::new(session)} },
+                Pane::Today => rsx! { {TodayView::new(session)} },
+                Pane::Trip => Self::trip_page(session),
+                Pane::Reports => rsx! { {ReportsView::new(session)} },
             },
             |view| rsx! { {view} },
         )
@@ -203,7 +147,7 @@ impl IntoDynNode for ScreenFrame<'_> {
                         button {
                             class: Look::tab(tab, &screen).class(),
                             onclick: move |event| SessionEvent::OpenTab { screen: target, top: ScrollTop::from(&event) }.applied(&session),
-                            "{tab.tab_label()}"
+                            "{tab.tab()}"
                         }
                     }
                 })}

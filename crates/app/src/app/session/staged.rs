@@ -6,15 +6,16 @@ use layout::scale::Viewport;
 use map_plan::{KeyEntry, MapLevel, MapMode, PickedMark};
 use report::ReportStore;
 
-use crate::app::screen::Screen;
+use crate::app::visit::Screen;
 use std::sync::Arc;
 
 use wiki::Wiki;
 
 use crate::app::history::History;
+use crate::app::session::LocationAccess;
 use crate::app::session::trip_shelf::TripRefusal;
 use crate::app::session::wall_clock::WallClock;
-use crate::app::session::{Focus, Landing, LocationAccess};
+use crate::app::visit::{Focus, Landing};
 use menu::Menu;
 
 pub trait Staged {

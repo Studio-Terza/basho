@@ -9,10 +9,10 @@ use dioxus::prelude::*;
 use guide::map_frame::{Pixels, PlanePoint};
 
 use crate::app::history::ScrollTop;
-use crate::app::screen::Screen;
 use crate::app::session::Session;
 use crate::app::session::gesture::Gesture;
 use crate::app::step::{Spot, Toward};
+use crate::app::visit::Screen;
 use history_event::HistoryEvent;
 use menu_event::MenuEvent;
 use pin_event::PinEvent;

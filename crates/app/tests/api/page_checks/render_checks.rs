@@ -1,7 +1,7 @@
 use rayon::prelude::*;
 use std::collections::BTreeSet;
 
-use basho::app::screen::Screen;
+use basho::app::visit::Screen;
 use guide::evidence::Evidence;
 use guide::itinerary::Day;
 use wiki::EntryKey;
