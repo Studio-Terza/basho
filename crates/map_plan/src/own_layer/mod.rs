@@ -1,11 +1,15 @@
+mod bits;
+mod geo_heading;
+
 use guide::classed::Classed;
 use guide::geo::{Bearing, Coordinate};
 use guide::leg::{LegIndex, Mode};
 use serde::Serialize;
 
-use crate::bits::{GeoHeading, GeoPoint};
 use crate::map_mark::{MapMark, Strength};
 use crate::map_text::MapText;
+use bits::GeoPoint;
+use geo_heading::GeoHeading;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(tag = "type", rename = "FeatureCollection")]

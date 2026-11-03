@@ -4,7 +4,7 @@ use std::fmt;
 use std::process::{Child, Command, Stdio};
 
 use crate::phase_length::PhaseLength;
-use sim_suite::map_phase::TopSample;
+use sim_suite::TopSample;
 
 use crate::device::Udid;
 use process_row::ProcessRow;

@@ -1,10 +1,14 @@
+mod feature_report;
 pub mod map_phase;
+mod test_tally;
 
 use std::fmt;
 
 use crate::crash_reports::CrashReports;
-use crate::suite::{FeatureReport, Standing, TestName, TestTally};
+use crate::suite::{Standing, TestName};
+use feature_report::FeatureReport;
 use map_phase::PhaseFigures;
+use test_tally::TestTally;
 
 #[derive(Clone, Debug, Default, serde::Serialize)]
 pub struct SimFindings {

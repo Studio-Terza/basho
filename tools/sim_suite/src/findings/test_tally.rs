@@ -1,6 +1,7 @@
 use strum::IntoEnumIterator;
 
-use crate::suite::{Feature, FeatureReport, Standing, SuiteWord, TestName};
+use crate::findings::feature_report::FeatureReport;
+use crate::suite::{Feature, Standing, SuiteWord, TestName};
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct TestTally {
