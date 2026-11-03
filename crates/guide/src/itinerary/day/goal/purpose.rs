@@ -1,4 +1,5 @@
-use crate::itinerary::day::goal::{LoopStop, Reason};
+use crate::LoopStop;
+use crate::itinerary::day::goal::Reason;
 use crate::leg::Mode;
 use crate::words::{Label, StarName};
 

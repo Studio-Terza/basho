@@ -1,6 +1,6 @@
 use guide::Elevation;
+use guide::LoopNumber;
 use guide::english_name::EnglishName;
-use guide::itinerary::day::goal::LoopNumber;
 use guide::times::{ListedTime, PlanTime};
 use guide::words::{Label, Spelling};
 use serde::{Serialize, Serializer};

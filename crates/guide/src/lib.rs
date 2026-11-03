@@ -9,6 +9,7 @@ mod fact_source;
 mod haste;
 mod language;
 mod node_id;
+mod sight_loop;
 mod source;
 mod star_point;
 pub use arrival::ArrivalMark;
@@ -17,6 +18,8 @@ pub use evidence_counts::EvidenceCounts;
 pub use fact_source::FactSource;
 pub use language::Language;
 use node_id::NodeId;
+use sight_loop::SightLoop;
+pub use sight_loop::{LoopNumber, LoopStop};
 use source::Source;
 pub use star_point::StarPoint;
 

@@ -3,7 +3,6 @@ mod goal_plan;
 mod loop_check;
 mod purpose;
 mod reason;
-mod sight_loop;
 
 use crate::content::Content;
 use crate::end::End;
@@ -17,7 +16,6 @@ pub use goal_plan::GoalPlan;
 use loop_check::LoopCheck;
 pub use purpose::Purpose;
 pub use reason::Reason;
-pub use sight_loop::{LoopNumber, LoopStop, SightLoop};
 
 #[derive(derive_more::AsRef, Clone, Debug)]
 pub struct Goal {

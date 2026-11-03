@@ -1,6 +1,6 @@
 use crate::content::Content;
-use crate::itinerary::day::goal::{LoopStop, SightLoop};
 use crate::words::{Label, StarName};
+use crate::{LoopStop, SightLoop};
 use serde::Deserialize;
 
 #[derive(Clone, Debug, Deserialize)]
