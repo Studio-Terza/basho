@@ -1,11 +1,9 @@
-mod language;
+use crate::Language;
 
 use crate::english_name::EnglishName;
 use serde::Deserialize;
 
 use crate::clock::TripZone;
-
-pub use language::Language;
 
 #[derive(derive_more::AsRef, Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

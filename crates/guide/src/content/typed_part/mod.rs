@@ -1,12 +1,14 @@
 mod measure;
 mod price;
 mod scheduled_train;
-pub use measure::{DistanceUnit, Measure, SpanUnit};
+pub use measure::{Measure, SpanUnit};
 pub use price::Price;
 pub use scheduled_train::ScheduledTrain;
 use std::fmt;
 
-use crate::times::FactSource;
+use crate::content::DistanceUnit;
+
+use crate::FactSource;
 use serde::Deserialize;
 
 use crate::content::{NameKind, SaidClock};

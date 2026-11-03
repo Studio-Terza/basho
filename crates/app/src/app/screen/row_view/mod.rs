@@ -3,9 +3,9 @@ mod excerpt_view;
 
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
+use guide::FactSource;
 use guide::classed::Classed;
 use guide::place::NoteKind;
-use guide::times::FactSource;
 use wiki::EntryId;
 use wiki::entry::{LoopRow, Row, StopRow};
 

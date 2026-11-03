@@ -1,7 +1,7 @@
 use std::ops::Range;
 use std::str::FromStr;
 
-use crate::content::typed_part::DistanceUnit;
+use crate::content::DistanceUnit;
 use crate::content::{ContentError, Figure, SaidClock};
 use crate::words::{Spelling, Written};
 

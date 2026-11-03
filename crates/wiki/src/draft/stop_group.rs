@@ -1,5 +1,5 @@
+use guide::StarPoint;
 use guide::geo::{Coordinate, Distance};
-use guide::landmark::StarPoint;
 use guide::naming::Naming;
 use guide::ruby_text::RubyText;
 

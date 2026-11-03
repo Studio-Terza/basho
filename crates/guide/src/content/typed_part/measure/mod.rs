@@ -1,4 +1,3 @@
-mod distance_unit;
 mod joint;
 mod span_unit;
 
@@ -11,7 +10,6 @@ use crate::content::{ContentError, Figure};
 use crate::words::{Spelling, Written};
 use joint::Joint;
 
-pub use distance_unit::DistanceUnit;
 pub use span_unit::SpanUnit;
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]

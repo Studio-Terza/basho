@@ -1,12 +1,12 @@
 use crate::words::{Label, Slug, Spelling, StarName};
 use std::fmt;
 
+use crate::NodeId;
 use crate::clock::Minutes;
 use crate::geo::{Distance, Speed};
 use crate::itinerary::arc_number::ArcNumber;
 use crate::leg::LegIndex;
 use crate::times::{ListedTime, PlanTime};
-use crate::way::NodeId;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum Problem {

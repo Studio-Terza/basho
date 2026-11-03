@@ -1,10 +1,12 @@
 mod content_error;
+mod distance_unit;
 mod figure;
 mod name_kind;
 mod part;
 mod said_clock;
 mod typed_part;
 mod words;
+pub use distance_unit::DistanceUnit;
 
 use std::fmt;
 

@@ -2,12 +2,22 @@
 mod operators;
 mod arrival;
 pub mod catch_words;
+mod elevation;
 mod evidence_counts;
+mod fact_source;
 mod haste;
+mod language;
+mod node_id;
 mod source;
+mod star_point;
 pub use arrival::ArrivalMark;
+pub use elevation::Elevation;
 pub use evidence_counts::EvidenceCounts;
+pub use fact_source::FactSource;
+pub use language::Language;
+use node_id::NodeId;
 use source::Source;
+pub use star_point::StarPoint;
 
 mod backup_mark;
 pub mod classed;
@@ -44,4 +54,3 @@ pub use map_frame::Scale;
 pub use overview::Overview;
 pub use place_catalog::PlaceCatalog;
 pub use trip::{Trip, TripError, TripSource};
-pub use trip_head::Language;

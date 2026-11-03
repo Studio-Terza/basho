@@ -1,8 +1,8 @@
 use std::collections::BTreeSet;
 
+use crate::NodeId;
 use crate::end::End;
 use crate::geo::{Coordinate, RouteLine};
-use crate::way::NodeId;
 
 #[derive(derive_more::AsRef, Clone, Debug, PartialEq)]
 pub struct MappedSegment {

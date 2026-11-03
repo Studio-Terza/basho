@@ -2,7 +2,7 @@ use std::fmt;
 
 use serde::Deserialize;
 
-use crate::times::clock_digits::ClockDigits;
+use crate::times::ClockDigits;
 use crate::words::Label;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize)]

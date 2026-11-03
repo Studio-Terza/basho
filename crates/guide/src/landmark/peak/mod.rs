@@ -1,4 +1,4 @@
-mod elevation;
+use crate::Elevation;
 
 use crate::english_name::EnglishName;
 use serde::Deserialize;
@@ -7,7 +7,6 @@ use serde::de::IgnoredAny;
 use crate::Source;
 use crate::geo::Coordinate;
 use crate::ruby_text::RubyText;
-pub use elevation::Elevation;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

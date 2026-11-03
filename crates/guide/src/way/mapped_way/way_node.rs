@@ -2,8 +2,8 @@ use serde::Deserialize;
 
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::NodeId;
 use crate::geo::{Coordinate, Degrees};
-use crate::way::NodeId;
 
 #[derive(Clone, Copy, Debug, Deserialize)]
 pub struct WayNode(NodeId, Degrees, Degrees);

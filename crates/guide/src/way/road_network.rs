@@ -1,7 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::NodeId;
 use crate::geo::{Coordinate, RouteLine};
-use crate::way::{MappedWay, NodeId};
+use crate::way::MappedWay;
 
 #[derive(Debug, Default)]
 pub struct RoadNetwork {
