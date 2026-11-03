@@ -5,7 +5,7 @@ use std::io;
 
 use tile_shapes::{Corridor, TileShape};
 
-use map_class::TileLayer;
+use crate::TileLayer;
 use map_class::Zoom;
 use tiles::{TileId, WrittenArchive};
 

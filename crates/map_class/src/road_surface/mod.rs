@@ -1,5 +1,7 @@
 use crate::road_rank::RoadRank;
-use crate::surface_tag::SurfaceTag;
+mod surface_tag;
+
+pub use surface_tag::SurfaceTag;
 
 #[derive(strum::IntoStaticStr, Clone, Copy, Debug, PartialEq, Eq)]
 #[strum(serialize_all = "snake_case")]

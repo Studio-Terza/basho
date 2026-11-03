@@ -1,5 +1,5 @@
 use super::WorldPoint;
-use map_class::GridAxis;
+use tiles::GridAxis;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct GridPoint {

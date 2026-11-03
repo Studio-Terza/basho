@@ -1,3 +1,3 @@
 mod bits;
 
-pub use bits::{TileArchive, TileId, WrittenArchive};
+pub use bits::{GridAxis, TileArchive, TileId, WrittenArchive};

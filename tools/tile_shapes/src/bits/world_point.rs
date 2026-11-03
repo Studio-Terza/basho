@@ -2,7 +2,8 @@ use guide::geo::Coordinate;
 use std::f64::consts::PI;
 use std::ops::{Add, Sub};
 
-use map_class::{GridAxis, Zoom};
+use map_class::Zoom;
+use tiles::GridAxis;
 use tiles::TileId;
 
 use super::LonLat;

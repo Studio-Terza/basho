@@ -21,7 +21,7 @@ fn a_road_in_the_corridor_reaches_every_zoom_from_its_first() {
     let lat = first.lat().angle().degrees();
     let line = [LonLat::new(lon, lat), LonLat::new(lon + 0.001, lat + 0.001)];
     let road = TileItem::new(
-        DrawnAs::new(map_class::TileLayer::Road, Zoom::LEAST, Vec::new()),
+        DrawnAs::new(tile_draft::TileLayer::Road, Zoom::LEAST, Vec::new()),
         TileShape::Line(line.into_iter().map(WorldPoint::of_lon_lat).collect()),
     );
     let mut pyramid = Pyramid::new(Corridor::of_trip(&SAMPLE));

@@ -1,6 +1,7 @@
 use guide::end::End;
 use guide::leg::Leg;
-use map_class::{GridAxis, Zoom};
+use map_class::Zoom;
+use tiles::GridAxis;
 use tiles::TileId;
 
 use super::WorldPoint;

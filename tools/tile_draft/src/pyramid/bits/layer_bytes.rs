@@ -1,4 +1,4 @@
-use map_class::TileLayer;
+use crate::TileLayer;
 
 use super::{Dictionary, GeometryBytes, ProtoBytes};
 use crate::tile_tag::{TagKey, TagText, TileTag};

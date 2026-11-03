@@ -1,5 +1,6 @@
 use super::WorldPoint;
-use map_class::{GridAxis, Zoom};
+use map_class::Zoom;
+use tiles::GridAxis;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Thinning {

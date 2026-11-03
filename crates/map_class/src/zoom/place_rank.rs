@@ -1,4 +1,4 @@
-use crate::zoom::Zoom;
+use crate::Zoom;
 
 #[derive(strum::IntoStaticStr, strum::EnumString, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PlaceRank {

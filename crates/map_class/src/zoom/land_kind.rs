@@ -1,3 +1,5 @@
+use crate::Zoom;
+
 #[derive(strum::IntoStaticStr, strum::EnumString, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum LandKind {
     #[strum(to_string = "forest", serialize = "wood", serialize = "scrub")]
@@ -38,4 +40,14 @@ pub enum LandKind {
         serialize = "sand"
     )]
     Green,
+}
+
+impl From<LandKind> for Zoom {
+    fn from(kind: LandKind) -> Zoom {
+        match kind {
+            LandKind::Forest | LandKind::Farm | LandKind::Built | LandKind::Green => {
+                Zoom::LOCAL_ROADS
+            }
+        }
+    }
 }

@@ -1,7 +1,7 @@
 use std::fmt;
 
-use map_class::GridAxis;
 use serde::Deserialize;
+use tiles::GridAxis;
 
 #[derive(Clone, Copy, Debug, Deserialize, PartialEq)]
 pub struct LonLat(f64, f64);

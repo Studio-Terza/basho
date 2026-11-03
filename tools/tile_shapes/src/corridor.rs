@@ -4,7 +4,8 @@ use guide::leg::Mode;
 use std::collections::BTreeSet;
 use std::fmt;
 
-use map_class::{GridAxis, Zoom};
+use map_class::Zoom;
+use tiles::GridAxis;
 use tiles::TileId;
 
 use crate::bits::{CellWalk, WorldPoint};
