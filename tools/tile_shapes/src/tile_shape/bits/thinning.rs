@@ -1,4 +1,4 @@
-use super::WorldPoint;
+use crate::WorldPoint;
 use map_class::Zoom;
 use tiles::GridAxis;
 

@@ -1,4 +1,4 @@
-use super::GridPoint;
+use crate::GridPoint;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum PathKind {

@@ -6,7 +6,7 @@ use map_class::Zoom;
 use tiles::GridAxis;
 use tiles::TileId;
 
-use super::LonLat;
+use crate::LonLat;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct WorldPoint {

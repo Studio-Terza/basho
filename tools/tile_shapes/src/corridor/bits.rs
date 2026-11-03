@@ -4,7 +4,7 @@ use map_class::Zoom;
 use tiles::GridAxis;
 use tiles::TileId;
 
-use super::WorldPoint;
+use crate::WorldPoint;
 
 pub struct CellWalk;
 

@@ -4,7 +4,14 @@ use map_class::Zoom;
 use tiles::GridAxis;
 use tiles::TileId;
 
-use super::{ClipSide, GridPoint, LineRuns, PathKind, ShapeCut, Thinning, WorldPoint};
+mod clip_side;
+mod line_runs;
+mod thinning;
+
+use crate::{GridPoint, PathKind, ShapeCut, WorldPoint};
+use clip_side::ClipSide;
+use line_runs::LineRuns;
+use thinning::Thinning;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Winding {

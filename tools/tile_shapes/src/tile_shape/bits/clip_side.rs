@@ -1,4 +1,4 @@
-use super::WorldPoint;
+use crate::WorldPoint;
 use tiles::GridAxis;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
