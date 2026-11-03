@@ -1,6 +1,8 @@
 mod drag_from;
 
-use guide::map_frame::{Axis, Pixels, PlanePoint};
+use guide::plane::Axis;
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 use layout::Panel;
 use layout::scale::Viewport;
 

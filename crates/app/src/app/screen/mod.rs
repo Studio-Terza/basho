@@ -25,7 +25,7 @@ use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
 use guide::english_name::EnglishName;
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use layout::RootStyle;
 use layout::scale::Viewport;
 use map_plan::{MapSent, MapUpdate};

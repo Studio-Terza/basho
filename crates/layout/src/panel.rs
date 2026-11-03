@@ -1,5 +1,6 @@
 use guide::geo::Share;
-use guide::map_frame::{Pixels, Scale};
+use guide::plane::Pixels;
+use guide::plane::Scale;
 
 use crate::scale::Gap;
 use crate::scale::Token;

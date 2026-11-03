@@ -1,7 +1,7 @@
 use std::ops::Index;
 
-use crate::map_frame::axis::Axis;
-use crate::map_frame::pixels::Pixels;
+use crate::plane::axis::Axis;
+use crate::plane::pixels::Pixels;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct PlanePoint {

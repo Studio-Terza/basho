@@ -6,7 +6,8 @@ mod report_event;
 mod scroll_event;
 mod touch_event;
 use dioxus::prelude::*;
-use guide::map_frame::{Pixels, PlanePoint};
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 
 use crate::app::history::ScrollTop;
 use crate::app::session::Session;

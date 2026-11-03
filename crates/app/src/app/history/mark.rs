@@ -1,4 +1,4 @@
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 
 use crate::app::history::{ScrollTop, StepFolds};
 use crate::app::visit::Screen;

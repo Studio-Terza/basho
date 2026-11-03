@@ -3,7 +3,7 @@ mod reach;
 use std::fmt;
 use std::time::Duration;
 
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 
 use guide::geo::Share;
 

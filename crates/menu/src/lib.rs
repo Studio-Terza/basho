@@ -6,7 +6,7 @@ mod pose;
 mod pull;
 mod state;
 
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 
 use closed::Closed;
 use closing::Closing;

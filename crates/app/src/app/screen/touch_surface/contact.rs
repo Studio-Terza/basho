@@ -1,5 +1,6 @@
 use dioxus::prelude::*;
-use guide::map_frame::{Pixels, PlanePoint};
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 
 use crate::app::history::ScrollTop;
 

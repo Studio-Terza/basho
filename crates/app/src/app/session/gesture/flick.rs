@@ -1,7 +1,7 @@
 use std::time::Duration;
 use std::time::Instant;
 
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use layout::Motion;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]

@@ -1,6 +1,8 @@
 use std::fmt;
 
-use guide::map_frame::{Axis, MapFrame, Pixels};
+use guide::map_frame::MapFrame;
+use guide::plane::Axis;
+use guide::plane::Pixels;
 
 use guide::geo::{Coordinate, RouteLine};
 

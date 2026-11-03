@@ -1,6 +1,6 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
-use guide::map_frame::PlanePoint;
+use guide::plane::PlanePoint;
 
 use super::MapMark;
 

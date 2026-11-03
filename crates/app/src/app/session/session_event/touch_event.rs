@@ -1,7 +1,9 @@
 use std::time::Instant;
 
 use dioxus::prelude::*;
-use guide::map_frame::{Axis, Pixels, PlanePoint};
+use guide::plane::Axis;
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 use menu::MenuStep;
 
 use crate::app::session::gesture::{Gesture, Origin, TouchSample};

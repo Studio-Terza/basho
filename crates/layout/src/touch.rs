@@ -1,5 +1,6 @@
 use guide::geo::{Degrees, Share};
-use guide::map_frame::{Pixels, Scale};
+use guide::plane::Pixels;
+use guide::plane::Scale;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Touch {

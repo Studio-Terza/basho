@@ -1,4 +1,4 @@
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DragFrom {

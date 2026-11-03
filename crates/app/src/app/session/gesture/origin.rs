@@ -1,4 +1,4 @@
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use layout::Touch;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

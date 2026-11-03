@@ -2,7 +2,8 @@ mod stroke;
 
 use std::time::{Duration, Instant};
 
-use guide::map_frame::{Pixels, PlanePoint};
+use guide::plane::Pixels;
+use guide::plane::PlanePoint;
 
 use layout::scale::Viewport;
 
@@ -29,7 +30,7 @@ impl Swipe {
         let (first, rest) = samples.split_first().expect("a touch");
         let (last, middle) = rest.split_last().expect("an end");
         let origin =
-            held.unwrap_or_else(|| Origin::on_page(first.point()[guide::map_frame::Axis::Across]));
+            held.unwrap_or_else(|| Origin::on_page(first.point()[guide::plane::Axis::Across]));
         middle
             .iter()
             .fold(Gesture::pressed(origin, *first), |gesture, sample| {

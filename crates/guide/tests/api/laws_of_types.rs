@@ -6,7 +6,7 @@ use guide::geo::route_line::route_fix::off_route::OffRoute;
 use guide::guidance::LegProgress;
 use guide::guidance::tracking::{Placing, Stage, Tracking};
 use guide::leg::LegIndex;
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use guide::words::Spelling;
 use laws::proptest::prelude::{Strategy, any, prop_assert, prop_assert_eq};
 

@@ -4,7 +4,7 @@ mod outcome;
 pub mod stroke;
 mod touch_sample;
 
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 
 use guide::geo::Share;
 use layout::scale::Viewport;
@@ -81,8 +81,8 @@ impl Gesture {
                 start,
                 latest: sample,
                 flick: flick.followed(
-                    sample.point()[guide::map_frame::Axis::Across]
-                        - latest.point()[guide::map_frame::Axis::Across],
+                    sample.point()[guide::plane::Axis::Across]
+                        - latest.point()[guide::plane::Axis::Across],
                     latest.time(),
                     sample.time(),
                 ),

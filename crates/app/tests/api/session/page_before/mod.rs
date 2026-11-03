@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use dioxus::prelude::*;
 use guide::day_number::DayNumber;
 use guide::leg::LegIndex;
-use guide::map_frame::Pixels;
+use guide::plane::Pixels;
 use report::{Fact, ReportText};
 use wiki::EntryKey;
 

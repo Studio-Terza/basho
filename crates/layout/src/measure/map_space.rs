@@ -1,4 +1,5 @@
-use guide::map_frame::{Pixels, Scale};
+use guide::plane::Pixels;
+use guide::plane::Scale;
 
 use crate::measure::Extent;
 use crate::scale::{Gap, Token};

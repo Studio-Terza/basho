@@ -38,6 +38,7 @@ pub mod naming;
 mod overview;
 pub mod place;
 mod place_catalog;
+pub mod plane;
 pub mod pressing;
 pub mod reading;
 pub mod readout;
@@ -50,7 +51,7 @@ mod way;
 pub mod words;
 
 pub use backup_mark::BackupMark;
-pub use map_frame::Scale;
 pub use overview::Overview;
 pub use place_catalog::PlaceCatalog;
+pub use plane::Scale;
 pub use trip::{Trip, TripError, TripSource};
