@@ -3,9 +3,9 @@ use std::fmt;
 use serde::Deserialize;
 
 use crate::clock::{ClockTime, TripTime};
+use crate::clock_digits::ClockDigits;
 use crate::evidence::{Evidence, EvidenceKind};
 use crate::fact_source::FactSource;
-use crate::times::clock_digits::ClockDigits;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
 #[serde(deny_unknown_fields)]

@@ -2,6 +2,7 @@
 mod operators;
 mod arrival;
 pub mod catch_words;
+mod clock_digits;
 mod elevation;
 mod evidence_counts;
 mod fact_source;
