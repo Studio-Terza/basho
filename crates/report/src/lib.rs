@@ -1,7 +1,6 @@
 mod capture;
 mod fact;
 mod report_book;
-mod report_count;
 mod report_number;
 mod report_text;
 
@@ -10,7 +9,6 @@ use serde::{Deserialize, Serialize};
 pub use capture::Capture;
 pub use fact::Fact;
 pub use report_book::{ReportBook, ReportStore};
-use report_count::ReportCount;
 pub use report_number::ReportNumber;
 pub use report_text::ReportText;
 

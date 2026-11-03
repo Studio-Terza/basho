@@ -1,6 +1,7 @@
 use std::fmt;
 
-use crate::{ReportCount, ReportStore, ReportText};
+use crate::report_book::ReportCount;
+use crate::{ReportStore, ReportText};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Notice {

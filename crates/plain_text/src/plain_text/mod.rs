@@ -4,7 +4,9 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
-use crate::NotPlain;
+mod not_plain;
+
+pub use not_plain::NotPlain;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
 #[serde(try_from = "String")]

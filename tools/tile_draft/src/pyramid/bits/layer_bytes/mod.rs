@@ -1,7 +1,12 @@
+mod dictionary;
+mod proto_bytes;
+
 use crate::TileLayer;
 
-use super::{Dictionary, GeometryBytes, ProtoBytes};
+use super::GeometryBytes;
 use crate::tile_tag::{TagKey, TagText, TileTag};
+use dictionary::Dictionary;
+use proto_bytes::ProtoBytes;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct LayerBytes {
