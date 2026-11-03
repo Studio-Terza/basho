@@ -100,7 +100,7 @@ impl DayCatch {
 
     fn sighted<'catch>(
         feature: &'catch Feature,
-        note: Option<&'catch crate::place::RubyText>,
+        note: Option<&'catch crate::ruby_text::RubyText>,
         here: Coordinate,
     ) -> Option<CatchSight<'catch>> {
         feature.nearest_to(here).map(|nearest| {

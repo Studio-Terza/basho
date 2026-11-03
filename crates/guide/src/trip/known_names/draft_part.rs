@@ -3,8 +3,8 @@ use std::fmt;
 use serde::Serialize;
 
 use crate::content::{NameKind, StretchKind, TypedStretch};
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 use crate::words::Spelling;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]

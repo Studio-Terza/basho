@@ -1,7 +1,7 @@
 use crate::content::Content;
 use crate::itinerary::day::goal::{Goal, Purpose};
 use crate::leg::LegIndex;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 
 #[derive(Clone, Debug)]
 pub struct Ending {

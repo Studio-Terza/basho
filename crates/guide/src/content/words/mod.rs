@@ -3,8 +3,8 @@ mod typed_stretch;
 use serde::Deserialize;
 
 use crate::content::ContentError;
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 use crate::words::Written;
 
 pub use typed_stretch::{StretchKind, TypedStretch};

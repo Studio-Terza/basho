@@ -1,4 +1,4 @@
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 
 use crate::EntryId;
 

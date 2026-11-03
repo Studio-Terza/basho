@@ -10,7 +10,7 @@ use crate::content::Content;
 use crate::end::End;
 use crate::itinerary::day::Caption;
 use crate::leg::LegIndex;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use std::ops::Index;
 
 pub use aim::Aim;

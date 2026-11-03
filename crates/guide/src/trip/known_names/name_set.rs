@@ -1,7 +1,7 @@
 use std::collections::{BTreeSet, HashMap};
 
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 use crate::words::Spelling;
 
 #[derive(Debug, Default)]

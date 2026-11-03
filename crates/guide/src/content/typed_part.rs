@@ -6,8 +6,8 @@ use crate::content::{
     DistanceUnit, Measure, NameKind, Price, SaidClock, SaidFact, ScheduledTrain, SpanUnit,
 };
 use crate::evidence::EvidenceKind;
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 use crate::words::{Prose, Spelling};
 
 #[derive(Clone, Debug, Deserialize)]

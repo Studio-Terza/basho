@@ -4,8 +4,8 @@ use std::fmt;
 
 mod piece;
 
-use guide::place::RubyText;
 use guide::readout::recovery::catch_words::Readings;
+use guide::ruby_text::RubyText;
 use guide::trip::{DraftPart, KnownNames};
 use piece::Piece;
 

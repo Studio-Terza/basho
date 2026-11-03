@@ -5,10 +5,11 @@ use serde::Deserialize;
 use serde::de::IgnoredAny;
 
 use crate::english_name::EnglishName;
+use crate::evidence::Source;
 use crate::geo::Coordinate;
 use crate::itinerary::DayNumber;
 use crate::naming::Naming;
-use crate::place::{RubyText, Source};
+use crate::ruby_text::RubyText;
 use point_source::PointSource;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]

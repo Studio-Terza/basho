@@ -2,10 +2,12 @@ use serde::Deserialize;
 
 use crate::clock::Minutes;
 use crate::content::Content;
+use crate::evidence::Source;
 use crate::geo::{Coordinate, Distance};
 use crate::leg::cutoff::Cutoff;
 use crate::leg::stop_kind::StopKind;
-use crate::place::{Fact, RubyText, Source};
+use crate::place::Fact;
+use crate::ruby_text::RubyText;
 use crate::times::ListedTime;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]

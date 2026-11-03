@@ -1,5 +1,5 @@
 use crate::guidance::Pointer;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use crate::words::Prose;
 
 #[derive(Clone, Copy, Debug)]

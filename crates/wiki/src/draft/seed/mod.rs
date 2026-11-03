@@ -10,7 +10,8 @@ use guide::landmark::Landmarks;
 use guide::leg::{Leg, LegIndex};
 use guide::leg_line::LegLine;
 use guide::naming::Naming;
-use guide::place::{Place, RubyText};
+use guide::place::Place;
+use guide::ruby_text::RubyText;
 use guide::words::{Label, Spelling};
 
 use crate::draft::pages::Pages;

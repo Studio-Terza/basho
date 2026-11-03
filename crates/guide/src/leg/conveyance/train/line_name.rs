@@ -1,8 +1,8 @@
 use serde::Deserialize;
 
 use super::train_text_error::TrainTextError;
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]
 #[serde(try_from = "RubyText")]

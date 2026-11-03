@@ -7,7 +7,7 @@ use crate::content::Content;
 use crate::words::Prose;
 use serde::Deserialize;
 
-use crate::place::source::Source;
+use crate::evidence::Source;
 pub use excerpt_credit::ExcerptCredit;
 pub use excerpt_text::ExcerptText;
 use translator::Translator;

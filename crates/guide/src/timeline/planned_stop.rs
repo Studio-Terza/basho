@@ -3,7 +3,7 @@ use std::ops::Range;
 use crate::clock::{ClockTime, Minutes};
 use crate::geo::{Coordinate, Distance};
 use crate::leg::LegIndex;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 
 #[derive(derive_more::AsRef, Clone, Copy, Debug)]
 pub struct PlannedStop<'day> {

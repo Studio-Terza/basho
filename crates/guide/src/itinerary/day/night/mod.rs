@@ -9,7 +9,8 @@ use crate::content::Content;
 use crate::evidence::Evidence;
 use crate::geo::Coordinate;
 use crate::itinerary::day::Caption;
-use crate::place::{Fact, RubyText};
+use crate::place::Fact;
+use crate::ruby_text::RubyText;
 use crate::times::{ListedTime, PlanTime};
 use short_name::ShortName;
 

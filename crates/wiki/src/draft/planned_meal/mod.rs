@@ -6,8 +6,8 @@ use guide::end::End;
 use guide::itinerary::day::goal::{Goal, Purpose, Reason};
 use guide::itinerary::{Caption, Day};
 use guide::leg::{LegIndex, StopKind};
-use guide::place::RubyText;
 use guide::reading::Reading;
+use guide::ruby_text::RubyText;
 use strum::IntoEnumIterator;
 
 use crate::EntryKey;

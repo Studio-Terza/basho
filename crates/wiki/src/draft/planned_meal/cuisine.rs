@@ -1,5 +1,5 @@
-use guide::place::RubyText;
 use guide::reading::Reading;
+use guide::ruby_text::RubyText;
 use strum::{EnumIter, IntoEnumIterator};
 
 use crate::entry::Heading;

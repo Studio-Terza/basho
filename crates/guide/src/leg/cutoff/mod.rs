@@ -3,7 +3,7 @@ mod cutoff_kind;
 use serde::Deserialize;
 
 use crate::clock::ClockTime;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use crate::times::ListedTime;
 use cutoff_kind::CutoffKind;
 

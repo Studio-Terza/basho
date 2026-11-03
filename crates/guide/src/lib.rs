@@ -22,6 +22,7 @@ pub mod place;
 mod place_catalog;
 pub mod reading;
 pub mod readout;
+pub mod ruby_text;
 pub mod timeline;
 pub mod times;
 pub mod trip;

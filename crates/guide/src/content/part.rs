@@ -5,7 +5,7 @@ use serde::de::{Error, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 
 use crate::content::{NameKind, TypedPart, Words};
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 
 #[derive(Clone, Debug)]
 pub enum Part {

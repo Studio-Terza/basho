@@ -5,8 +5,8 @@ use std::fmt;
 use dioxus::prelude::*;
 use guide::end::End;
 use guide::leg_line::LegLine;
-use guide::place::RubyText;
 use guide::reading::Reading;
+use guide::ruby_text::RubyText;
 use guide::words::Spelling;
 
 use crate::app::screen::ruby_view::RubyView;

@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 
 #[derive(Debug, Deserialize)]
 #[serde(transparent)]
