@@ -1,14 +1,11 @@
 mod logged_decision;
-mod tracker_decision;
-mod tracker_reading;
 
 use guide::clock::TripTime;
 use report::ReportText;
 
 use crate::app::session::measure::Cadence;
+use crate::app::session::tracker_decision::TrackerDecision;
 use logged_decision::LoggedDecision;
-pub use tracker_decision::TrackerDecision;
-pub use tracker_reading::TrackerReading;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct DecisionLog {

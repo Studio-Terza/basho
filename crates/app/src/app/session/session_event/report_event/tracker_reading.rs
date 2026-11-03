@@ -3,7 +3,7 @@ use std::fmt;
 use guide::geo::Distance;
 use guide::guidance::{Guidance, LegProgress};
 
-use super::tracker_decision::TrackerDecision;
+use crate::app::session::tracker_decision::TrackerDecision;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct TrackerReading {

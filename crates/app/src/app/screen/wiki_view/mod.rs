@@ -1,4 +1,3 @@
-mod row_view;
 mod section_anchor;
 mod wiki_bar;
 
@@ -9,10 +8,10 @@ use wiki::EntryId;
 use wiki::entry::Entry;
 
 use crate::app::screen::linked_view::LinkedView;
+use crate::app::screen::row_view::RowView;
 use crate::app::screen::ruby_view::RubyView;
 use crate::app::screen::unverified_mark::UnverifiedMark;
 use crate::app::session::Session;
-pub use row_view::RowView;
 use section_anchor::SectionAnchor;
 use wiki_bar::WikiBar;
 

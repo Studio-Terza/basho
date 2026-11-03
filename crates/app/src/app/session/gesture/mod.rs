@@ -1,3 +1,4 @@
+mod flick;
 mod origin;
 mod outcome;
 pub mod stroke;
@@ -10,8 +11,8 @@ use layout::scale::Viewport;
 use layout::{Panel, Touch};
 use menu::{DragFrom, Pull};
 
-use crate::app::session::hand::Flick;
 use crate::app::step::Toward;
+use flick::Flick;
 pub use origin::Origin;
 pub use outcome::Outcome;
 use stroke::Stroke;

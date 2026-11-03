@@ -12,7 +12,8 @@ use storage_fake::MemoryStorage;
 use storage_ports::HomeFolder;
 
 use basho::app::session::gesture::Gesture;
-use basho::app::session::tracker_log::{DecisionLog, TrackerDecision};
+use basho::app::session::tracker_decision::TrackerDecision;
+use basho::app::session::tracker_log::DecisionLog;
 use basho::app::session::{Session, SessionEvent};
 use basho::app::step::{Spot, StepNumber};
 use basho::app::visit::Screen;

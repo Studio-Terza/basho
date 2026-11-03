@@ -1,4 +1,4 @@
-use basho::app::screen::Appearance;
+use basho::app::session::Appearance;
 use basho::app::session::DarkAfterSunset;
 use guide::clock::{ClockTime, Minutes, TripTime};
 

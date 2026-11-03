@@ -1,7 +1,7 @@
+use crate::app::session::gesture::Flick;
 use crate::app::session::gesture::Gesture;
 use crate::app::session::gesture::origin::Origin;
 use crate::app::session::gesture::touch_sample::TouchSample;
-use crate::app::session::hand::Flick;
 
 use super::Stroke;
 

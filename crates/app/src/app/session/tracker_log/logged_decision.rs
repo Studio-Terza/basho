@@ -3,7 +3,7 @@ use std::fmt;
 use guide::clock::TripTime;
 use guide::clock::trip_stamp::TripStamp;
 
-use super::tracker_decision::TrackerDecision;
+use crate::app::session::tracker_decision::TrackerDecision;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct LoggedDecision {

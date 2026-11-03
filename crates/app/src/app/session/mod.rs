@@ -1,3 +1,4 @@
+mod appearance;
 mod dark_after_sunset;
 pub mod gesture;
 mod hand;
@@ -13,6 +14,7 @@ mod place;
 pub mod progress_file;
 mod session_event;
 pub mod staged;
+pub mod tracker_decision;
 pub mod tracker_log;
 pub mod trip_shelf;
 mod wakes;
@@ -39,10 +41,10 @@ use report::{ReportBook, ReportNumber, ReportStore, ReportText};
 use storage_ports::HomeFolder;
 
 use crate::app::history::{Fold, History, ScrollTop, StepFolds};
-use crate::app::screen::Appearance;
 use crate::app::step::{DayPoint, Spot, Step, StepNumber, StepState, Toward};
 use crate::app::visit::{Focus, Landing, Scroll, Visit};
 use crate::app::visit::{Screen, Turning};
+pub use appearance::Appearance;
 pub use dark_after_sunset::DarkAfterSunset;
 use gesture::Gesture;
 pub use location_access::LocationAccess;
