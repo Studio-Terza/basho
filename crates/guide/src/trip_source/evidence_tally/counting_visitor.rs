@@ -5,7 +5,7 @@ use serde::de::{Error, MapAccess, SeqAccess, Visitor};
 
 use crate::EvidenceCounts;
 use crate::evidence::Evidence;
-use crate::trip::trip_source::EvidenceTally;
+use crate::trip_source::EvidenceTally;
 use crate::words::Spelling;
 
 pub struct CountingVisitor;

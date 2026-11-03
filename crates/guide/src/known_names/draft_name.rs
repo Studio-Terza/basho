@@ -1,5 +1,5 @@
+use crate::known_names::DraftPart;
 use crate::ruby_text::RubyText;
-use crate::trip::known_names::DraftPart;
 
 #[derive(Debug, Default)]
 pub struct DraftName {

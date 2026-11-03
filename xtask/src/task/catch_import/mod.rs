@@ -6,7 +6,7 @@ use std::fs;
 use std::io::ErrorKind;
 use std::path::{Path, PathBuf};
 
-use guide::trip::KnownNames;
+use guide::KnownNames;
 use guide::words::{Label, Spelling};
 use guide::{Trip, TripSource};
 

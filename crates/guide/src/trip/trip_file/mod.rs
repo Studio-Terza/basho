@@ -8,14 +8,15 @@ use serde::Deserialize;
 
 use crate::itinerary::{Arc, Day, Finding, Itinerary, LegLines, Problem};
 
+use crate::KnownNames;
+use crate::TripSource;
 use crate::day_number::DayNumber;
 use crate::landmark::Landmarks;
 use crate::overview::Overview;
 use crate::place::Place;
 use crate::place_catalog::PlaceCatalog;
 use crate::readout::DayCatch;
-use crate::trip::KnownNames;
-use crate::trip::{Trip, TripError, TripSource};
+use crate::trip::{Trip, TripError};
 use crate::trip_head::TripHead;
 
 #[derive(Debug, Deserialize)]

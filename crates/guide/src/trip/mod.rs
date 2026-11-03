@@ -1,8 +1,10 @@
 mod content_list;
-mod known_names;
 mod trip_error;
 mod trip_file;
-mod trip_source;
+
+use crate::TripSource;
+
+use crate::KnownNames;
 pub use content_list::ContentList;
 
 use std::fs;
@@ -16,9 +18,7 @@ use crate::overview::Overview;
 use crate::place_catalog::PlaceCatalog;
 use trip_file::TripFile;
 
-pub use known_names::{DraftPart, KnownNames, NameForms};
 pub use trip_error::TripError;
-pub use trip_source::TripSource;
 
 #[derive(Debug)]
 pub struct Trip {

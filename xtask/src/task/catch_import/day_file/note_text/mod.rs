@@ -6,7 +6,7 @@ mod piece;
 
 use guide::catch_words::Readings;
 use guide::ruby_text::RubyText;
-use guide::trip::{DraftPart, KnownNames};
+use guide::{DraftPart, KnownNames};
 use piece::Piece;
 
 #[derive(Clone, Debug, PartialEq, Eq)]

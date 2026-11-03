@@ -21,7 +21,7 @@ use crate::draft::stop_group::StopGroup;
 use crate::draft::stop_ref::StopRef;
 use crate::entry::{Entry, EntryKind};
 use crate::{EntryKey, Home};
-use guide::trip::NameForms;
+use guide::NameForms;
 use town_evening::TownEvening;
 
 #[derive(Clone, Debug)]
