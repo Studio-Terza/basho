@@ -3,10 +3,10 @@ mod map_key_view;
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use map_key_view::MapKeyView;
-use map_plan::{MapHealth, MapLevel, MapMode};
+use map_plan::{MapLevel, MapMode};
 use newtype::Newtype;
 
-use crate::app::session::{Session, SessionEvent};
+use crate::app::session::{MapHealth, Session, SessionEvent};
 
 #[derive(Newtype)]
 pub struct DayMapView<'view> {

@@ -5,6 +5,7 @@ pub mod kept_file;
 mod location_access;
 #[cfg(target_os = "ios")]
 mod location_feed;
+mod map_health;
 mod measure;
 mod page_shift;
 mod page_turn;
@@ -33,7 +34,7 @@ use guide::readout::Trail;
 use guide::timeline::Halt;
 use guide::{PlaceCatalog, Trip};
 use layout::scale::Viewport;
-use map_plan::{KeyEntry, MapHealth, MapLevel, MapMode, PickedMark, PinchWay};
+use map_plan::{KeyEntry, MapLevel, MapMode, PickedMark, PinchWay};
 use report::{ReportBook, ReportNumber, ReportStore, ReportText};
 use storage_ports::HomeFolder;
 
@@ -47,6 +48,7 @@ use gesture::Gesture;
 pub use location_access::LocationAccess;
 #[cfg(target_os = "ios")]
 use location_feed::LocationFeed;
+pub use map_health::MapHealth;
 use measure::Cadence;
 use menu::{Menu, PoseStyle, Pull};
 pub use page_shift::PageShift;
