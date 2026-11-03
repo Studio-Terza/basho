@@ -1,3 +1,5 @@
+mod ground;
+
 use newtype::Newtype;
 use std::cmp::Ordering;
 use std::fmt;
@@ -10,6 +12,8 @@ use crate::geo::not_finite::NotFinite;
 
 use crate::geo::kilometers::Kilometers;
 use crate::geo::share::Share;
+
+pub use ground::Ground;
 
 #[derive(Newtype, Clone, Copy, Debug, PartialEq, Default, Deserialize)]
 #[serde(try_from = "f64")]

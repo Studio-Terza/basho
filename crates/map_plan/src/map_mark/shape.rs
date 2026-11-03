@@ -4,7 +4,7 @@ use std::fmt::Write;
 use dioxus::prelude::*;
 use guide::map_frame::{Pixels, PlanePoint};
 
-use layout::Halving;
+use guide::map_frame::Halving;
 use layout::measure::MarkSize;
 
 use super::look::Look;

@@ -1,7 +1,11 @@
+mod halving;
+
 use newtype::Newtype;
 use std::cmp::Ordering;
 use std::fmt;
 use std::ops::{AddAssign, Div, Mul};
+
+pub use halving::Halving;
 
 #[derive(Newtype, Clone, Copy, Debug, Default, PartialEq)]
 pub struct Pixels(f64);

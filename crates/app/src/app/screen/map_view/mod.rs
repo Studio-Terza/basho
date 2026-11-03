@@ -10,12 +10,12 @@ use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
 use guide::geo::Distance;
+use guide::geo::distance::Ground;
 use guide::guidance::{Guidance, Phase, PositionSource};
 use guide::itinerary::{Caption, Day};
 use guide::leg::Mode;
 use guide::leg_line::LegLine;
 use guide::readout::Emphasis;
-use layout::measure::Ground;
 use map_plan::{MapPlan, MapSent, MapSight, MapUpdate};
 use newtype::Newtype;
 

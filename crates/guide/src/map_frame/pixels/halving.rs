@@ -1,5 +1,5 @@
-use guide::geo::Share;
-use guide::map_frame::Pixels;
+use crate::geo::Share;
+use crate::map_frame::Pixels;
 
 pub trait Halving {
     #[must_use]

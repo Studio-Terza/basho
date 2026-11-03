@@ -1,7 +1,7 @@
 pub mod bearing;
 mod coordinate;
 mod degrees;
-mod distance;
+pub mod distance;
 mod kilometers;
 mod not_finite;
 pub mod route_line;

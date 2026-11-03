@@ -1,5 +1,5 @@
-use guide::Scale;
-use guide::geo::Distance;
+use crate::geo::Distance;
+use crate::map_frame::Scale;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Ground {

@@ -10,7 +10,7 @@ use std::fmt::Write;
 use crate::geo::{Coordinate, Degrees, Distance, Share};
 
 pub use axis::Axis;
-pub use pixels::Pixels;
+pub use pixels::{Halving, Pixels};
 pub use plane_point::PlanePoint;
 pub use scale::Scale;
 use tenths::Tenths;
