@@ -15,8 +15,8 @@ use std::fmt;
 
 use serde::Deserialize;
 
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 
 use content_error::ContentError;
 pub use content_list::ContentList;

@@ -6,7 +6,7 @@ mod uncited;
 use std::fmt;
 
 use condition_clause::ConditionClause;
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 use link_free::LinkFree;
 use object_phrase::ObjectPhrase;
 pub use rewording::Rewording;

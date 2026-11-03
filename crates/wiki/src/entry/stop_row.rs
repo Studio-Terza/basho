@@ -1,5 +1,5 @@
 use guide::content::Content;
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 use guide::leg::Cutoff;
 use guide::place::Fact;
 use guide::times::ListedTime;

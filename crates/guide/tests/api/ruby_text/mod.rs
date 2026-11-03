@@ -1,4 +1,4 @@
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 
 #[test]
 fn annotated_names_split_into_base_and_reading_around_plain_text() {

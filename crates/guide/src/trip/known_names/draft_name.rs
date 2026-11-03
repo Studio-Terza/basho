@@ -1,4 +1,4 @@
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use crate::trip::known_names::DraftPart;
 
 #[derive(Debug, Default)]

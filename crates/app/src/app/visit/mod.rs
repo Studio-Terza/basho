@@ -1,13 +1,19 @@
 mod focus;
 mod jumps;
 mod landing;
+mod pane;
+mod screen;
 mod scroll;
+mod turning;
 use std::fmt;
 
 pub use focus::Focus;
 use jumps::Jumps;
 pub use landing::Landing;
+pub use pane::Pane;
+pub use screen::Screen;
 pub use scroll::Scroll;
+pub use turning::Turning;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Visit {

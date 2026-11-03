@@ -9,8 +9,8 @@ use std::rc::Rc;
 use dioxus::prelude::*;
 use map_plan::{MapSent, MapUpdate};
 
-use crate::app::screen::Screen;
 use crate::app::session::Session;
+use crate::app::visit::Screen;
 use engine_event::EngineEvent;
 use engine_files::EngineFiles;
 #[cfg(any(target_os = "ios", target_os = "macos"))]

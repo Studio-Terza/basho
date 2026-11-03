@@ -5,8 +5,9 @@ use guide::itinerary::Day;
 
 use crate::app::screen::day_name::DayName;
 use crate::app::screen::look::Look;
-use crate::app::session::{Landing, Session, SessionEvent};
+use crate::app::session::{Session, SessionEvent};
 use crate::app::step::Toward;
+use crate::app::visit::Landing;
 
 pub struct DayNav<'view> {
     session: &'view Session,

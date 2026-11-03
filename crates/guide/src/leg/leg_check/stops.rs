@@ -3,8 +3,8 @@ use crate::geo::Distance;
 use crate::itinerary::Problem;
 use crate::leg::leg_check::leg_rule::LegRule;
 use crate::leg::{Leg, Mode};
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 
 pub struct Stops;
 

@@ -1,16 +1,16 @@
 use std::cell::RefCell;
 
 use dioxus::prelude::*;
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 use guide::leg::LegIndex;
 use guide::map_frame::Pixels;
 use report::{Fact, ReportText};
 use wiki::EntryKey;
 
 use basho::app::history::{Fold, ScrollTop};
-use basho::app::screen::Screen;
 use basho::app::session::{Session, SessionEvent};
 use basho::app::step::{DayPoint, Step, StepNumber, Toward};
+use basho::app::visit::Screen;
 
 use crate::ui_check::{Drawing, Stage};
 

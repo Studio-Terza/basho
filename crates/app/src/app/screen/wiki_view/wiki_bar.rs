@@ -5,11 +5,11 @@ use wiki::EntryKey;
 use wiki::entry::Entry;
 
 use crate::app::history::ScrollTop;
-use crate::app::screen::Screen;
 use crate::app::screen::origin_name::OriginName;
 use crate::app::screen::wiki_view::section_anchor::SectionAnchor;
 use crate::app::session::{Session, SessionEvent};
 use crate::app::step::Toward;
+use crate::app::visit::Screen;
 
 pub struct WikiBar<'view> {
     session: &'view Session,

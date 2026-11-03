@@ -13,11 +13,11 @@ use objc2_core_location::{
 
 use layout::measure::Ground;
 
-use crate::app::screen::Screen;
 use crate::app::session::Session;
 use crate::app::session::location_access::LocationAccess;
 use crate::app::session::measure::{Angle, Cadence};
 use crate::app::session::wall_clock::WallClock;
+use crate::app::visit::Screen;
 
 pub struct LocationFeed {
     manager: Retained<CLLocationManager>,

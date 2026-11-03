@@ -4,10 +4,10 @@ use dioxus::prelude::*;
 use guide::map_frame::{Axis, Pixels, PlanePoint};
 use menu::MenuStep;
 
-use crate::app::screen::Screen;
 use crate::app::session::gesture::{Gesture, Origin, TouchSample};
 use crate::app::session::measure::Cadence;
 use crate::app::session::{Session, SessionEvent};
+use crate::app::visit::Screen;
 
 use super::scroll_event::ScrollEvent;
 

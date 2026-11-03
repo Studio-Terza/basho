@@ -2,7 +2,7 @@ use crate::words::Spelling;
 use serde::Deserialize;
 
 use crate::content::Content;
-use crate::itinerary::DayNumber;
+use crate::day_number::DayNumber;
 use crate::itinerary::arc_number::ArcNumber;
 
 #[derive(Debug, Deserialize)]

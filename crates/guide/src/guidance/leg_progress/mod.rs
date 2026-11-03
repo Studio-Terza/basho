@@ -6,11 +6,12 @@ use std::ops::RangeInclusive;
 use std::str::FromStr;
 
 use crate::clock::{ClockTime, Minutes, TripTime};
+use crate::day_number::DayNumber;
 use crate::end::End;
 use crate::geo::{Coordinate, Degrees, Distance};
 use crate::guidance::nearness::Nearness;
 use crate::guidance::tracking::{Placing, Stage, Tracking};
-use crate::itinerary::{Day, DayNumber};
+use crate::itinerary::Day;
 use crate::leg::{LegIndex, Mode};
 use progress_error::ProgressError;
 

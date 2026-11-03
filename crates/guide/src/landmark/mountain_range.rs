@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde::de::IgnoredAny;
 
 use crate::geo::{Coordinate, Share};
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

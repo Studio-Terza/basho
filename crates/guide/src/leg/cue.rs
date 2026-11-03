@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 use crate::clock::ClockTime;
-use crate::guidance::Pressing;
+use crate::pressing::Pressing;
 use crate::times::ListedTime;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]

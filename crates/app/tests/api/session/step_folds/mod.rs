@@ -1,4 +1,4 @@
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 
 use basho::app::history::Fold;
 use basho::app::history::StepFolds;

@@ -2,7 +2,7 @@ use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use newtype::Newtype;
 
-use crate::app::session::Visit;
+use crate::app::visit::Visit;
 
 #[derive(Newtype)]
 pub struct ScrollAnchor {

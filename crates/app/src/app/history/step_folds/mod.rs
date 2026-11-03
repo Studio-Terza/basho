@@ -1,6 +1,6 @@
 mod fold;
 
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 
 use crate::app::step::{StepNumber, StepState};
 pub use fold::Fold;

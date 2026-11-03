@@ -5,7 +5,7 @@ use crate::content::Content;
 use crate::itinerary::day::Caption;
 use crate::itinerary::day::goal::Reason;
 use crate::leg::LegIndex;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

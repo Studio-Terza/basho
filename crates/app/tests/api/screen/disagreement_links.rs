@@ -1,8 +1,8 @@
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 use guide::words::Slug;
 use wiki::EntryKey;
 
-use basho::app::screen::Screen;
+use basho::app::visit::Screen;
 
 use crate::ui_check::{Drawing, Harness, Stage};
 

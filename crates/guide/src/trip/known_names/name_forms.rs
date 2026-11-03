@@ -1,11 +1,11 @@
 use std::convert::Infallible;
 use std::str::FromStr;
 
+use crate::day_number::DayNumber;
 use crate::english_name::EnglishName;
-use crate::itinerary::DayNumber;
 use crate::landmark::Landmarks;
-use crate::place::RubyText;
 use crate::reading::Reading;
+use crate::ruby_text::RubyText;
 use crate::words::Spelling;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]

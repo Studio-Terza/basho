@@ -1,8 +1,8 @@
 use std::fmt;
 
+use guide::day_number::DayNumber;
 use guide::guidance::tracking::{Placing, Tracking};
 use guide::guidance::{Guidance, LegProgress, PositionSource};
-use guide::itinerary::DayNumber;
 use guide::timeline::Stance;
 
 #[derive(strum::Display, Clone, Copy, Debug, PartialEq, Eq)]

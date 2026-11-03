@@ -2,8 +2,6 @@ pub mod disagreement;
 mod excerpt;
 mod fact;
 mod place_fact;
-mod ruby_text;
-mod source;
 
 use crate::content::{Content, ContentList};
 use crate::words::Slug;
@@ -11,12 +9,11 @@ use serde::Deserialize;
 
 use crate::english_name::EnglishName;
 use crate::naming::Naming;
+use crate::ruby_text::RubyText;
 use disagreement::Disagreement;
 pub use excerpt::{Excerpt, ExcerptCredit, ExcerptText};
 pub use fact::{Fact, NoteKind};
 pub use place_fact::PlaceFact;
-pub use ruby_text::RubyText;
-pub use source::Source;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

@@ -1,7 +1,7 @@
 use guide::clock::Minutes;
 use guide::itinerary::day::goal::{Goal, Purpose};
 
-use basho::app::screen::Screen;
+use basho::app::visit::Screen;
 
 use crate::ui_check::{Drawing, Harness, Stage};
 

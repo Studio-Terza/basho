@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use super::Segment;
 use super::script::Script;
-use crate::place::ruby_text::ruby_error::RubyError;
+use crate::ruby_text::ruby_error::RubyError;
 use crate::words::{Spelling, Written};
 
 pub struct AnnotatedPair([Segment; AnnotatedPair::LENGTH]);

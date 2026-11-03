@@ -1,7 +1,7 @@
 mod annotated_pair;
 mod script;
 
-use crate::place::ruby_text::ruby_error::RubyError;
+use crate::ruby_text::ruby_error::RubyError;
 use crate::words::{Spelling, Written};
 pub use annotated_pair::AnnotatedPair;
 use script::Script;

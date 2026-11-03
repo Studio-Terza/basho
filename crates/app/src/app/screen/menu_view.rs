@@ -1,15 +1,15 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
+use guide::day_number::DayNumber;
 use guide::end::End;
 use guide::english_name::EnglishName;
-use guide::itinerary::{Caption, Day, DayNumber};
+use guide::itinerary::{Caption, Day};
 use menu::PoseStyle;
 use newtype::Newtype;
 use wiki::EntryKey;
 
 use crate::app::history::ScrollTop;
-use crate::app::screen::Screen;
 use crate::app::screen::day_name::DayName;
 use crate::app::screen::look::Look;
 use crate::app::screen::ruby_view::RubyView;
@@ -17,8 +17,10 @@ use crate::app::screen::scroll_anchor::ScrollAnchor;
 use crate::app::screen::time_view::TimeView;
 use crate::app::screen::touch_surface::TouchSurface;
 use crate::app::screen::unverified_mark::UnverifiedMark;
-use crate::app::session::{Landing, Session, SessionEvent};
+use crate::app::session::{Session, SessionEvent};
 use crate::app::step::GoalNumber;
+use crate::app::visit::Landing;
+use crate::app::visit::Screen;
 
 #[derive(Newtype)]
 pub struct MenuView<'session> {

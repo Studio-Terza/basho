@@ -6,9 +6,9 @@ use guide::end::End;
 use guide::guidance::LegProgress;
 use guide::guidance::Phase;
 use guide::guidance::PositionSource;
-use guide::guidance::Pressing;
 use guide::leg::Leg;
 use guide::leg::LegIndex;
+use guide::pressing::Pressing;
 
 const DAY_THREE: usize = 3;
 const MILL_RACE_PATH: LegIndex = LegIndex::new(5);

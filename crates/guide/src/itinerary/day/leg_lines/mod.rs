@@ -3,8 +3,8 @@ use std::collections::BTreeMap;
 
 use serde::Deserialize;
 
+use crate::day_number::DayNumber;
 use crate::itinerary::Day;
-use crate::itinerary::DayNumber;
 use crate::itinerary::Problem;
 use crate::leg::LegIndex;
 use crate::way::{LegPath, MappedWay, RoadNetwork};

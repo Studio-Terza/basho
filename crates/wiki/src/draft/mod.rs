@@ -1,3 +1,4 @@
+mod pages;
 mod planned_meal;
 mod seed;
 mod shelf;
@@ -15,6 +16,7 @@ use crate::entry::EntryKind;
 use crate::entry::{Entry, Row};
 use crate::name_table::Claim;
 use crate::{EntryId, EntryKey};
+use pages::Pages;
 use planned_meal::PlannedMeal;
 use seed::Seed;
 use stop_group::StopGroup;
@@ -104,7 +106,8 @@ impl<'trip> Roster<'trip> {
 
     #[must_use]
     pub fn entries(&self) -> Vec<Entry> {
-        self.seeds.iter().map(|seed| seed.entry(self)).collect()
+        let pages = Pages::over(self);
+        self.seeds.iter().map(|seed| seed.entry(&pages)).collect()
     }
 
     #[must_use]

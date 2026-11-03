@@ -3,13 +3,15 @@ mod map_feed;
 pub mod screen;
 pub mod session;
 pub mod step;
+pub mod visit;
 
 use dioxus::prelude::*;
 use guide::Trip;
 
 use map_feed::MapFeed;
-use screen::{Screen, ScreenFrame};
+use screen::ScreenFrame;
 use session::{Session, TripShelf};
+use visit::Screen;
 
 pub struct App;
 

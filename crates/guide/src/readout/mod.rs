@@ -1,5 +1,6 @@
 pub mod arrow;
 mod emphasis;
+pub mod pointer;
 pub mod recovery;
 mod status;
 pub mod time_check;

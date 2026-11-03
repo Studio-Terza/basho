@@ -1,5 +1,5 @@
 use guide::content::Content;
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 
 use crate::EntryId;
 use crate::name_table::{NameTable, Run};

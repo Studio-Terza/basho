@@ -7,7 +7,7 @@ use crate::words::{Prose, Spelling};
 use serde::Deserialize;
 
 use crate::geo::{Coordinate, RouteFix, RouteLine};
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use feature_kind::FeatureKind;
 use feature_record::{FeatureRecord, NameForm};
 use name_error::NameError;

@@ -6,10 +6,11 @@ use wiki::{EntryId, EntryKey, Home};
 
 use basho::app::history::StepFolds;
 use basho::app::history::{History, Mark, ScrollTop};
-use basho::app::screen::Screen;
-use basho::app::session::{Focus, Landing, Session, SessionEvent, Visit};
+use basho::app::session::{Session, SessionEvent};
 use basho::app::step::{Spot, Step, StepNumber, Toward};
-use guide::itinerary::DayNumber;
+use basho::app::visit::Screen;
+use basho::app::visit::{Focus, Landing, Visit};
+use guide::day_number::DayNumber;
 
 use crate::ui_check::{Drawing, Stage};
 

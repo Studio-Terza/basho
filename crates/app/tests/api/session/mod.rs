@@ -6,7 +6,6 @@ mod page_before;
 mod progress_file;
 mod set_now;
 mod step_folds;
-mod visit;
 use std::cell::Cell;
 
 use std::time::Duration;

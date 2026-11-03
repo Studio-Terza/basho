@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::clock::{ClockTime, Minutes};
 use crate::end::End;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use crate::times::ListedTime;
 use flight::Flight;
 

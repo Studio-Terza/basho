@@ -1,6 +1,6 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 use newtype::Newtype;
 
 #[derive(Newtype)]

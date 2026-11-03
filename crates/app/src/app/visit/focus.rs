@@ -1,4 +1,4 @@
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 
 use crate::app::step::Spot;
 

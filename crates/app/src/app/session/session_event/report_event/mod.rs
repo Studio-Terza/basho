@@ -7,10 +7,10 @@ use guide::clock::TripTime;
 use guide::clock::trip_stamp::TripStamp;
 use report::{Capture, Fact, ReportText};
 
-use crate::app::screen::Screen;
 use crate::app::session::tracker_log::TrackerReading;
 use crate::app::session::{Session, SessionEvent};
 use crate::app::step::{DayPoint, Spot, Step};
+use crate::app::visit::Screen;
 use fix_text::FixText;
 use screen_text::ScreenText;
 use step_text::StepText;

@@ -9,7 +9,7 @@ use crate::geo::Distance;
 use crate::itinerary::{Caption, Day};
 use crate::leg::{Branch, Leg, LegIndex, Mode};
 use crate::leg_line::LegLine;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use crate::timeline::deadline::Deadline;
 use crate::timeline::deadline_kind::DeadlineKind;
 use crate::timeline::hold::Hold;

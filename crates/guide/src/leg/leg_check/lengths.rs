@@ -2,7 +2,7 @@ use crate::itinerary::Problem;
 use crate::leg::leg_check::leg_rule::LegRule;
 use crate::leg::{BranchLine, Leg};
 use crate::leg_line::LegLine;
-use crate::place::RubyText;
+use crate::ruby_text::RubyText;
 use crate::words::Label;
 
 pub struct Lengths;

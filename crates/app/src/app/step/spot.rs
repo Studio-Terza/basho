@@ -1,4 +1,5 @@
-use guide::itinerary::{Day, DayNumber, Itinerary};
+use guide::day_number::DayNumber;
+use guide::itinerary::{Day, Itinerary};
 use map_plan::MapLevel;
 
 use super::Step;

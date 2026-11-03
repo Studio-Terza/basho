@@ -1,7 +1,7 @@
 use guide::TripSource;
 use guide::content::Content;
 use guide::itinerary::Arc;
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 use guide::trip::{DraftPart, KnownNames};
 use guide::words::Spelling;
 

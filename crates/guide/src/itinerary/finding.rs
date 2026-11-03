@@ -1,4 +1,4 @@
-use crate::itinerary::DayNumber;
+use crate::day_number::DayNumber;
 
 use crate::leg::LegIndex;
 use std::fmt;

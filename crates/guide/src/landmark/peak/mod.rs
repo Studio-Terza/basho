@@ -4,8 +4,9 @@ use crate::english_name::EnglishName;
 use serde::Deserialize;
 use serde::de::IgnoredAny;
 
+use crate::evidence::Source;
 use crate::geo::Coordinate;
-use crate::place::{RubyText, Source};
+use crate::ruby_text::RubyText;
 pub use elevation::Elevation;
 
 #[derive(derive_more::AsRef, Debug, Deserialize)]

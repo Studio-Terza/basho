@@ -1,16 +1,15 @@
 mod arc;
 mod arc_number;
 pub mod day;
-mod day_number;
 mod finding;
 mod problem;
 
 use crate::clock::CalendarDate;
-use crate::trip::TripHead;
+use crate::day_number::DayNumber;
+use crate::trip_head::TripHead;
 
 pub use arc::Arc;
 pub use day::{Caption, Day, LegLines};
-pub use day_number::DayNumber;
 pub use finding::Finding;
 pub use problem::Problem;
 

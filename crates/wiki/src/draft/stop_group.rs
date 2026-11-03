@@ -1,7 +1,7 @@
 use guide::geo::{Coordinate, Distance};
 use guide::landmark::StarPoint;
 use guide::naming::Naming;
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 
 use crate::draft::stop_ref::StopRef;
 use crate::entry::EntryKind;

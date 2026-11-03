@@ -9,7 +9,7 @@ mod stop_row;
 use guide::content::Content;
 use guide::english_name::EnglishName;
 use guide::evidence::Evidence;
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 
 use crate::Home;
 

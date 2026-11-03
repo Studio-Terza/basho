@@ -1,6 +1,6 @@
 use crate::guidance::Guidance;
-use crate::guidance::pressing::Pressing;
 use crate::leg::{Branch, LegIndex};
+use crate::pressing::Pressing;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Plan<'day> {

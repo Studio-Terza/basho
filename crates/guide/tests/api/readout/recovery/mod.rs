@@ -10,9 +10,9 @@ use guide::end::End;
 use guide::geo::Distance;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
-use guide::guidance::Pointer;
 use guide::guidance::Sighting;
 use guide::leg::LegIndex;
+use guide::readout::pointer::Pointer;
 use rayon::prelude::*;
 
 const SAMPLE_DAY: usize = 3;

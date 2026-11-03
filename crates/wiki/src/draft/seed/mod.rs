@@ -1,27 +1,27 @@
-mod pages;
 mod town_evening;
 
 use guide::content::Content;
+use guide::day_number::DayNumber;
 use guide::end::End;
 use guide::english_name::EnglishName;
 use guide::itinerary::day::Night;
 use guide::itinerary::day::goal::{Goal, Purpose};
-use guide::itinerary::{Caption, Day, DayNumber, Itinerary};
+use guide::itinerary::{Caption, Day, Itinerary};
 use guide::landmark::Landmarks;
 use guide::leg::{Leg, LegIndex};
 use guide::leg_line::LegLine;
 use guide::naming::Naming;
-use guide::place::{Place, RubyText};
+use guide::place::Place;
+use guide::ruby_text::RubyText;
 use guide::words::{Label, Spelling};
 
-use crate::draft::Roster;
+use crate::draft::pages::Pages;
 use crate::draft::planned_meal::PlannedMeal;
 use crate::draft::stop_group::StopGroup;
 use crate::draft::stop_ref::StopRef;
 use crate::entry::{Entry, EntryKind};
 use crate::{EntryKey, Home};
 use guide::trip::NameForms;
-use pages::Pages;
 use town_evening::TownEvening;
 
 #[derive(Clone, Debug)]
@@ -224,8 +224,8 @@ impl<'trip> Seed<'trip> {
     }
 
     #[must_use]
-    pub fn entry(&self, roster: &Roster<'trip>) -> Entry {
-        let pages = Pages::over(roster);
+    pub fn entry(&self, pages: &Pages<'_, 'trip>) -> Entry {
+        let roster = pages.roster();
         let entry = Entry::new(self.entry_kind(), self.entry_name()).homed(self.home());
         match self {
             Seed::Index => entry,

@@ -1,9 +1,9 @@
 use guide::classed::Classed;
-use guide::guidance::Pressing;
+use guide::pressing::Pressing;
 use guide::readout::Emphasis;
 use guide::timeline::{BufferState, DeadlineKind};
 
-use crate::app::screen::Screen;
+use crate::app::visit::Screen;
 
 #[derive(strum::IntoStaticStr, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Look {
@@ -63,7 +63,7 @@ impl Look {
     }
 
     pub fn tab(chosen: &Screen, shown: &Screen) -> Look {
-        if chosen.tab_label() == shown.tab_label() {
+        if chosen.tab() == shown.tab() {
             Look::TabActive
         } else {
             Look::Tab

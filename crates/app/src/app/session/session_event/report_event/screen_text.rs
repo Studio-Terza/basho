@@ -3,7 +3,7 @@ use std::fmt;
 use guide::reading::Reading;
 use wiki::entry::Entry;
 
-use crate::app::screen::Screen;
+use crate::app::visit::Screen;
 
 pub struct ScreenText {
     screen: Screen,

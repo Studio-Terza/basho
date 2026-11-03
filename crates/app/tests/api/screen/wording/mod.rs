@@ -1,5 +1,5 @@
-use guide::place::RubyText;
 use guide::reading::Reading;
+use guide::ruby_text::RubyText;
 
 use basho::app::screen::wording::Rewording;
 use basho::app::screen::wording::Wording;

@@ -26,12 +26,13 @@ use basho::app::history::{History, Mark, ScrollTop};
 use guide::words::Spelling;
 
 use basho::app::history::StepFolds;
-use basho::app::screen::Screen;
+use basho::app::session::LocationAccess;
 use basho::app::session::staged::Staged;
 use basho::app::session::trip_shelf::{PickedFile, TripRefusal, TripText};
 use basho::app::session::wall_clock::WallClock;
-use basho::app::session::{Focus, Landing, LocationAccess, Visit};
 use basho::app::step::{GoalNumber, Step, StepNumber};
+use basho::app::visit::Screen;
+use basho::app::visit::{Focus, Landing, Visit};
 use layout::scale::Viewport;
 use map_plan::{KeyEntry, MapLevel, MapMode, PickedMark};
 use menu::Menu;

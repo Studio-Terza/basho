@@ -5,8 +5,8 @@ mod scan;
 use std::collections::{BTreeMap, HashMap};
 
 use guide::content::Content;
-use guide::place::RubyText;
 use guide::reading::Reading;
+use guide::ruby_text::RubyText;
 use guide::words::Spelling;
 
 use crate::EntryId;

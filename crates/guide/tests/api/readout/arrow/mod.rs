@@ -6,10 +6,10 @@ use guide::geo::Bearing;
 use guide::geo::Distance;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
-use guide::guidance::Pointer;
 use guide::leg::LegIndex;
 use guide::readout::Arrow;
 use guide::readout::arrow::Aim;
+use guide::readout::pointer::Pointer;
 
 const SAMPLE_DAY: usize = 3;
 const MILL_RACE: LegIndex = LegIndex::new(5);

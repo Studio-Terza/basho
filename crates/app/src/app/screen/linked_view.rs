@@ -1,7 +1,7 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::content::Content;
-use guide::place::RubyText;
+use guide::ruby_text::RubyText;
 use wiki::EntryId;
 
 use crate::app::history::ScrollTop;
