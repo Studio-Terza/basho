@@ -1,11 +1,13 @@
+mod tab;
+
 use std::fmt;
 
 use dioxus::prelude::*;
 use wiki::EntryId;
 
 use crate::app::visit::pane::Pane;
-use crate::app::visit::tab::Tab;
 use crate::app::visit::turning::Turning;
+use tab::Tab;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub enum Screen {

@@ -4,7 +4,6 @@ mod landing;
 mod pane;
 mod screen;
 mod scroll;
-mod tab;
 mod turning;
 use std::fmt;
 
