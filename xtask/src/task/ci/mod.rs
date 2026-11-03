@@ -3,15 +3,15 @@ use meta_xtask::Task as Shared;
 pub mod browser;
 mod ports;
 
+use crate::task::chromium::Chromium;
 use crate::task::failure::Failure;
 use crate::task::flag::Flag;
-use crate::task::gate::Chromium;
 use crate::task::lint::Lint;
+use crate::task::ports::CargoStep;
 use crate::task::trip_check::TripCheck;
 use crate::task::workspace::Workspace;
 use browser::Browser;
 use newtype::Newtype;
-pub use ports::CargoStep;
 use ports::ChromeSession;
 
 pub struct Ci;

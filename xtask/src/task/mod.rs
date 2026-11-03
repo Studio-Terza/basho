@@ -1,4 +1,5 @@
 pub mod catch_import;
+pub mod chromium;
 pub mod ci;
 mod failure;
 pub mod flag;
@@ -6,6 +7,7 @@ mod fuzz_trip;
 pub mod gate;
 mod lint;
 pub mod mutants;
+mod ports;
 mod print;
 mod problem_count;
 mod tile_build;

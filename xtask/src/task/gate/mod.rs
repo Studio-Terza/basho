@@ -1,4 +1,3 @@
-mod chromium;
 mod commit;
 mod detail;
 mod outcome;
@@ -15,6 +14,7 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime};
 
+use crate::task::chromium::Chromium;
 use crate::task::ci::Ci;
 use crate::task::failure::Failure;
 use crate::task::flag::Flag;
@@ -28,7 +28,6 @@ pub(crate) use ports::Git;
 use ports::Status;
 use sim_ports::Sim;
 
-pub use chromium::Chromium;
 pub use commit::Commit;
 pub use detail::Detail;
 pub use outcome::Outcome;

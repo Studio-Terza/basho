@@ -2,7 +2,8 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, UNIX_EPOCH};
 
 use guide::TripSource;
-use xtask::task::gate::{Chromium, Commit, Detail, Outcome, Posting, Record, StatusResult, Tree};
+use xtask::task::chromium::Chromium;
+use xtask::task::gate::{Commit, Detail, Outcome, Posting, Record, StatusResult, Tree};
 
 const HASH: &str = "0123456789abcdef0123456789abcdef01234567";
 

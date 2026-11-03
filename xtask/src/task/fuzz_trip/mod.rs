@@ -1,6 +1,6 @@
-use crate::task::ci::CargoStep;
 use crate::task::failure::Failure;
 use crate::task::flag::Flag;
+use crate::task::ports::CargoStep;
 use crate::task::workspace::Workspace;
 use newtype::Newtype;
 
