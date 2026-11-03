@@ -2,7 +2,7 @@ use dioxus::dioxus_core::{DynamicNode, VComponent};
 use dioxus::prelude::*;
 
 use crate::app::session::trip_shelf::TripShelf;
-use crate::app::session::trip_shelf::shown_trip::trip_round::TripRound;
+use crate::app::session::trip_shelf::trip_round::TripRound;
 
 #[derive(Props, Clone, PartialEq)]
 pub struct TripScope {

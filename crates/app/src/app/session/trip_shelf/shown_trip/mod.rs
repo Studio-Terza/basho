@@ -1,16 +1,11 @@
-mod trip_round;
-mod trip_scope;
-
 use std::rc::Rc;
 
 use dioxus::prelude::*;
 use guide::{Trip, TripError};
 
 use crate::app::session::trip_shelf::TripShelf;
-
+use crate::app::session::trip_shelf::trip_round::TripRound;
 use crate::app::session::trip_shelf::trip_text::TripText;
-use trip_round::TripRound;
-use trip_scope::TripScope;
 
 #[derive(Clone, Debug, Default)]
 pub enum ShownTrip {
@@ -66,12 +61,7 @@ impl ShownTrip {
 
     pub fn view(&self, holder: TripShelf) -> Element {
         match self {
-            ShownTrip::Opened { round, .. } => {
-                let scope = TripScope::new(*round, holder);
-                rsx! {
-                    {std::iter::once(rsx! { Fragment { key: "{round}", {scope} } })}
-                }
-            }
+            ShownTrip::Opened { round, .. } => holder.round_view(*round),
             ShownTrip::Failed(error) => rsx! {
                 main {
                     p { class: "error", "The guide data failed to load: {error}" }

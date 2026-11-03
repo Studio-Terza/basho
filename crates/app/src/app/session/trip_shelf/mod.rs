@@ -3,6 +3,8 @@ mod shown_trip;
 mod trip_input;
 mod trip_picker;
 mod trip_refusal;
+mod trip_round;
+mod trip_scope;
 mod trip_text;
 
 use std::ffi::OsString;
@@ -18,6 +20,8 @@ pub use picked_file::PickedFile;
 use shown_trip::ShownTrip;
 pub use trip_input::TripInput;
 pub use trip_refusal::TripRefusal;
+use trip_round::TripRound;
+use trip_scope::TripScope;
 pub use trip_text::TripText;
 
 pub type TripPage = fn(&Trip, TripShelf) -> Element;
@@ -63,6 +67,13 @@ impl TripShelf {
 
     pub fn view(self) -> Element {
         self.shown.read().view(self)
+    }
+
+    pub fn round_view(self, round: TripRound) -> Element {
+        let scope = TripScope::new(round, self);
+        rsx! {
+            {std::iter::once(rsx! { Fragment { key: "{round}", {scope} } })}
+        }
     }
 
     #[must_use]
