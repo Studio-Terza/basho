@@ -1,11 +1,11 @@
 use std::ops::Range;
 
 use crate::clock::{ClockTime, Minutes};
+use crate::deadline_kind::DeadlineKind;
 use crate::evidence::Evidence;
 use crate::haste::Haste;
 use crate::leg::{Cutoff, LegIndex, Mode};
 use crate::ruby_text::RubyText;
-use crate::timeline::deadline_kind::DeadlineKind;
 use crate::times::{ListedTime, PlanTime};
 
 #[derive(Clone, Copy, Debug)]

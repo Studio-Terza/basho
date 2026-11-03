@@ -1,11 +1,11 @@
 use crate::fixture::Fixture;
+use guide::BufferState;
 use guide::clock::ClockTime;
 use guide::clock::Minutes;
 use guide::clock::TripTime;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
 use guide::leg::LegIndex;
-use guide::timeline::BufferState;
 
 const DAY_THREE: usize = 3;
 const DAY_FOUR: usize = 4;

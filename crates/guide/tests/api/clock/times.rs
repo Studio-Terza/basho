@@ -5,8 +5,8 @@ use guide::classed::Classed;
 use guide::clock::{ClockTime, Minutes};
 use guide::end::End;
 use guide::evidence::Evidence;
+use guide::guidance::timeline::LiveGap;
 use guide::itinerary::Day;
-use guide::timeline::LiveGap;
 use guide::times::{Basis, FactTime, ListedTime, LiveTime, PlanTime, ShownTime};
 use guide::words::Spelling;
 

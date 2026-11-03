@@ -1,4 +1,5 @@
-use guide::timeline::{Buffer, DeadlineKind};
+use guide::DeadlineKind;
+use guide::guidance::timeline::Buffer;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Wanted {

@@ -7,6 +7,8 @@ mod resume;
 mod stretch;
 
 use crate::fixture::Fixture;
+use guide::BufferState;
+use guide::DeadlineKind;
 use guide::clock::Minutes;
 use guide::clock::Pause;
 use guide::clock::TripTime;
@@ -14,12 +16,10 @@ use guide::end::End;
 use guide::geo::Coordinate;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
+use guide::guidance::timeline::Halt;
 use guide::itinerary::Day;
 use guide::leg::LegIndex;
 use guide::leg::margin::Margin;
-use guide::timeline::BufferState;
-use guide::timeline::DeadlineKind;
-use guide::timeline::Halt;
 
 const DAY_THREE: usize = 3;
 const MILL_RACE_PATH: LegIndex = LegIndex::new(5);

@@ -1,7 +1,7 @@
 use crate::clock::{ClockTime, Minutes};
-use crate::timeline::deadline::Deadline;
-use crate::timeline::planned_stop::PlannedStop;
-use crate::timeline::stretch_index::StretchIndex;
+use crate::guidance::timeline::deadline::Deadline;
+use crate::guidance::timeline::planned_stop::PlannedStop;
+use crate::guidance::timeline::stretch_index::StretchIndex;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Here {

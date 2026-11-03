@@ -8,7 +8,6 @@ use crate::fixture::Fixture;
 use newtype::Counter;
 use rayon::prelude::*;
 
-use guide::ArrivalMark;
 use guide::clock::CalendarDate;
 use guide::clock::ClockTime;
 use guide::clock::Minutes;
@@ -16,15 +15,16 @@ use guide::clock::Pause;
 use guide::clock::TripTime;
 use guide::end::End;
 use guide::geo::Coordinate;
+use guide::guidance::ArrivalMark;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
+use guide::guidance::timeline::Buffer;
+use guide::guidance::timeline::Halt;
+use guide::guidance::timeline::Stop;
 use guide::itinerary::Day;
 use guide::leg::Leg;
 use guide::leg::LegIndex;
 use guide::leg::Mode;
-use guide::timeline::Buffer;
-use guide::timeline::Halt;
-use guide::timeline::Stop;
 
 const ON_PLAN: Minutes = Minutes::new(1);
 const LATE_TRAIN: Minutes = Minutes::new(10);

@@ -1,9 +1,9 @@
 use std::fmt;
 
+use guide::Stance;
 use guide::day_number::DayNumber;
 use guide::guidance::tracking::{Placing, Tracking};
 use guide::guidance::{Guidance, LegProgress, PositionSource};
-use guide::timeline::Stance;
 
 #[derive(strum::Display, Clone, Copy, Debug, PartialEq, Eq)]
 #[strum(serialize_all = "kebab-case")]

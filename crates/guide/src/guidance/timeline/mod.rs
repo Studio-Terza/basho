@@ -1,9 +1,9 @@
 mod backup;
 mod buffer;
-mod buffer_state;
+
+use crate::Stance;
 pub mod course;
 mod deadline;
-mod deadline_kind;
 mod footing;
 mod halt;
 mod here;
@@ -12,7 +12,6 @@ mod juncture;
 mod moment;
 mod planned_stop;
 mod resume;
-mod stance;
 mod stop;
 mod stretch;
 mod stretch_index;
@@ -41,10 +40,7 @@ use wait::Wait;
 
 pub use backup::Backup;
 pub use buffer::{Buffer, LiveGap};
-pub use buffer_state::BufferState;
-pub use deadline_kind::DeadlineKind;
 pub use halt::Halt;
-pub use stance::Stance;
 pub use stop::Stop;
 
 #[derive(Clone, Debug)]

@@ -1,10 +1,10 @@
 use std::ops::Range;
 
 use crate::clock::{ClockTime, Minutes};
+use crate::guidance::timeline::buffer::Buffer;
+use crate::guidance::timeline::deadline::Deadline;
+use crate::guidance::timeline::here::Here;
 use crate::leg::LegIndex;
-use crate::timeline::buffer::Buffer;
-use crate::timeline::deadline::Deadline;
-use crate::timeline::here::Here;
 
 #[derive(Clone, Debug)]
 pub struct Stretch<'day> {

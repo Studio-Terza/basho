@@ -2,7 +2,7 @@ mod board_markup;
 mod reason_markup;
 mod time_markup;
 
-use guide::leg::card::CardLine;
+use guide::card::CardLine;
 use guide::reading::Reading;
 use std::fmt;
 

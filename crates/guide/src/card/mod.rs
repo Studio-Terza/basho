@@ -1,9 +1,10 @@
+mod card_fill;
 mod card_line;
+pub use card_fill::CardFill;
 
 use serde::Deserialize;
 
 use crate::content::Content;
-use crate::leg::card_fill::CardFill;
 
 pub use card_line::CardLine;
 

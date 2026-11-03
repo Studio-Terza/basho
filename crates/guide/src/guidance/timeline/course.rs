@@ -4,20 +4,20 @@ use std::iter;
 
 use crate::clock::Pause;
 use crate::clock::{ClockTime, Minutes};
+use crate::deadline_kind::DeadlineKind;
 use crate::end::End;
 use crate::geo::Distance;
+use crate::guidance::timeline::deadline::Deadline;
+use crate::guidance::timeline::hold::Hold;
+use crate::guidance::timeline::juncture::Juncture;
+use crate::guidance::timeline::moment::Moment;
+use crate::guidance::timeline::planned_stop::PlannedStop;
+use crate::guidance::timeline::stretch::Stretch;
+use crate::guidance::timeline::wait::Wait;
 use crate::itinerary::{Caption, Day};
 use crate::leg::{Branch, Leg, LegIndex, Mode};
 use crate::leg_line::LegLine;
 use crate::ruby_text::RubyText;
-use crate::timeline::deadline::Deadline;
-use crate::timeline::deadline_kind::DeadlineKind;
-use crate::timeline::hold::Hold;
-use crate::timeline::juncture::Juncture;
-use crate::timeline::moment::Moment;
-use crate::timeline::planned_stop::PlannedStop;
-use crate::timeline::stretch::Stretch;
-use crate::timeline::wait::Wait;
 use crate::times::{ListedTime, PlanTime};
 
 #[derive(Clone, Copy, Debug)]

@@ -1,6 +1,6 @@
 use crate::clock::Minutes;
 use crate::geo::Distance;
-use crate::timeline::planned_stop::PlannedStop;
+use crate::guidance::timeline::planned_stop::PlannedStop;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Stop<'day> {

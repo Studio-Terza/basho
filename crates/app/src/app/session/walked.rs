@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use guide::timeline::Halt;
+use guide::guidance::timeline::Halt;
 
 use guide::readout::Trail;
 

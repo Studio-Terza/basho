@@ -1,4 +1,5 @@
 use crate::fixture::Fixture;
+use guide::DeadlineKind;
 use guide::clock::Minutes;
 use guide::clock::TripTime;
 use guide::end::End;
@@ -7,7 +8,6 @@ use guide::guidance::LegProgress;
 use guide::leg::Leg;
 use guide::leg::LegIndex;
 use guide::leg::margin::Margin;
-use guide::timeline::DeadlineKind;
 
 const DAY_THREE: usize = 3;
 const DAY_FOUR: usize = 4;
@@ -37,7 +37,7 @@ fn a_shinkansen_after_a_stopover_keeps_its_eticket_margin() {
     let trip = Fixture::bundled_days(&[DAY_FOUR]);
     let day = trip.day(DAY_FOUR);
     let shinkansen = day.leg(SHINKANSEN).unwrap();
-    let ride = guide::timeline::course::Course::new(day)
+    let ride = guide::guidance::timeline::course::Course::new(day)
         .closing(SHINKANSEN)
         .unwrap();
     assert_eq!(

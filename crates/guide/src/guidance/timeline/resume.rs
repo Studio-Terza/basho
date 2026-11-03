@@ -1,6 +1,6 @@
 use crate::clock::Minutes;
-use crate::timeline::stretch::Stretch;
-use crate::timeline::stretch_index::StretchIndex;
+use crate::guidance::timeline::stretch::Stretch;
+use crate::guidance::timeline::stretch_index::StretchIndex;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Resume {

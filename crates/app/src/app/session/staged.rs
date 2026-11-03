@@ -1,7 +1,7 @@
 use guide::clock::TripTime;
 use guide::geo::{Bearing, Coordinate, Distance};
 use guide::guidance::LegProgress;
-use guide::timeline::Halt;
+use guide::guidance::timeline::Halt;
 use layout::scale::Viewport;
 use map_plan::{KeyEntry, MapLevel, MapMode, PickedMark};
 use report::ReportStore;

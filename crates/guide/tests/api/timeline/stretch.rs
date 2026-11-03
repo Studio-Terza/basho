@@ -1,14 +1,14 @@
 use crate::fixture::Fixture;
 use crate::fixture::WrittenTime;
+use guide::BufferState;
 use guide::clock::Minutes;
 use guide::clock::TripTime;
 use guide::end::End;
 use guide::geo::Distance;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
+use guide::guidance::timeline::Halt;
 use guide::leg::LegIndex;
-use guide::timeline::BufferState;
-use guide::timeline::Halt;
 
 const DAY_TWO: usize = 2;
 const DAY_THREE: usize = 3;

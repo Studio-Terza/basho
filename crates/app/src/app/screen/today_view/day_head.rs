@@ -1,10 +1,10 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
-use guide::ArrivalMark;
 use guide::FactSource;
 use guide::classed::Classed;
 use guide::content::Content;
 use guide::end::End;
+use guide::guidance::ArrivalMark;
 use guide::guidance::Guidance;
 use guide::itinerary::Caption;
 use guide::place::NoteKind;
