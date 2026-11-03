@@ -1,5 +1,3 @@
-mod angle;
-
 use std::rc::Rc;
 use std::time::{Duration, UNIX_EPOCH};
 
@@ -17,10 +15,9 @@ use guide::geo::distance::Ground;
 
 use crate::app::session::Session;
 use crate::app::session::location_access::LocationAccess;
-use crate::app::session::measure::Cadence;
+use crate::app::session::measure::{Angle, Cadence};
 use crate::app::session::wall_clock::WallClock;
 use crate::app::visit::Screen;
-use angle::Angle;
 
 pub struct LocationFeed {
     manager: Retained<CLLocationManager>,
