@@ -9,7 +9,7 @@ use basho::app::history::{History, Mark, ScrollTop};
 use basho::app::screen::Screen;
 use basho::app::session::{Focus, Landing, Session, SessionEvent, Visit};
 use basho::app::step::{Spot, Step, StepNumber, Toward};
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 
 use crate::ui_check::{Drawing, Stage};
 

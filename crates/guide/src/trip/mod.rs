@@ -1,8 +1,6 @@
 mod known_names;
-mod language;
 mod trip_error;
 mod trip_file;
-mod trip_head;
 mod trip_source;
 
 use std::fs;
@@ -17,9 +15,7 @@ use crate::place_catalog::PlaceCatalog;
 use trip_file::TripFile;
 
 pub use known_names::{DraftPart, KnownNames, NameForms};
-pub use language::Language;
 pub use trip_error::TripError;
-pub use trip_head::TripHead;
 pub use trip_source::TripSource;
 
 #[derive(Debug)]

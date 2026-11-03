@@ -1,7 +1,7 @@
 use std::fmt;
 use std::path::{Path, PathBuf};
 
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct TripDay(DayNumber);

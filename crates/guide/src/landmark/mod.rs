@@ -3,8 +3,8 @@ mod peak;
 mod river;
 mod sea;
 mod star_point;
+use crate::day_number::DayNumber;
 use crate::geo::Coordinate;
-use crate::itinerary::DayNumber;
 use crate::words::StarName;
 use serde::Deserialize;
 

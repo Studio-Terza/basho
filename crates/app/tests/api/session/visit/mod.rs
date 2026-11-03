@@ -1,4 +1,4 @@
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 
 use basho::app::session::visit::Focus;
 use basho::app::session::visit::Landing;

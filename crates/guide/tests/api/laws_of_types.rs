@@ -1,10 +1,10 @@
 use guide::clock::Minutes;
+use guide::day_number::DayNumber;
 use guide::english_name::EnglishName;
 use guide::geo::Distance;
 use guide::geo::route_line::route_fix::off_route::OffRoute;
 use guide::guidance::LegProgress;
 use guide::guidance::tracking::{Placing, Stage, Tracking};
-use guide::itinerary::DayNumber;
 use guide::leg::LegIndex;
 use guide::map_frame::Pixels;
 use guide::words::Spelling;

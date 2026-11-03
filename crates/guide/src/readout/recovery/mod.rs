@@ -3,9 +3,9 @@ pub mod day_catch;
 mod kana_file;
 
 use crate::geo::Coordinate;
-use crate::guidance::Pointer;
 use crate::itinerary::Day;
 use crate::leg::LegIndex;
+use crate::readout::pointer::Pointer;
 use crate::times::FactTime;
 
 pub use day_catch::{CatchSight, DayCatch};

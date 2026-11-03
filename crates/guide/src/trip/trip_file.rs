@@ -4,14 +4,17 @@ use std::thread::{Scope, ScopedJoinHandle};
 
 use serde::Deserialize;
 
-use crate::itinerary::{Arc, Day, DayNumber, Finding, Itinerary, LegLines, Problem};
+use crate::itinerary::{Arc, Day, Finding, Itinerary, LegLines, Problem};
+
+use crate::day_number::DayNumber;
 use crate::landmark::Landmarks;
 use crate::overview::Overview;
 use crate::place::Place;
 use crate::place_catalog::PlaceCatalog;
 use crate::readout::{DayCatch, KanaFile};
 use crate::trip::KnownNames;
-use crate::trip::{Trip, TripError, TripHead, TripSource};
+use crate::trip::{Trip, TripError, TripSource};
+use crate::trip_head::TripHead;
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]

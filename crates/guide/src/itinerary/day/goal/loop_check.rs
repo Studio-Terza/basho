@@ -1,7 +1,8 @@
 use crate::clock::ClockTime;
+use crate::day_number::DayNumber;
 use crate::end::End;
 use crate::itinerary::day::goal::{Goal, LoopStop};
-use crate::itinerary::{DayNumber, Finding, Problem};
+use crate::itinerary::{Finding, Problem};
 use crate::leg::{Leg, LegIndex};
 use crate::times::PlanTime;
 

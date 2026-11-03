@@ -1,9 +1,10 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
+use guide::day_number::DayNumber;
 use guide::end::End;
 use guide::english_name::EnglishName;
-use guide::itinerary::{Caption, Day, DayNumber};
+use guide::itinerary::{Caption, Day};
 use menu::PoseStyle;
 use newtype::Newtype;
 use wiki::EntryKey;

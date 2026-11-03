@@ -1,8 +1,9 @@
 use guide::content::Content;
+use guide::day_number::DayNumber;
 use guide::end::End;
+use guide::itinerary::Day;
 use guide::itinerary::day::Night;
 use guide::itinerary::day::goal::Goal;
-use guide::itinerary::{Day, DayNumber};
 use guide::leg::{Leg, LegIndex};
 use guide::leg_line::LegLine;
 use guide::place::{Place, PlaceFact};

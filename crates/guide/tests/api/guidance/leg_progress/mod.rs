@@ -5,13 +5,13 @@ use std::time::UNIX_EPOCH;
 use guide::clock::ClockTime;
 use guide::clock::Minutes;
 use guide::clock::TripTime;
+use guide::day_number::DayNumber;
 use guide::end::End;
 use guide::geo::Coordinate;
 use guide::geo::Degrees;
 use guide::geo::Distance;
 use guide::guidance::LegProgress;
 use guide::guidance::Phase;
-use guide::itinerary::DayNumber;
 use guide::leg::LegIndex;
 
 const DAY: u8 = 8;

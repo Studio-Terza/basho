@@ -1,7 +1,7 @@
 use newtype::Newtype;
 use std::fmt;
 
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 
 #[derive(Newtype, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct DayName {

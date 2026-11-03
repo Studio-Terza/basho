@@ -1,6 +1,6 @@
 use guide::Trip;
+use guide::day_number::DayNumber;
 use guide::end::End;
-use guide::itinerary::DayNumber;
 use guide::ruby_text::RubyText;
 use guide::words::Slug;
 use wiki::entry::{Entry, EntryKind, Heading, Opening, Row, Section, StopRow};

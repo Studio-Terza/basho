@@ -5,9 +5,7 @@ mod nearness;
 mod phase;
 mod plan;
 mod platform;
-mod pointer;
 mod position_source;
-mod pressing;
 mod remaining;
 mod ride_search;
 mod ride_slack;
@@ -42,9 +40,7 @@ pub use arrival::Arrival;
 pub use leg_progress::LegProgress;
 pub use phase::Phase;
 pub use plan::Plan;
-pub use pointer::Pointer;
 pub use position_source::PositionSource;
-pub use pressing::Pressing;
 pub use sighting::Sighting;
 
 #[derive(Clone, Copy, Debug)]

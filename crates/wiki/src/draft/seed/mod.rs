@@ -1,11 +1,12 @@
 mod town_evening;
 
 use guide::content::Content;
+use guide::day_number::DayNumber;
 use guide::end::End;
 use guide::english_name::EnglishName;
 use guide::itinerary::day::Night;
 use guide::itinerary::day::goal::{Goal, Purpose};
-use guide::itinerary::{Caption, Day, DayNumber, Itinerary};
+use guide::itinerary::{Caption, Day, Itinerary};
 use guide::landmark::Landmarks;
 use guide::leg::{Leg, LegIndex};
 use guide::leg_line::LegLine;

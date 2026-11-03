@@ -13,10 +13,10 @@ use std::ops::Index;
 
 use crate::clock::Pause;
 use crate::clock::{CalendarDate, ClockTime, Minutes, Sunset, TripZone};
+use crate::day_number::DayNumber;
 use crate::end::End;
 use crate::evidence::Evidence;
 use crate::geo::Distance;
-use crate::itinerary::DayNumber;
 use crate::itinerary::Problem;
 use crate::itinerary::arc_number::ArcNumber;
 use crate::itinerary::day::goal::{Aim, Goal, GoalPlan, Purpose};

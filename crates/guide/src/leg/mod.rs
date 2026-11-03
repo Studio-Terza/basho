@@ -19,9 +19,10 @@ use serde::Deserialize;
 
 use crate::clock::{ClockTime, Minutes};
 use crate::content::{Content, ContentList};
+use crate::day_number::DayNumber;
 use crate::end::End;
 use crate::geo::{Coordinate, Distance, RouteLine};
-use crate::itinerary::{DayNumber, Finding};
+use crate::itinerary::Finding;
 use crate::leg_line::LegLine;
 use crate::place::Fact;
 use crate::ruby_text::RubyText;

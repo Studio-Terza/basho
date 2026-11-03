@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use dioxus::prelude::*;
-use guide::itinerary::DayNumber;
+use guide::day_number::DayNumber;
 use guide::leg::LegIndex;
 use guide::map_frame::Pixels;
 use report::{Fact, ReportText};

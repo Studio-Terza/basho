@@ -1,10 +1,11 @@
 use crate::content::Content;
+use crate::day_number::DayNumber;
 use crate::end::End;
 use crate::geo::Coordinate;
 use crate::geo::Distance;
 use crate::itinerary::day::goal::{Aim, Ending, Goal, LoopCheck, Purpose};
 use crate::itinerary::day::{Caption, Night};
-use crate::itinerary::{DayNumber, Finding, Problem};
+use crate::itinerary::{Finding, Problem};
 use crate::leg::{Leg, LegIndex, Mode};
 use crate::leg_line::LegLine;
 use crate::words::Label;

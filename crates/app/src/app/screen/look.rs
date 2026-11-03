@@ -1,5 +1,5 @@
 use guide::classed::Classed;
-use guide::guidance::Pressing;
+use guide::pressing::Pressing;
 use guide::readout::Emphasis;
 use guide::timeline::{BufferState, DeadlineKind};
 

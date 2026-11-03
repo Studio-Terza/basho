@@ -6,10 +6,10 @@ use crate::readout::recovery::catch_words::Readings;
 use serde::Deserialize;
 use serde::de::IgnoredAny;
 
+use crate::day_number::DayNumber;
 use crate::geo::{Coordinate, Degrees, Distance};
-use crate::guidance::Pointer;
-use crate::itinerary::DayNumber;
 use crate::leg::LegIndex;
+use crate::readout::pointer::Pointer;
 use crate::words::Spelling;
 use feature::Feature;
 use leg_catch::LegCatch;

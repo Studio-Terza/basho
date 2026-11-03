@@ -1,4 +1,4 @@
-use crate::guidance::Pointer;
+use crate::readout::pointer::Pointer;
 use crate::ruby_text::RubyText;
 use crate::words::Prose;
 

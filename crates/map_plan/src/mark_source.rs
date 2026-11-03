@@ -1,10 +1,11 @@
 use guide::content::Content;
+use guide::day_number::DayNumber;
 use guide::end::End;
 use guide::evidence::Evidence;
 use guide::geo::{Coordinate, RouteLine, Share};
 use guide::guidance::Guidance;
+use guide::itinerary::Caption;
 use guide::itinerary::day::goal::LoopStop;
-use guide::itinerary::{Caption, DayNumber};
 use guide::leg::{Leg, LegIndex, StopKind};
 use guide::reading::Reading;
 use guide::ruby_text::RubyText;
