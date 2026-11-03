@@ -1,3 +1,4 @@
+mod claim;
 mod draft;
 pub mod entry;
 mod entry_id;
