@@ -1,4 +1,4 @@
-use guide::readout::recovery::catch_words::Readings;
+use guide::catch_words::Readings;
 use xtask::task::catch_import::catch_section::CatchSection;
 use xtask::task::catch_import::day_file::DayFile;
 

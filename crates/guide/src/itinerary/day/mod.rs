@@ -4,8 +4,9 @@ mod landing;
 mod leg_lines;
 mod night;
 
-use crate::content::{Content, ContentList};
+use crate::content::Content;
 use crate::geo::Coordinate;
+use crate::trip::ContentList;
 use crate::words::{Label, StarName};
 use newtype::Counter;
 use serde::Deserialize;

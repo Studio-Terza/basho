@@ -5,9 +5,8 @@ use guide::clock::{ClockTime, Minutes};
 use guide::end::End;
 use guide::evidence::Evidence;
 use guide::itinerary::Day;
-use guide::times::{
-    Basis, FactSource, FactTime, ListedTime, LiveGap, LiveTime, PlanTime, ShownTime,
-};
+use guide::timeline::LiveGap;
+use guide::times::{Basis, FactSource, FactTime, ListedTime, LiveTime, PlanTime, ShownTime};
 use guide::words::Spelling;
 
 const APPROXIMATE: char = '≈';

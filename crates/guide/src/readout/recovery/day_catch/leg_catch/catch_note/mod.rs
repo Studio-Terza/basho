@@ -1,6 +1,6 @@
 mod note_text;
 
-use crate::readout::recovery::catch_words::FeatureId;
+use crate::readout::recovery::day_catch::FeatureId;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 

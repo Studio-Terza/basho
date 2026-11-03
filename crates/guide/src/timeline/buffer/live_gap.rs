@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::clock::Minutes;
-use crate::times::basis::Basis;
+use crate::times::Basis;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct LiveGap {

@@ -1,4 +1,4 @@
-use guide::readout::recovery::catch_words::{FeatureName, Readings};
+use guide::catch_words::{FeatureName, Readings};
 use guide::ruby_text::RubyText;
 use std::collections::BTreeMap;
 

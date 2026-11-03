@@ -18,7 +18,8 @@ use basho::app::session::trip_shelf::TripShelf;
 
 use crate::ui_check::{Drawing, Handset, Harness, Stage};
 use devtools::DevTools;
-use layout::scale::{Text, Token};
+use layout::measure::Text;
+use layout::scale::Token;
 pub use ports::{Chrome, MapServer};
 pub use stopwatch::Stopwatch;
 use unfinished::Unfinished;

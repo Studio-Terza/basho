@@ -1,7 +1,8 @@
 mod geometry;
 mod name_form;
 
-use crate::readout::recovery::catch_words::{FeatureId, FeatureName, Readings};
+use crate::catch_words::{FeatureName, Readings};
+use crate::readout::recovery::day_catch::FeatureId;
 use crate::words::Prose;
 use serde::Deserialize;
 use serde::de::IgnoredAny;

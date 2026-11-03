@@ -1,5 +1,6 @@
 mod point_source;
-use crate::content::{Content, ContentList};
+use crate::content::Content;
+use crate::trip::ContentList;
 use crate::words::StarName;
 use serde::Deserialize;
 use serde::de::IgnoredAny;

@@ -1,6 +1,7 @@
 use guide::map_frame::{Pixels, Scale};
 
-use crate::scale::{Extent, Gap, Token};
+use crate::measure::Extent;
+use crate::scale::{Gap, Token};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MapSpace {

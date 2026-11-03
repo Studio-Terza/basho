@@ -1,6 +1,8 @@
+mod referent;
+pub use referent::Referent;
 use serde::Deserialize;
 
-use super::{ReasonKind, Referent};
+use super::ReasonKind;
 use crate::evidence::Evidence;
 
 #[derive(Debug, Deserialize)]

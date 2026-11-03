@@ -1,4 +1,6 @@
+mod kana_file;
 use crate::words::Label;
+pub use kana_file::KanaFile;
 use std::collections::{BTreeMap, BTreeSet};
 use std::thread::{Scope, ScopedJoinHandle};
 
@@ -11,7 +13,7 @@ use crate::landmark::Landmarks;
 use crate::overview::Overview;
 use crate::place::Place;
 use crate::place_catalog::PlaceCatalog;
-use crate::readout::{DayCatch, KanaFile};
+use crate::readout::DayCatch;
 use crate::trip::KnownNames;
 use crate::trip::{Trip, TripError, TripSource};
 use crate::trip_head::TripHead;

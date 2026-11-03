@@ -1,7 +1,8 @@
 use std::ops::Range;
 use std::str::FromStr;
 
-use crate::content::{ContentError, DistanceUnit, Figure, SaidClock};
+use crate::content::typed_part::DistanceUnit;
+use crate::content::{ContentError, Figure, SaidClock};
 use crate::words::{Spelling, Written};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

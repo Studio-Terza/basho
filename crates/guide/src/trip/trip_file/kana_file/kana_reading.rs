@@ -1,4 +1,4 @@
-use crate::readout::recovery::catch_words::FeatureName;
+use crate::catch_words::FeatureName;
 use crate::words::Spelling;
 use serde::Deserialize;
 use serde::de::IgnoredAny;

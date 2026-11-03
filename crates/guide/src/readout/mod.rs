@@ -8,7 +8,7 @@ mod trail;
 
 pub use arrow::Arrow;
 pub use emphasis::Emphasis;
-pub use recovery::{DayCatch, KanaFile, Recovery};
+pub use recovery::{DayCatch, Recovery};
 pub use status::Status;
 pub use time_check::TimeCheck;
 pub use trail::Trail;

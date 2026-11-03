@@ -1,14 +1,16 @@
+mod content_list;
 mod known_names;
 mod trip_error;
 mod trip_file;
 mod trip_source;
+pub use content_list::ContentList;
 
 use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use crate::content::{Content, ContentList};
+use crate::content::Content;
 use crate::itinerary::{Finding, Itinerary};
 use crate::overview::Overview;
 use crate::place_catalog::PlaceCatalog;

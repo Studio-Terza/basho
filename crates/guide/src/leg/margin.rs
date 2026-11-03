@@ -1,5 +1,5 @@
 use crate::clock::{ClockTime, Minutes};
-use crate::timeline::haste::Haste;
+use crate::haste::Haste;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Margin {

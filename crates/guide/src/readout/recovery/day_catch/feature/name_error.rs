@@ -1,4 +1,4 @@
-use crate::readout::recovery::catch_words::FeatureId;
+use crate::readout::recovery::day_catch::FeatureId;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

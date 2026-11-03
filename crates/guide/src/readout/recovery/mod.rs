@@ -1,6 +1,4 @@
-pub mod catch_words;
 pub mod day_catch;
-mod kana_file;
 
 use crate::geo::Coordinate;
 use crate::itinerary::Day;
@@ -9,7 +7,6 @@ use crate::readout::pointer::Pointer;
 use crate::times::FactTime;
 
 pub use day_catch::{CatchSight, DayCatch};
-pub use kana_file::KanaFile;
 
 #[derive(Clone, Debug)]
 pub struct Recovery<'catch> {

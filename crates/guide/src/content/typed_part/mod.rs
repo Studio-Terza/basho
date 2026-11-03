@@ -1,10 +1,15 @@
+mod measure;
+mod price;
+mod scheduled_train;
+pub use measure::{DistanceUnit, Measure, SpanUnit};
+pub use price::Price;
+pub use scheduled_train::ScheduledTrain;
 use std::fmt;
 
+use crate::times::FactSource;
 use serde::Deserialize;
 
-use crate::content::{
-    DistanceUnit, Measure, NameKind, Price, SaidClock, SaidFact, ScheduledTrain, SpanUnit,
-};
+use crate::content::{NameKind, SaidClock};
 use crate::evidence::EvidenceKind;
 use crate::reading::Reading;
 use crate::ruby_text::RubyText;
@@ -70,5 +75,31 @@ impl fmt::Display for TypedPart {
             TypedPart::Service(train) => train.fmt(formatter),
             TypedPart::Quote(quote) => quote.fmt(formatter),
         }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SaidFact {
+    at: SaidClock,
+    source: FactSource,
+    #[serde(deserialize_with = "EvidenceKind::deserialize_backed")]
+    evidence: Option<EvidenceKind>,
+}
+
+impl SaidFact {
+    #[must_use]
+    pub fn clock(self) -> SaidClock {
+        self.at
+    }
+
+    #[must_use]
+    pub fn source(self) -> FactSource {
+        self.source
+    }
+
+    #[must_use]
+    pub fn evidence(self) -> Option<EvidenceKind> {
+        self.evidence
     }
 }

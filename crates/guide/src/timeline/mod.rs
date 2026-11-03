@@ -6,11 +6,9 @@ mod deadline;
 mod deadline_kind;
 mod footing;
 mod halt;
-mod haste;
 mod here;
 mod hold;
 mod juncture;
-mod margin;
 mod moment;
 mod planned_stop;
 mod resume;
@@ -42,11 +40,10 @@ use stretch_index::StretchIndex;
 use wait::Wait;
 
 pub use backup::Backup;
-pub use buffer::Buffer;
+pub use buffer::{Buffer, LiveGap};
 pub use buffer_state::BufferState;
 pub use deadline_kind::DeadlineKind;
 pub use halt::Halt;
-pub use margin::Margin;
 pub use stance::Stance;
 pub use stop::Stop;
 

@@ -2,8 +2,9 @@ mod note_kind;
 use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 
-use crate::content::{Content, ContentList};
+use crate::content::Content;
 use crate::evidence::Evidence;
+use crate::trip::ContentList;
 
 pub use note_kind::NoteKind;
 

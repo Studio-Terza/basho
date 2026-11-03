@@ -1,7 +1,9 @@
 #[macro_use]
 mod operators;
 mod arrival;
+pub mod catch_words;
 mod evidence_counts;
+mod haste;
 mod source;
 pub use arrival::ArrivalMark;
 pub use evidence_counts::EvidenceCounts;

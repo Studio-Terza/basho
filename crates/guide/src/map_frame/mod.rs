@@ -2,9 +2,10 @@ mod axis;
 mod pixels;
 mod plane_point;
 mod scale;
+mod svg_path;
 mod tenths;
+pub use svg_path::SvgPath;
 
-use crate::words::SvgPath;
 use std::fmt::Write;
 
 use crate::geo::{Coordinate, Degrees, Distance, Share};

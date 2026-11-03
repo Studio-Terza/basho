@@ -1,10 +1,12 @@
+mod live_gap;
 use crate::clock::{ClockTime, Minutes};
 use crate::timeline::backup::Backup;
 use crate::timeline::buffer_state::BufferState;
 use crate::timeline::deadline::Deadline;
 use crate::timeline::footing::Footing;
 use crate::timeline::here::Here;
-use crate::times::{Basis, LiveGap};
+use crate::times::Basis;
+pub use live_gap::LiveGap;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Buffer<'day> {

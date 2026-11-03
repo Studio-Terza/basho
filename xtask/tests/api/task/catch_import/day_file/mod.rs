@@ -2,7 +2,7 @@ mod note_text;
 use std::path::Path;
 
 use guide::Trip;
-use guide::readout::recovery::catch_words::Readings;
+use guide::catch_words::Readings;
 use guide::trip::KnownNames;
 use serde_json::{Value, json};
 use xtask::task::catch_import::day_file::DayFile;

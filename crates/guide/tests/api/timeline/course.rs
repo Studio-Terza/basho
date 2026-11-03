@@ -6,8 +6,8 @@ use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
 use guide::leg::Leg;
 use guide::leg::LegIndex;
+use guide::leg::margin::Margin;
 use guide::timeline::DeadlineKind;
-use guide::timeline::Margin;
 
 const DAY_THREE: usize = 3;
 const DAY_FOUR: usize = 4;

@@ -2,8 +2,8 @@ use guide::geo::Share;
 use guide::map_frame::Pixels;
 use guide::words::Label;
 
-use crate::scale::token::Token;
-use crate::scale::viewport::Viewport;
+use crate::scale::Token;
+use crate::scale::Viewport;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Text {

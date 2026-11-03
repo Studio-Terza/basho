@@ -16,10 +16,10 @@ use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
 use guide::itinerary::Day;
 use guide::leg::LegIndex;
+use guide::leg::margin::Margin;
 use guide::timeline::BufferState;
 use guide::timeline::DeadlineKind;
 use guide::timeline::Halt;
-use guide::timeline::Margin;
 
 const DAY_THREE: usize = 3;
 const MILL_RACE_PATH: LegIndex = LegIndex::new(5);

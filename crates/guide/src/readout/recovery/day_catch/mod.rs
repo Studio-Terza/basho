@@ -1,8 +1,11 @@
-use crate::content::{Content, ContentList};
+mod feature_id;
+use crate::content::Content;
+use crate::trip::ContentList;
+pub use feature_id::FeatureId;
 mod catch_sight;
 pub mod feature;
 pub mod leg_catch;
-use crate::readout::recovery::catch_words::Readings;
+use crate::catch_words::Readings;
 use serde::Deserialize;
 use serde::de::IgnoredAny;
 

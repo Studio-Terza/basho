@@ -2,7 +2,8 @@ mod feature_kind;
 mod feature_record;
 
 mod name_error;
-use crate::readout::recovery::catch_words::{FeatureId, Readings};
+use crate::catch_words::Readings;
+use crate::readout::recovery::day_catch::FeatureId;
 use crate::words::{Prose, Spelling};
 use serde::Deserialize;
 

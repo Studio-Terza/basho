@@ -1,6 +1,6 @@
 mod kana_reading;
 
-use crate::readout::recovery::catch_words::{FeatureName, Readings};
+use crate::catch_words::{FeatureName, Readings};
 use std::collections::BTreeMap;
 
 use serde::Deserialize;
