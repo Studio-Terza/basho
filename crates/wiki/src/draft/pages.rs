@@ -35,6 +35,11 @@ impl<'roster, 'trip> Pages<'roster, 'trip> {
     }
 
     #[must_use]
+    pub fn roster(&self) -> &'roster Roster<'trip> {
+        self.roster
+    }
+
+    #[must_use]
     pub fn shops(&self) -> Vec<Section> {
         let groups = self.roster.first_stops(EntryKind::Shop);
         let on_shelf = |wanted: Shelf| {
