@@ -139,10 +139,12 @@ impl<'day> Deadline<'day> {
     }
 
     #[must_use]
-    pub fn ends_stretch(&self) -> bool {
-        matches!(
-            self.kind,
-            DeadlineKind::Ride | DeadlineKind::Tour | DeadlineKind::CheckIn
-        )
+    pub fn ends_stretch(&self) -> Option<&Deadline<'day>> {
+        Some(self).filter(|deadline| {
+            matches!(
+                deadline.kind,
+                DeadlineKind::Ride | DeadlineKind::Tour | DeadlineKind::CheckIn
+            )
+        })
     }
 }

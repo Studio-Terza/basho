@@ -71,10 +71,9 @@ impl LegProgress {
         });
         let pinned = LegProgress::confirmed(day.number(), placing.on_leg(), offset)
             .tracked(Tracking::pinned(placing, baseline));
-        match (placing.stage(), day.leg(placing.on_leg())) {
-            (Stage::Finished, Some(leg)) => pinned.placed(leg.length(), now),
-            _ => pinned,
-        }
+        day.leg(placing.on_leg())
+            .filter(|_| placing.stage() == Stage::Finished)
+            .map_or(pinned, |leg| pinned.placed(leg.length(), now))
     }
 
     #[must_use]
@@ -153,25 +152,37 @@ impl LegProgress {
     }
 
     #[must_use]
-    pub fn arrived(self, day: &Day) -> bool {
+    pub fn arrived(self, day: &Day) -> Option<LegProgress> {
         let last = day.legs().len().checked_sub(1).map(LegIndex::new);
-        self.for_day(day.number()).is_some_and(|kept| {
-            Some(kept.leg) == last
-                && day
-                    .leg(kept.leg)
+        self.for_day(day.number())
+            .filter(|kept| Some(kept.leg) == last)
+            .filter(|kept| {
+                day.leg(kept.leg)
                     .is_some_and(|leg| kept.along >= leg.length() - Nearness::GpsError.distance())
-        })
+            })
     }
 }
 
 impl Eq for LegProgress {}
 
 impl LegProgress {
+    const OFFSET_WORDS: usize = 2;
+    const BEHIND_WORDS: usize = 4;
+    const FIX_WORDS: usize = 3;
+    const HEAD_WORDS: usize = 4;
+
     fn offset_word<'text>(rest: &[&'text str]) -> Option<&'text str> {
-        match rest {
-            ["offset" | "behind", offset] | ["behind", _, "started", offset] => Some(*offset),
-            _ => Self::word_after(rest, "offset"),
-        }
+        <[&str; Self::OFFSET_WORDS]>::try_from(rest)
+            .ok()
+            .filter(|[label, _]| ["offset", "behind"].contains(label))
+            .map(|[_, offset]| offset)
+            .or_else(|| {
+                <[&str; Self::BEHIND_WORDS]>::try_from(rest)
+                    .ok()
+                    .filter(|[behind, _, started, _]| (*behind, *started) == ("behind", "started"))
+                    .map(|[_, _, _, offset]| offset)
+            })
+            .or_else(|| Self::word_after(rest, "offset"))
     }
 
     fn word_after<'text>(rest: &[&'text str], label: &str) -> Option<&'text str> {
@@ -190,12 +201,13 @@ impl LegProgress {
     fn seen_word(rest: &[&str]) -> Option<Coordinate> {
         rest.iter()
             .position(|word| *word == "from")
-            .and_then(|from| match rest.get(from..)? {
-                [_, lat, lon, ..] => Some(Coordinate::new(
+            .and_then(|from| rest.get(from..))
+            .and_then(|tail| tail.first_chunk::<{ Self::FIX_WORDS }>())
+            .and_then(|[_, lat, lon]| {
+                Some(Coordinate::new(
                     Degrees::new(lat.parse().ok()?),
                     Degrees::new(lon.parse().ok()?),
-                )),
-                _ => None,
+                ))
             })
     }
 }
@@ -233,26 +245,28 @@ impl FromStr for LegProgress {
 
     fn from_str(text: &str) -> Result<LegProgress, ProgressError> {
         let words: Vec<&str> = text.split_whitespace().collect();
-        match words.as_slice() {
-            ["day", day, "leg", leg, rest @ ..] => Self::offset_word(rest).and_then(|offset| {
-                Some(LegProgress {
-                    day: Some(DayNumber::new(day.parse().ok()?)),
-                    leg: LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
-                    along: Self::along_word(rest, "along"),
-                    furthest: Self::along_word(rest, "furthest")
-                        .max(Self::along_word(rest, "along")),
-                    offset: Minutes::new(offset.parse().ok()?),
-                    at: Self::word_after(rest, "at")
-                        .map(str::parse)
-                        .and_then(Result::ok)
-                        .map(Minutes::new)
-                        .map(ClockTime::at_minutes),
-                    seen: Self::seen_word(rest),
-                    tracking: rest.join(" ").parse().unwrap_or_default(),
+        words
+            .split_first_chunk::<{ Self::HEAD_WORDS }>()
+            .filter(|([day, _, leg, _], _)| (*day, *leg) == ("day", "leg"))
+            .and_then(|([_, day, _, leg], rest)| {
+                Self::offset_word(rest).and_then(|offset| {
+                    Some(LegProgress {
+                        day: Some(DayNumber::new(day.parse().ok()?)),
+                        leg: LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
+                        along: Self::along_word(rest, "along"),
+                        furthest: Self::along_word(rest, "furthest")
+                            .max(Self::along_word(rest, "along")),
+                        offset: Minutes::new(offset.parse().ok()?),
+                        at: Self::word_after(rest, "at")
+                            .map(str::parse)
+                            .and_then(Result::ok)
+                            .map(Minutes::new)
+                            .map(ClockTime::at_minutes),
+                        seen: Self::seen_word(rest),
+                        tracking: rest.join(" ").parse().unwrap_or_default(),
+                    })
                 })
-            }),
-            _ => None,
-        }
-        .ok_or_else(|| ProgressError::Unreadable(Written::new(text.to_owned())))
+            })
+            .ok_or_else(|| ProgressError::Unreadable(Written::new(text.to_owned())))
     }
 }

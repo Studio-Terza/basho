@@ -13,8 +13,11 @@ impl Wanted {
         match self {
             Wanted::Ride => Self::named_ride(buffer),
             Wanted::RideWithBackup => Self::named_ride(buffer)
-                .filter(|buffer| buffer.backup().is_some() && buffer.reaches_before_event()),
-            Wanted::Cutoff => Some(buffer).filter(|buffer| !buffer.deadline().ends_stretch()),
+                .filter(|buffer| buffer.backup().is_some())
+                .filter(|buffer| buffer.reaches_before_event().is_some()),
+            Wanted::Cutoff => {
+                Some(buffer).filter(|buffer| buffer.deadline().ends_stretch().is_none())
+            }
         }
     }
 

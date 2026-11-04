@@ -62,11 +62,15 @@ impl Sighting {
     pub fn guidance(self, day: &Day, progress: LegProgress, now: TripTime) -> Guidance<'_> {
         match self {
             Sighting::Fresh(at) => Guidance::new(day, progress, now, Some(at)),
-            Sighting::Stale { since, .. } if since.trip_date() != now.trip_date() => {
-                Guidance::new(day, progress, now, None)
-            }
-            Sighting::Stale { at, since } => Guidance::new(day, progress, since, Some(at))
-                .after_gps_loss(Guidance::new(day, progress, now, None)),
+            Sighting::Stale { at, since } => Some(since)
+                .filter(|since| since.trip_date() != now.trip_date())
+                .map_or_else(
+                    || {
+                        Guidance::new(day, progress, since, Some(at))
+                            .after_gps_loss(Guidance::new(day, progress, now, None))
+                    },
+                    |_| Guidance::new(day, progress, now, None),
+                ),
         }
     }
 }

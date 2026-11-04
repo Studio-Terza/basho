@@ -40,21 +40,21 @@ impl Track {
 
     #[must_use]
     pub fn remembered(self, day: &Day, now: TripTime) -> Option<LegProgress> {
-        match self.trust {
-            Trust::Unconfirmed => self.kept,
-            Trust::Followed | Trust::Turned => {
-                let along = self.snap.fix().along();
-                let held = self
-                    .kept
-                    .filter(|kept| kept.leg() == self.snap.index() && self.trust == Trust::Followed)
-                    .map_or(along, |kept| *kept.reached().end());
+        let along = self.snap.fix().along();
+        let held = self
+            .kept
+            .filter(|kept| kept.leg() == self.snap.index())
+            .filter(|_| self.trust == Trust::Followed)
+            .map_or(along, |kept| *kept.reached().end());
+        Some(self.trust)
+            .filter(|trust| *trust != Trust::Unconfirmed)
+            .map_or(self.kept, |_| {
                 Some(
                     LegProgress::confirmed(day.number(), self.snap.index(), self.offset(day, now))
                         .placed(along, now)
                         .reaching(held)
                         .seen_at(self.here),
                 )
-            }
-        }
+            })
     }
 }

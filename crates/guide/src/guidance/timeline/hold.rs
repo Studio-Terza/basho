@@ -10,11 +10,10 @@ pub enum Hold {
 
 impl From<Option<&Leg>> for Hold {
     fn from(leg: Option<&Leg>) -> Hold {
-        match leg {
-            Some(leg) if leg.mode() != Mode::Walk => Hold::Ride,
-            Some(leg) if leg.tour().is_some() => Hold::Tour,
-            Some(_) | None => Hold::Free,
-        }
+        leg.filter(|leg| leg.mode() != Mode::Walk)
+            .map(|_| Hold::Ride)
+            .or_else(|| leg.and_then(Leg::tour).map(|_| Hold::Tour))
+            .unwrap_or(Hold::Free)
     }
 }
 

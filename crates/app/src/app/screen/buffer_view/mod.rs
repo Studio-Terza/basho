@@ -38,7 +38,7 @@ impl<'view> BufferView<'view> {
                         buffer.deadline().kind(),
                         DeadlineKind::Ride | DeadlineKind::Tour
                     )
-                    && buffer.reaches_before_event())
+                    && buffer.reaches_before_event().is_some())
                 .then_some("Walk on now. You can still make it if you do not stop.");
                 let backup = buffer.backup();
                 let kind = Look::deadline(buffer.deadline().kind());

@@ -72,11 +72,15 @@ impl Here {
     }
 
     #[must_use]
-    pub fn ahead_of(self, deadline: &Deadline<'_>) -> bool {
-        deadline.ends_stretch()
-            || (deadline.reach() >= self.reach
-                && self
-                    .clock
-                    .is_none_or(|clock| clock <= deadline.event().since_midnight()))
+    pub fn ahead_of<'deadline, 'day>(
+        self,
+        deadline: &'deadline Deadline<'day>,
+    ) -> Option<&'deadline Deadline<'day>> {
+        deadline.ends_stretch().or(Some(deadline)
+            .filter(|deadline| deadline.reach() >= self.reach)
+            .filter(|deadline| {
+                self.clock
+                    .is_none_or(|clock| clock <= deadline.event().since_midnight())
+            }))
     }
 }

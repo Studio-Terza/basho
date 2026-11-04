@@ -30,26 +30,26 @@ impl Arrival {
     #[must_use]
     pub fn time(self, mark: ArrivalMark) -> Option<ClockTime> {
         match mark {
-            ArrivalMark::Arrives => self.at,
-            ArrivalMark::AfterSunset => self.sunset.filter(|limit| self.missed(mark, *limit)),
-            ArrivalMark::AfterCheckIn => self.check_in.filter(|limit| self.missed(mark, *limit)),
+            ArrivalMark::Arrives => self.at.map(TripTime::time),
+            ArrivalMark::AfterSunset => self
+                .limited(self.sunset)
+                .filter(|limit| Some(*limit) < self.at)
+                .map(TripTime::time),
+            ArrivalMark::AfterCheckIn => self
+                .limited(self.check_in)
+                .filter(|limit| Some(*limit) < self.at)
+                .or(self.limited(self.check_in).filter(|_| self.at.is_none()))
+                .map(TripTime::time),
         }
-        .map(TripTime::time)
+    }
+
+    fn limited(self, limit: Option<TripTime>) -> Option<TripTime> {
+        limit.filter(|limit| self.planned <= *limit)
     }
 
     #[must_use]
     pub fn arrives(self, now: TripTime) -> Option<LiveTime> {
         self.at
             .map(|at| LiveTime::new(at.time(), Basis::PlanLeft(at.minutes_since(now))))
-    }
-
-    fn missed(self, mark: ArrivalMark, limit: TripTime) -> bool {
-        self.planned <= limit
-            && match mark {
-                ArrivalMark::Arrives | ArrivalMark::AfterSunset => {
-                    self.at.is_some_and(|at| at > limit)
-                }
-                ArrivalMark::AfterCheckIn => self.at.is_none_or(|at| at > limit),
-            }
     }
 }

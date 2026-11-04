@@ -19,6 +19,7 @@ pub mod timeline;
 mod track;
 pub mod tracking;
 mod walk_search;
+use crate::Stance;
 use crate::clock::ClockTime;
 use crate::clock::{DayTense, Minutes, Sunset, TripTime};
 use crate::end::End;
@@ -88,14 +89,19 @@ impl<'day> Guidance<'day> {
             now,
             kept: progress,
         };
-        match position {
-            _ if progress.arrived(day) => estimate.arrived(),
-            Some(here) if schedule.phase() == Phase::Preview => WalkSearch::new(day, here, now)
-                .best(None)
-                .map_or(estimate, |track| estimate.moving(track)),
-            Some(here) => estimate.located(here, kept),
-            None => estimate,
-        }
+        progress
+            .arrived(day)
+            .map(|_| estimate.arrived())
+            .or(position
+                .filter(|_| schedule.phase() == Phase::Preview)
+                .map(|here| WalkSearch::new(day, here, now))
+                .map(|search| {
+                    search
+                        .best(None)
+                        .map_or(estimate, |track| estimate.moving(track))
+                }))
+            .or_else(|| position.map(|here| estimate.located(here, kept)))
+            .unwrap_or(estimate)
     }
 
     #[must_use]
@@ -218,10 +224,10 @@ impl<'day> Guidance<'day> {
         let end = on_day(self.day.legs().last()?.time(End::Finish));
         let at = self.timeline().arrival();
         let sunset = self.day.sunset().and_then(Sunset::time).map(on_day);
-        (self.tense() == DayTense::Today
-            && self.phase != Phase::Preview
-            && self.phase != Phase::Done)
-            .then(|| Arrival::new(end, at, sunset, Some(on_day(night.check_in_by()))))
+        (self.tense() == DayTense::Today)
+            .then_some(self.phase.stance())
+            .and_then(Stance::playing)
+            .map(|_| Arrival::new(end, at, sunset, Some(on_day(night.check_in_by()))))
     }
 
     #[must_use]
@@ -238,10 +244,11 @@ impl<'day> Guidance<'day> {
             .day
             .leave_from()
             .filter(|from| self.now.minutes_into(self.day.date()) < from.since_midnight());
-        match (self.now.tense_of(self.day.date()), early) {
-            (DayTense::Today, Some(_)) => DayTense::Ahead,
-            (tense, _) => tense,
-        }
+        let tense = self.now.tense_of(self.day.date());
+        Some(tense)
+            .filter(|tense| *tense == DayTense::Today)
+            .and(early)
+            .map_or(tense, |_| DayTense::Ahead)
     }
 
     #[must_use]
@@ -263,17 +270,18 @@ impl<'day> Guidance<'day> {
 
     #[must_use]
     pub fn shifted(&self, leg: LegIndex, planned: ListedTime) -> ShownTime {
-        if leg >= self.leg
-            && self
-                .day
-                .leg(leg)
-                .is_some_and(|found| found.mode() == Mode::Walk)
-            && self.timeline().holds_now(leg)
-        {
-            ShownTime::off_by(planned, self.offset)
-        } else {
-            ShownTime::from(planned)
-        }
+        Some(leg)
+            .filter(|leg| *leg >= self.leg)
+            .filter(|leg| {
+                self.day
+                    .leg(*leg)
+                    .is_some_and(|found| found.mode() == Mode::Walk)
+            })
+            .and_then(|leg| self.timeline().holds_now(leg))
+            .map_or_else(
+                || ShownTime::from(planned),
+                |_| ShownTime::off_by(planned, self.offset),
+            )
     }
 
     #[must_use]
@@ -306,24 +314,25 @@ impl<'day> Guidance<'day> {
             .map(|time| {
                 let due =
                     TripTime::on_date_at(self.day.zone(), self.day.date(), ClockTime::from(time));
-                let check = if leg.mode() != Mode::Walk && self.phase.at_platform().is_some() {
-                    TimeCheck::boarding(due, time, self.now)
-                } else {
-                    TimeCheck::comparing(due, time, self.now, leg)
-                };
-                if self.source == PositionSource::Gps || self.off_route.is_some() {
-                    check
-                } else {
-                    check.estimated(self.source.last_fix_time())
-                }
+                let check = Some(leg)
+                    .filter(|leg| leg.mode() != Mode::Walk)
+                    .and(self.phase.at_platform())
+                    .map_or_else(
+                        || TimeCheck::comparing(due, time, self.now, leg),
+                        |_| TimeCheck::boarding(due, time, self.now),
+                    );
+                self.off_route
+                    .map(|_| check)
+                    .or(Some(self.source)
+                        .filter(|source| *source == PositionSource::Gps)
+                        .map(|_| check))
+                    .unwrap_or_else(|| check.estimated(self.source.last_fix_time()))
             })
     }
 
     #[must_use]
     pub fn status(&self) -> Option<Status> {
-        let leg = self
-            .leg()
-            .filter(|_| self.phase != Phase::Preview && self.phase != Phase::Done)?;
+        let leg = self.phase.stance().playing().and(self.leg())?;
         Some(
             self.phase
                 .ride_status(leg)
@@ -334,45 +343,54 @@ impl<'day> Guidance<'day> {
 
     #[must_use]
     pub fn arrow(&self) -> Option<Arrow> {
-        let here = self.position.filter(|_| {
-            self.phase != Phase::Done
-                && self
-                    .source
+        let here = self
+            .position
+            .filter(|_| self.phase != Phase::Done)
+            .filter(|_| {
+                self.source
                     .lost_for(self.now)
                     .is_none_or(|lost| lost <= Arrow::STALE)
-        })?;
+            })?;
         let leg = self.leg()?;
-        let arrow = if leg.mode() == Mode::Walk {
-            Some(
-                self.off_route
-                    .and_then(|_| leg.line().fix(here))
-                    .map_or_else(
-                        || {
-                            Arrow::ahead(
-                                here,
-                                leg,
-                                self.along,
-                                self.day.leg(self.leg.incremented()),
-                            )
-                        },
-                        |fix| Arrow::back_to_route(here, fix),
-                    ),
+        Some(leg)
+            .filter(|leg| leg.mode() == Mode::Walk)
+            .map_or_else(
+                || {
+                    self.phase
+                        .at_platform()
+                        .and(leg.boarding())
+                        .filter(|boarding| {
+                            here.distance_to(*boarding) > Nearness::GpsError.distance()
+                        })
+                        .map(|boarding| Arrow::toward(here, boarding))
+                },
+                |leg| {
+                    Some(
+                        self.off_route
+                            .and_then(|_| leg.line().fix(here))
+                            .map_or_else(
+                                || {
+                                    Arrow::ahead(
+                                        here,
+                                        leg,
+                                        self.along,
+                                        self.day.leg(self.leg.incremented()),
+                                    )
+                                },
+                                |fix| Arrow::back_to_route(here, fix),
+                            ),
+                    )
+                },
             )
-        } else {
-            self.phase
-                .at_platform()
-                .and(leg.boarding())
-                .filter(|boarding| here.distance_to(*boarding) > Nearness::GpsError.distance())
-                .map(|boarding| Arrow::toward(here, boarding))
-        };
-        arrow.map(|arrow| arrow.dated(self.source.last_fix_time()))
+            .map(|arrow| arrow.dated(self.source.last_fix_time()))
     }
 
     #[must_use]
     pub fn recovery(&self) -> Option<Recovery<'day>> {
         let here = self
             .position
-            .filter(|_| self.tense() == DayTense::Today && self.phase.at_platform().is_none())?;
+            .filter(|_| self.tense() == DayTense::Today)
+            .filter(|_| self.phase.at_platform().is_none())?;
         self.off_route
             .map(|_| Minutes::ZERO)
             .or_else(|| self.time_check().and_then(TimeCheck::late_by))
@@ -397,11 +415,9 @@ impl<'day> Guidance<'day> {
             leg: snap.index(),
             along: snap.fix().along(),
             source: PositionSource::Gps,
-            phase: if arrived.arrived(self.day) {
-                Phase::Done
-            } else {
-                Phase::Moving
-            },
+            phase: arrived
+                .arrived(self.day)
+                .map_or(Phase::Moving, |_| Phase::Done),
             offset: track.offset(self.day, self.now),
             off_route: self
                 .day
@@ -520,12 +536,10 @@ impl<'day> Guidance<'day> {
             .map_or(base, |ride| {
                 let after = (usize::from(base)..self.day.legs().len()).find(walk);
                 let before = (0..usize::from(base)).rev().find(walk);
-                if clock <= ride.time(End::Finish).since_midnight() {
-                    before.or(after)
-                } else {
-                    after.or(before)
-                }
-                .map_or(base, LegIndex::new)
+                Some(clock)
+                    .filter(|clock| *clock <= ride.time(End::Finish).since_midnight())
+                    .map_or_else(|| after.or(before), |_| before.or(after))
+                    .map_or(base, LegIndex::new)
             })
     }
 }

@@ -85,8 +85,10 @@ impl<'day> Stretch<'day> {
     }
 
     #[must_use]
-    pub fn holds(&self, leg: LegIndex) -> bool {
-        self.opener <= leg && self.closer.is_none_or(|closer| leg < closer)
+    pub fn holds(&self, leg: LegIndex) -> Option<LegIndex> {
+        Some(leg)
+            .filter(|leg| self.opener <= *leg)
+            .filter(|leg| self.closer.is_none_or(|closer| *leg < closer))
     }
 
     #[must_use]
@@ -105,12 +107,13 @@ impl<'day> Stretch<'day> {
         });
         self.cutoffs
             .iter()
-            .filter(|deadline| here.ahead_of(deadline))
+            .filter_map(|deadline| here.ahead_of(deadline))
             .map(|deadline| {
                 Buffer::new(*deadline, here.projected(deadline.reach())).seen_from(here)
             })
             .chain(end)
-            .filter(|buffer| buffer.deadline().leg() >= first && buffer.deadline().leg() <= last)
+            .filter(|buffer| buffer.deadline().leg() >= first)
+            .filter(|buffer| buffer.deadline().leg() <= last)
             .min_by_key(Buffer::spare)
     }
 

@@ -18,10 +18,9 @@ impl LiveGap {
 
 impl fmt::Display for LiveGap {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.spare < Minutes::ZERO {
-            write!(formatter, "{} short · {}", self.spare.abs(), self.basis)
-        } else {
-            write!(formatter, "{} to spare · {}", self.spare, self.basis)
-        }
+        let (amount, word) = Some(self.spare)
+            .filter(|spare| *spare < Minutes::ZERO)
+            .map_or((self.spare, "to spare"), |spare| (spare.abs(), "short"));
+        write!(formatter, "{amount} {word} · {}", self.basis)
     }
 }

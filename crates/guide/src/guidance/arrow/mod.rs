@@ -26,7 +26,8 @@ impl Arrow {
     pub fn ahead(here: Coordinate, leg: &Leg, along: Distance, next: Option<&Leg>) -> Arrow {
         let reach = along + Self::LOOK_AHEAD;
         let target = next
-            .filter(|next| next.mode() == Mode::Walk && reach > leg.length())
+            .filter(|next| next.mode() == Mode::Walk)
+            .filter(|_| reach > leg.length())
             .and_then(|next| next.line().point_along(reach - leg.length()))
             .or_else(|| leg.line().point_along(reach))
             .unwrap_or_else(|| leg.point(End::Finish));

@@ -26,7 +26,7 @@ impl<'day> RideSearch<'day> {
     #[must_use]
     pub fn riding_on(self, kept: LegProgress) -> Option<Snap> {
         let ride = kept.leg();
-        let leg = self.day.leg(ride).filter(|leg| self.under_way(leg))?;
+        let leg = self.day.leg(ride).and_then(|leg| self.under_way(leg))?;
         leg.line()
             .fix(self.here)
             .filter(|fix| fix.off_route() <= Nearness::ClearlyElsewhere.beside(leg.line()))
@@ -43,47 +43,56 @@ impl<'day> RideSearch<'day> {
             .skip(usize::from(after))
             .skip_while(|(_, leg)| leg.mode() == Mode::Walk)
             .take_while(|(_, leg)| leg.mode() != Mode::Walk)
-            .filter(|(_, leg)| self.under_way(leg))
-            .map(|(index, _)| LegIndex::new(index))
+            .filter_map(|(index, leg)| self.under_way(leg).map(|_| index))
+            .map(LegIndex::new)
             .collect();
         next.into_iter()
-            .filter(|_| self.away_from_walks())
+            .filter_map(|index| self.away_from_walks().map(|_| index))
             .filter_map(|index| {
                 let leg = self.day.leg(index)?;
                 leg.line()
                     .fix(self.here)
                     .filter(|fix| fix.off_route() <= Nearness::OnRoute.beside(leg.line()))
-                    .filter(|fix| self.on_schedule(leg, *fix))
+                    .and_then(|fix| self.on_schedule(leg, fix))
                     .map(|fix| Snap::new(index, fix))
             })
             .min_by_key(|snap| snap.fix().off_route())
     }
 
-    fn under_way(self, leg: &Leg) -> bool {
+    fn under_way(self, leg: &'day Leg) -> Option<&'day Leg> {
         let clock = self.now.minutes_into(self.day.date());
         let station = Nearness::AtStation.distance();
-        leg.mode() != Mode::Walk
-            && clock >= leg.time(End::Start).since_midnight()
-            && clock
-                <= leg.time(End::Finish).since_midnight() + RideSlack::Arrival.for_mode(leg.mode())
-            && self.here.distance_to(leg.point(End::Finish)) > station
-            && leg
-                .boarding()
-                .is_none_or(|boarding| self.here.distance_to(boarding) > station)
+        Some(leg)
+            .filter(|leg| leg.mode() != Mode::Walk)
+            .filter(|leg| clock >= leg.time(End::Start).since_midnight())
+            .filter(|leg| {
+                clock
+                    <= leg.time(End::Finish).since_midnight()
+                        + RideSlack::Arrival.for_mode(leg.mode())
+            })
+            .filter(|leg| self.here.distance_to(leg.point(End::Finish)) > station)
+            .filter(|leg| {
+                leg.boarding()
+                    .is_none_or(|boarding| self.here.distance_to(boarding) > station)
+            })
     }
 
-    fn on_schedule(self, leg: &Leg, fix: RouteFix) -> bool {
+    fn on_schedule(self, leg: &Leg, fix: RouteFix) -> Option<RouteFix> {
         let clock = self.now.minutes_into(self.day.date());
         let start = leg.time(End::Start).since_midnight();
         let span = (leg.time(End::Finish).since_midnight() - start).max(Minutes::new(1));
         let share = |minutes: Minutes| Share::ratio((minutes - start).amount(), span.amount());
         let length = leg.line().length();
         let station = Nearness::AtStation.distance();
-        fix.along() + station >= length * share(clock - RideSlack::Departure.for_mode(leg.mode()))
-            && fix.along() <= length * share(clock + Self::CLOCK_STEP) + station
+        Some(fix)
+            .filter(|fix| {
+                fix.along() + station
+                    >= length * share(clock - RideSlack::Departure.for_mode(leg.mode()))
+            })
+            .filter(|fix| fix.along() <= length * share(clock + Self::CLOCK_STEP) + station)
     }
 
-    fn away_from_walks(self) -> bool {
+    fn away_from_walks(self) -> Option<Self> {
         self.day
             .legs()
             .iter()
@@ -93,5 +102,6 @@ impl<'day> RideSearch<'day> {
                     .fix(self.here)
                     .is_none_or(|fix| fix.off_route() > Nearness::OnRoute.beside(leg.line()))
             })
+            .then_some(self)
     }
 }

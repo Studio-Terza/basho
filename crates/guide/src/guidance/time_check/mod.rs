@@ -34,23 +34,24 @@ impl TimeCheck {
     #[must_use]
     pub fn comparing(due: TripTime, by: ShownTime, now: TripTime, leg: &Leg) -> TimeCheck {
         let over = now.minutes_since(due);
-        if over <= Minutes::ZERO {
-            TimeCheck::Expected { by, left: -over }
-        } else if over <= Allowance::for_leg(leg) {
-            TimeCheck::Due { by, over }
-        } else {
-            TimeCheck::Late { by, over }
-        }
+        Some(over)
+            .filter(|over| *over <= Minutes::ZERO)
+            .map(|over| TimeCheck::Expected { by, left: -over })
+            .or_else(|| {
+                Some(over)
+                    .filter(|over| *over <= Allowance::for_leg(leg))
+                    .map(|over| TimeCheck::Due { by, over })
+            })
+            .unwrap_or(TimeCheck::Late { by, over })
     }
 
     #[must_use]
     pub fn boarding(due: TripTime, by: ShownTime, now: TripTime) -> TimeCheck {
         let over = now.minutes_since(due);
-        if over <= Minutes::ZERO {
-            TimeCheck::Expected { by, left: -over }
-        } else {
-            TimeCheck::Due { by, over }
-        }
+        Some(over).filter(|over| *over <= Minutes::ZERO).map_or(
+            TimeCheck::Due { by, over },
+            |over| TimeCheck::Expected { by, left: -over },
+        )
     }
 
     #[must_use]
@@ -73,19 +74,19 @@ impl TimeCheck {
 
     #[must_use]
     pub fn rest(self) -> Spelling {
-        Spelling::new(match self {
+        match self {
             TimeCheck::Expected { left, .. }
             | TimeCheck::Estimated {
                 left, from: None, ..
-            } => format!(" · {left} left"),
+            } => Spelling::new(format!(" · {left} left")),
             TimeCheck::Estimated {
                 left,
                 from: Some(from),
                 ..
-            } => format!(" · {left} left (from {from})"),
-            TimeCheck::Due { .. } => " · now".to_owned(),
-            TimeCheck::Late { .. } => String::new(),
-        })
+            } => Spelling::new(format!(" · {left} left (from {from})")),
+            TimeCheck::Due { .. } => Spelling::new(" · now".to_owned()),
+            TimeCheck::Late { .. } => Spelling::new(String::new()),
+        }
     }
 
     #[must_use]

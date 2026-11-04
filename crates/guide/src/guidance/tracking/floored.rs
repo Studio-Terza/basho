@@ -23,32 +23,29 @@ impl<'day> Guidance<'day> {
         let clock = self.now.minutes_into(self.day.date()) - self.offset;
         let waiting = self.day.leg(floor.on_leg()).map(|leg| {
             let start = leg.time(End::Start).since_midnight();
-            if clock < start {
-                Phase::Waiting {
+            Some(start)
+                .filter(|start| clock < *start)
+                .map_or(Phase::Overdue, |start| Phase::Waiting {
                     minutes: start - clock,
-                }
-            } else {
-                Phase::Overdue
-            }
+                })
         });
         let held = Guidance {
             leg: floor.on_leg(),
-            along: if self.leg == floor.on_leg() {
-                self.along
-            } else {
-                Distance::default()
-            },
+            along: Some(self.leg)
+                .filter(|leg| *leg == floor.on_leg())
+                .map_or(Distance::default(), |_| self.along),
             source: PositionSource::Estimate,
             off_route: None,
             ..self
         };
-        match (floor.stage(), waiting) {
-            (Stage::Finished, _) => held.arrived(),
-            (Stage::Boarding, Some(phase)) => Guidance { phase, ..held },
-            (Stage::Boarding | Stage::Under, _) => Guidance {
-                phase: Phase::Moving,
-                ..held
-            },
+        match floor.stage() {
+            Stage::Finished => held.arrived(),
+            Stage::Boarding => held.in_phase(waiting.unwrap_or(Phase::Moving)),
+            Stage::Under => held.in_phase(Phase::Moving),
         }
+    }
+
+    fn in_phase(self, phase: Phase) -> Guidance<'day> {
+        Guidance { phase, ..self }
     }
 }

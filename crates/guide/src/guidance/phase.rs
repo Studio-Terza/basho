@@ -19,14 +19,17 @@ pub enum Phase {
 impl Phase {
     #[must_use]
     pub fn staged(self, mode: Option<Mode>) -> Stage {
-        match (self, mode) {
-            (Phase::Done, _) => Stage::Finished,
-            (Phase::Moving, _) | (_, None | Some(Mode::Walk)) => Stage::Under,
-            (
-                Phase::Preview | Phase::Waiting { .. } | Phase::Overdue | Phase::Missed,
-                Some(Mode::Train | Mode::Bus | Mode::Boat | Mode::Car),
-            ) => Stage::Boarding,
+        match self {
+            Phase::Done => Stage::Finished,
+            Phase::Moving => Stage::Under,
+            Phase::Preview | Phase::Waiting { .. } | Phase::Overdue | Phase::Missed => {
+                Self::transit(mode).map_or(Stage::Under, |_| Stage::Boarding)
+            }
         }
+    }
+
+    fn transit(mode: Option<Mode>) -> Option<Mode> {
+        mode.filter(|mode| *mode != Mode::Walk)
     }
 
     #[must_use]
@@ -58,36 +61,34 @@ impl Phase {
 
     #[must_use]
     pub fn due(self, leg: &Leg, offset: Minutes) -> Option<ShownTime> {
-        match (self, leg.mode()) {
-            (Phase::Preview | Phase::Done, _) => None,
-            (
-                Phase::Waiting { .. } | Phase::Overdue | Phase::Missed,
-                Mode::Train | Mode::Bus | Mode::Boat | Mode::Car,
-            ) => Some(ShownTime::from(leg.listed(End::Start))),
-            (Phase::Moving, Mode::Train | Mode::Bus | Mode::Boat | Mode::Car) => {
-                Some(ShownTime::from(leg.listed(End::Finish)))
+        match self {
+            Phase::Preview | Phase::Done => None,
+            Phase::Waiting { .. } | Phase::Overdue | Phase::Missed => {
+                Some(Self::when(leg, offset, End::Start))
             }
-            (
-                Phase::Waiting { .. } | Phase::Overdue | Phase::Missed | Phase::Moving,
-                Mode::Walk,
-            ) => Some(ShownTime::off_by(leg.listed(End::Finish), offset)),
+            Phase::Moving => Some(Self::when(leg, offset, End::Finish)),
         }
+    }
+
+    fn when(leg: &Leg, offset: Minutes, end: End) -> ShownTime {
+        Some(leg.mode())
+            .filter(|mode| *mode == Mode::Walk)
+            .map_or_else(
+                || ShownTime::from(leg.listed(end)),
+                |_| ShownTime::off_by(leg.listed(End::Finish), offset),
+            )
     }
 
     #[must_use]
     pub fn ride_status(self, leg: &Leg) -> Option<Status> {
-        match (self, leg.mode()) {
-            (
-                Phase::Waiting { .. } | Phase::Overdue,
-                Mode::Train | Mode::Bus | Mode::Boat | Mode::Car,
-            ) => Some(Status::Waiting {
-                until: leg.listed(End::Start),
-            }),
-            (Phase::Moving, mode @ (Mode::Train | Mode::Bus | Mode::Boat | Mode::Car)) => {
-                Some(Status::Riding(mode))
+        match self {
+            Phase::Waiting { .. } | Phase::Overdue => {
+                Self::transit(Some(leg.mode())).map(|_| Status::Waiting {
+                    until: leg.listed(End::Start),
+                })
             }
-            (Phase::Moving | Phase::Waiting { .. } | Phase::Overdue, Mode::Walk)
-            | (Phase::Preview | Phase::Missed | Phase::Done, _) => None,
+            Phase::Moving => Self::transit(Some(leg.mode())).map(Status::Riding),
+            Phase::Preview | Phase::Missed | Phase::Done => None,
         }
     }
 }

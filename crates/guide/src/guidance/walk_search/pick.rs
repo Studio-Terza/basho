@@ -107,20 +107,21 @@ impl<'day> Pick<'day> {
         let latest = self.kept.offset() + elapsed;
         let early = Minutes::rounded((earliest - delay).amount() / Self::CATCH_UP.fraction())
             .unwrap_or_default();
-        if elapsed <= Self::STEADY {
-            Minutes::ZERO
-        } else {
-            early.max(delay - latest).max(Minutes::ZERO)
-        }
+        Some(elapsed)
+            .filter(|elapsed| *elapsed > Self::STEADY)
+            .map_or(Minutes::ZERO, |_| {
+                early.max(delay - latest).max(Minutes::ZERO)
+            })
     }
 
     fn gap(self, stride: Stride) -> Distance {
         let moved = self.kept.moved_to(self.here).unwrap_or_default();
         let stepped = stride.stepped();
-        if stepped < Distance::default() {
-            moved - stepped * Self::CATCH_UP.fraction().recip()
-        } else {
-            (stepped - moved).abs()
-        }
+        Some(stepped)
+            .filter(|stepped| *stepped < Distance::default())
+            .map_or_else(
+                || (stepped - moved).abs(),
+                |stepped| moved - stepped * Self::CATCH_UP.fraction().recip(),
+            )
     }
 }

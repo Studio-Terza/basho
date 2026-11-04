@@ -91,7 +91,7 @@ impl<'day> Timeline<'day> {
                 self.find(|stretch| stretch.closer() == Some(leg))
             }
             (Stance::Moving, Hold::Ride) => self.find(|stretch| stretch.opener() == next),
-            _ => self.find(|stretch| stretch.holds(leg)),
+            _ => self.find(|stretch| stretch.holds(leg).is_some()),
         };
         let reach = match (stance, hold) {
             (Stance::Missed | Stance::Waiting, Hold::Ride | Hold::Tour) => {
@@ -116,7 +116,7 @@ impl<'day> Timeline<'day> {
                 if planned.leg().incremented() != leg
                     || course.day().leg(leg).and_then(Leg::tour).is_none() =>
             {
-                self.find(|stretch| stretch.holds(planned.leg()))
+                self.find(|stretch| stretch.holds(planned.leg()).is_some())
             }
             _ => stretch,
         };
@@ -191,11 +191,9 @@ impl<'day> Timeline<'day> {
         let since = clock - stop.planned().since_midnight();
         self.delay.map_or_else(
             || {
-                if since >= stop.booked() {
-                    stop.booked()
-                } else {
-                    Minutes::ZERO
-                }
+                Some(since)
+                    .filter(|since| *since >= stop.booked())
+                    .map_or(Minutes::ZERO, |_| stop.booked())
             },
             |delay| since - delay,
         )
@@ -293,10 +291,10 @@ impl<'day> Timeline<'day> {
     }
 
     #[must_use]
-    pub fn holds_now(&self, leg: LegIndex) -> bool {
+    pub fn holds_now(&self, leg: LegIndex) -> Option<LegIndex> {
         self.here
             .and_then(|here| self.stretches.get(usize::from(here.stretch())))
-            .is_some_and(|stretch| stretch.holds(leg))
+            .and_then(|stretch| stretch.holds(leg))
     }
 
     #[must_use]
@@ -304,9 +302,9 @@ impl<'day> Timeline<'day> {
         self.course
             .day()
             .leg(leg)
-            .filter(|tour| {
-                tour.tour().is_some() && stance == Stance::Moving && along <= Stop::REACH
-            })
+            .filter(|tour| tour.tour().is_some())
+            .filter(|_| stance == Stance::Moving)
+            .filter(|_| along <= Stop::REACH)
             .filter(|tour| {
                 self.clock
                     .is_none_or(|clock| clock < tour.time(End::Start).since_midnight())
@@ -318,15 +316,23 @@ impl<'day> Timeline<'day> {
     pub fn stop_at(&self, leg: LegIndex, along: Distance) -> Option<PlannedStop<'day>> {
         let day = self.course.day();
         let length = |index: LegIndex| day.leg(index).map_or(Distance::default(), Leg::length);
-        let near: Vec<&PlannedStop<'day>> = self
-            .stops
-            .iter()
-            .filter(|stop| {
-                (stop.leg() == leg && (stop.along() - along).abs() <= Stop::AT)
-                    || (along <= Stop::AT
-                        && Some(stop.leg()) == leg.previous()
-                        && length(stop.leg()) - stop.along() <= Stop::AT)
-            })
+        let before = (along <= Stop::AT)
+            .then_some(leg.previous())
+            .flatten()
+            .into_iter()
+            .flat_map(|previous| {
+                self.stops
+                    .iter()
+                    .filter(move |stop| stop.leg() == previous)
+                    .filter(move |stop| length(previous) - stop.along() <= Stop::AT)
+            });
+        let near: Vec<&PlannedStop<'day>> = before
+            .chain(
+                self.stops
+                    .iter()
+                    .filter(|stop| stop.leg() == leg)
+                    .filter(|stop| (stop.along() - along).abs() <= Stop::AT),
+            )
             .collect();
         let clock = self.clock.unwrap_or_default();
         near.iter()
@@ -389,17 +395,17 @@ impl<'day> Timeline<'day> {
         let closer = stretch.closer()?;
         let leg = self.course.day().leg(closer)?;
         let arrival = resume.arrival_in(stretch);
-        match self.course.hold(closer) {
-            Hold::Ride => {
-                let waiting = self
-                    .floor
-                    .filter(|_| self.here.map(Here::stretch) == Some(resume.stretch()));
-                self.boarded(closer, arrival, waiting)
-            }
-            Hold::Free | Hold::Tour => {
-                self.resumed_at(closer, arrival.max(leg.time(End::Start).since_midnight()))
-            }
-        }
+        Some(self.course.hold(closer))
+            .filter(|hold| *hold == Hold::Ride)
+            .map_or_else(
+                || self.resumed_at(closer, arrival.max(leg.time(End::Start).since_midnight())),
+                |_| {
+                    let waiting = self
+                        .floor
+                        .filter(|_| self.here.map(Here::stretch) == Some(resume.stretch()));
+                    self.boarded(closer, arrival, waiting)
+                },
+            )
     }
 
     #[must_use]
@@ -410,31 +416,34 @@ impl<'day> Timeline<'day> {
         waiting: Option<Minutes>,
     ) -> Option<Resume> {
         let leg = self.course.day().leg(ride)?;
-        if arrival <= leg.time(End::Start).since_midnight() {
-            self.resumed_at(
-                self.course.hold(ride).resume_after(ride),
-                self.course.clock(Juncture::Resume, ride)?.since_midnight(),
+        let reaches =
+            |limit: ClockTime| Some(limit).filter(|limit| arrival <= limit.since_midnight());
+        Some(arrival)
+            .filter(|arrival| *arrival <= leg.time(End::Start).since_midnight())
+            .map_or_else(
+                || {
+                    let backup = self.reachable(ride, reaches, waiting)?;
+                    let end = self.course.run_end(ride);
+                    self.resumed_at(
+                        end.incremented(),
+                        backup.backup_ride()?.time(End::Finish).since_midnight()
+                            + self.course.wait(Wait::Station, end),
+                    )
+                },
+                |_| {
+                    self.resumed_at(
+                        self.course.hold(ride).resume_after(ride),
+                        self.course.clock(Juncture::Resume, ride)?.since_midnight(),
+                    )
+                },
             )
-        } else {
-            let backup = self.reachable(
-                ride,
-                |limit: ClockTime| arrival <= limit.since_midnight(),
-                waiting,
-            )?;
-            let end = self.course.run_end(ride);
-            self.resumed_at(
-                end.incremented(),
-                backup.backup_ride()?.time(End::Finish).since_midnight()
-                    + self.course.wait(Wait::Station, end),
-            )
-        }
     }
 
     #[must_use]
     pub fn reachable(
         &self,
         ride: LegIndex,
-        reaches_by: impl Fn(ClockTime) -> bool,
+        reaches_by: impl Fn(ClockTime) -> Option<ClockTime>,
         waiting: Option<Minutes>,
     ) -> Option<&'day Branch> {
         let leg = self.course.day().leg(ride)?;
@@ -442,7 +451,7 @@ impl<'day> Timeline<'day> {
         let backup = branch.backup_ride()?;
         let target = leg.boarding_margin()?.target(backup.time(End::Start));
         let limit = waiting.map_or(target, |_| backup.time(End::Start));
-        reaches_by(limit).then_some(branch)
+        reaches_by(limit).map(|_| branch)
     }
 
     #[must_use]
@@ -519,18 +528,20 @@ impl<'day> Timeline<'day> {
             )
             .and_then(Branch::backup_ride)
             .filter(|_| deadline.event() == leg.time(End::Start));
-        match (backup, buffer.reaches_by(deadline.event())) {
-            (Some(backup), _) => {
+        backup
+            .map(|backup| {
                 let end = self.course.run_end(ride);
                 let onward = backup.time(End::Finish).since_midnight()
                     + self.course.wait(Wait::Station, end);
                 let arrives = self
                     .resumed_at(end.incremented(), onward)
                     .and_then(|resume| self.finish_from(resume));
-                Some(Backup::ride(backup.listed(End::Start), arrives, check_in))
-            }
-            (None, false) => Some(Backup::none(check_in)),
-            (None, true) => None,
-        }
+                Backup::ride(backup.listed(End::Start), arrives, check_in)
+            })
+            .or_else(|| {
+                buffer
+                    .reaches_by(deadline.event())
+                    .map_or(Some(Backup::none(check_in)), |_| None)
+            })
     }
 }

@@ -46,11 +46,9 @@ impl Snap {
             .leaves(day)
             .filter(|leaves| clock > *leaves)
             .map(|leaves| clock - leaves);
-        if clock < arrives {
-            clock - arrives
-        } else {
-            overdue.unwrap_or(Minutes::ZERO)
-        }
+        Some(arrives)
+            .filter(|arrives| clock < *arrives)
+            .map_or(overdue.unwrap_or(Minutes::ZERO), |arrives| clock - arrives)
     }
 
     fn arrives(self, day: &Day) -> Minutes {
@@ -71,11 +69,9 @@ impl Snap {
                     )
                 })
                 .unwrap_or(Minutes::ZERO);
-            if along <= slack {
-                walked.min(before)
-            } else {
-                walked
-            }
+            Some(along)
+                .filter(|along| *along <= slack)
+                .map_or(walked, |_| walked.min(before))
         })
     }
 
@@ -87,15 +83,15 @@ impl Snap {
             + leg.planned_after(along)
             + Self::dwell_between(leg, along, along + slack);
         let visit = leg.time(End::Finish).since_midnight() + leg.paused(Pause::AtEnd);
-        if along >= leg.length() - slack {
-            day.leg(self.index.incremented()).map(|next| {
-                walked
-                    .max(visit)
-                    .max(next.time(End::Start).since_midnight())
+        Some(along)
+            .filter(|along| *along >= leg.length() - slack)
+            .map_or(Some(walked), |_| {
+                day.leg(self.index.incremented()).map(|next| {
+                    walked
+                        .max(visit)
+                        .max(next.time(End::Start).since_midnight())
+                })
             })
-        } else {
-            Some(walked)
-        }
     }
 
     #[expect(
@@ -105,7 +101,8 @@ impl Snap {
     fn dwell_between(leg: &Leg, from: Distance, to: Distance) -> Minutes {
         leg.along()
             .iter()
-            .filter(|stop| stop.distance_along() >= from && stop.distance_along() < to)
+            .filter(|stop| stop.distance_along() >= from)
+            .filter(|stop| stop.distance_along() < to)
             .map(|stop| stop.dwell_minutes())
             .sum()
     }

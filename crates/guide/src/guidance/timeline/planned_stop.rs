@@ -79,10 +79,14 @@ impl<'day> PlannedStop<'day> {
     pub fn settled(&self, time: Minutes, spent: Option<Minutes>, here: Minutes) -> Minutes {
         let inferred = time - self.planned.since_midnight();
         let spent = spent.unwrap_or(inferred).clamp(Minutes::ZERO, self.booked);
-        match (spent == Minutes::ZERO, spent == self.booked) {
-            (true, _) => here.min(self.reach),
-            (false, true) => here.max(self.reach + spent),
-            (false, false) => self.reach + spent,
-        }
+        Some(spent)
+            .filter(|spent| *spent == Minutes::ZERO)
+            .map(|_| here.min(self.reach))
+            .or_else(|| {
+                Some(spent)
+                    .filter(|spent| *spent == self.booked)
+                    .map(|spent| here.max(self.reach + spent))
+            })
+            .unwrap_or(self.reach + spent)
     }
 }

@@ -31,12 +31,15 @@ impl<'day> WalkSearch<'day> {
     #[must_use]
     pub fn best(self, kept: Option<LegProgress>) -> Option<Track> {
         let near = self.candidates();
-        match kept.filter(|kept| self.day.leg(kept.leg()).is_some()) {
-            Some(kept) => self.continued(&near, kept),
-            None => Pick::unseen(self.day, self.here, self.now)
-                .best(&near)
-                .map(|snap| self.tracked(snap, None, Trust::Followed)),
-        }
+        kept.filter(|kept| self.day.leg(kept.leg()).is_some())
+            .map_or_else(
+                || {
+                    Pick::unseen(self.day, self.here, self.now)
+                        .best(&near)
+                        .map(|snap| self.tracked(snap, None, Trust::Followed))
+                },
+                |kept| self.continued(&near, kept),
+            )
     }
 
     #[must_use]
@@ -104,7 +107,8 @@ impl<'day> WalkSearch<'day> {
         let others: Vec<Snap> = near
             .iter()
             .copied()
-            .filter(|snap| snap.index() != kept.leg() && snap.fix().off_route() <= best)
+            .filter(|snap| snap.index() != kept.leg())
+            .filter(|snap| snap.fix().off_route() <= best)
             .collect();
         let current: Vec<Snap> = near
             .iter()
@@ -119,70 +123,74 @@ impl<'day> WalkSearch<'day> {
                     .is_some_and(|stride| stride.reach() != Reach::Beyond)
             })
             .collect();
-        if self.elsewhere(kept) {
-            pick.best(near)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else if self
+        let back: Vec<Snap> = others.iter().copied().filter(behind).collect();
+        let cornered = self.elsewhere(kept).map(|_| near);
+        let boarded = self
             .day
             .leg(kept.leg())
-            .is_some_and(|leg| leg.mode() != Mode::Walk)
-        {
-            pick.best(&settled)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else if !others.is_empty()
-            && current
-                .iter()
-                .any(|snap| snap.fix().off_route() <= best && behind(snap))
-        {
-            pick.best(&others)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else if others.iter().any(behind)
-            && current
-                .iter()
-                .all(|snap| snap.fix().off_route() > Nearness::OffRoute.distance())
-        {
-            let back: Vec<Snap> = others.iter().copied().filter(behind).collect();
-            pick.best(&back)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else {
-            pick.best(&current).map(|snap| {
-                self.tracked(
-                    snap,
-                    Some(kept),
-                    Stride::between(self.day, kept, snap, self.now)
-                        .map_or(Trust::Unconfirmed, Stride::returning),
-                )
+            .filter(|leg| leg.mode() != Mode::Walk)
+            .map(|_| settled.as_slice());
+        let overtaken = others
+            .first()
+            .filter(|_| {
+                current
+                    .iter()
+                    .filter(|snap| snap.fix().off_route() <= best)
+                    .any(behind)
             })
-        }
+            .map(|_| others.as_slice());
+        let turned = others
+            .iter()
+            .find(|snap| behind(snap))
+            .filter(|_| {
+                current
+                    .iter()
+                    .all(|snap| snap.fix().off_route() > Nearness::OffRoute.distance())
+            })
+            .map(|_| back.as_slice());
+        cornered.or(boarded).or(overtaken).or(turned).map_or_else(
+            || {
+                pick.best(&current).map(|snap| {
+                    self.tracked(
+                        snap,
+                        Some(kept),
+                        Stride::between(self.day, kept, snap, self.now)
+                            .map_or(Trust::Unconfirmed, Stride::returning),
+                    )
+                })
+            },
+            |chosen| {
+                pick.best(chosen)
+                    .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
+            },
+        )
     }
 
-    fn elsewhere(self, kept: LegProgress) -> bool {
-        self.day.leg(kept.leg()).is_none_or(|leg| {
-            leg.line()
-                .fix(self.here)
-                .is_none_or(|fix| fix.off_route() > Nearness::ClearlyElsewhere.beside(leg.line()))
-        })
+    fn elsewhere(self, kept: LegProgress) -> Option<LegProgress> {
+        self.day
+            .leg(kept.leg())
+            .is_none_or(|leg| {
+                leg.line().fix(self.here).is_none_or(|fix| {
+                    fix.off_route() > Nearness::ClearlyElsewhere.beside(leg.line())
+                })
+            })
+            .then_some(kept)
     }
 
     fn tracked(self, snap: Snap, kept: Option<LegProgress>, trust: Trust) -> Track {
         let leg = self.day.leg(snap.index());
         let ended = leg
+            .filter(|leg| snap.fix().along() >= leg.length() - Nearness::GpsError.distance())
             .filter(|leg| {
-                snap.fix().along() >= leg.length() - Nearness::GpsError.distance()
-                    && self.here.distance_to(leg.point(End::Finish))
-                        <= Nearness::OffRoute.distance()
+                self.here.distance_to(leg.point(End::Finish)) <= Nearness::OffRoute.distance()
             })
             .and_then(|_| self.day.leg(snap.index().incremented()))
             .filter(|next| next.mode() == Mode::Walk)
             .map(|next| Snap::at_start(snap.index().incremented(), next, self.here));
         let shown = ended.unwrap_or(snap);
-        let trust = if leg
-            .is_some_and(|leg| snap.fix().off_route() > Nearness::OffRoute.beside(leg.line()))
-        {
-            Trust::Unconfirmed
-        } else {
-            trust
-        };
+        let trust = leg
+            .filter(|leg| snap.fix().off_route() > Nearness::OffRoute.beside(leg.line()))
+            .map_or(trust, |_| Trust::Unconfirmed);
         Track::new(shown, kept, trust, self.here)
     }
 }

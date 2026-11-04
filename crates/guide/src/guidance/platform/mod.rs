@@ -61,13 +61,14 @@ impl<'day> Platform<'day> {
     #[must_use]
     pub fn phase(self, now: TripTime) -> Phase {
         let minutes = self.leg.time(End::Start).since_midnight() - now.time().since_midnight();
-        if minutes >= Minutes::ZERO {
-            Phase::Waiting { minutes }
-        } else if -minutes <= RideSlack::Departure.for_mode(self.leg.mode()) {
-            Phase::Overdue
-        } else {
-            Phase::Missed
-        }
+        Some(minutes)
+            .filter(|minutes| *minutes >= Minutes::ZERO)
+            .map(|minutes| Phase::Waiting { minutes })
+            .or_else(|| {
+                (-minutes <= RideSlack::Departure.for_mode(self.leg.mode()))
+                    .then_some(Phase::Overdue)
+            })
+            .unwrap_or(Phase::Missed)
     }
 
     #[must_use]
@@ -77,7 +78,8 @@ impl<'day> Platform<'day> {
             .line()
             .fix(here)
             .filter(|_| now.time() > self.leg.time(End::Start))
-            .filter(|fix| fix.along() > station && fix.off_route() < station)
+            .filter(|fix| fix.along() > station)
+            .filter(|fix| fix.off_route() < station)
             .filter(|fix| {
                 self.walking
                     .is_none_or(|walk| fix.off_route() < walk.fix().off_route())
@@ -87,10 +89,10 @@ impl<'day> Platform<'day> {
 
     #[must_use]
     pub fn late(self, now: TripTime) -> Minutes {
-        if self.phase(now) == Phase::Missed {
-            now.time().since_midnight() - self.leg.time(End::Start).since_midnight()
-        } else {
-            Minutes::ZERO
-        }
+        Some(self.phase(now))
+            .filter(|phase| *phase == Phase::Missed)
+            .map_or(Minutes::ZERO, |_| {
+                now.time().since_midnight() - self.leg.time(End::Start).since_midnight()
+            })
     }
 }

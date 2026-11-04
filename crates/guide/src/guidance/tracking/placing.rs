@@ -12,6 +12,8 @@ pub struct Placing {
 }
 
 impl Placing {
+    const WORDS: usize = 2;
+
     #[must_use]
     pub fn new(leg: LegIndex, stage: Stage) -> Placing {
         Placing { leg, stage }
@@ -19,13 +21,14 @@ impl Placing {
 
     #[must_use]
     pub(super) fn from_words(words: &[&str]) -> Option<Placing> {
-        match words {
-            [leg, stage, ..] => Some(Placing::new(
-                LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
-                stage.parse().ok()?,
-            )),
-            _ => None,
-        }
+        words
+            .split_first_chunk::<{ Self::WORDS }>()
+            .and_then(|([leg, stage], _)| {
+                Some(Placing::new(
+                    LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
+                    stage.parse().ok()?,
+                ))
+            })
     }
 
     #[must_use]
@@ -42,12 +45,16 @@ impl Placing {
 impl Placing {
     #[must_use]
     pub fn lateness(self, leg: &Leg, clock: Minutes) -> Minutes {
-        let start = leg.time(End::Start).since_midnight();
-        let end = leg.time(End::Finish).since_midnight();
         match self.stage {
-            Stage::Boarding => (clock - start + Minutes::new(1)).max(Minutes::ZERO),
-            Stage::Under if clock >= end => clock - start,
-            Stage::Under | Stage::Finished => Minutes::ZERO,
+            Stage::Boarding => {
+                (clock - leg.time(End::Start).since_midnight() + Minutes::new(1)).max(Minutes::ZERO)
+            }
+            Stage::Under => Some(leg.time(End::Finish).since_midnight())
+                .filter(|end| clock >= *end)
+                .map_or(Minutes::ZERO, |_| {
+                    clock - leg.time(End::Start).since_midnight()
+                }),
+            Stage::Finished => Minutes::ZERO,
         }
     }
 }

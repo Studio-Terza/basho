@@ -12,15 +12,18 @@ pub enum Marker {
 impl Marker {
     #[must_use]
     pub fn on_route(leg: &Leg, along: Distance) -> Option<Marker> {
-        let routed = if leg.line().points().len() > 1 {
-            leg.line().point_along(along)
-        } else {
-            Some(
-                leg.point(End::Start)
-                    .toward(leg.point(End::Finish), Share::ratio(along, leg.length())),
+        Some(leg.line())
+            .filter(|line| line.points().len() > 1)
+            .map_or_else(
+                || {
+                    Some(
+                        leg.point(End::Start)
+                            .toward(leg.point(End::Finish), Share::ratio(along, leg.length())),
+                    )
+                },
+                |line| line.point_along(along),
             )
-        };
-        routed.map(Marker::OnRoute)
+            .map(Marker::OnRoute)
     }
 
     #[must_use]

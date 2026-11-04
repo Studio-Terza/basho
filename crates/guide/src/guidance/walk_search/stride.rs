@@ -53,11 +53,15 @@ impl Stride {
 
     #[must_use]
     pub fn reach(self) -> Reach {
-        match self.budget {
-            _ if self.walked < -Nearness::GpsError.distance() => Reach::Behind,
-            Some(budget) if self.walked > budget => Reach::Beyond,
-            Some(_) | None => Reach::Within,
-        }
+        Some(self.walked)
+            .filter(|walked| *walked < -Nearness::GpsError.distance())
+            .map(|_| Reach::Behind)
+            .or_else(|| {
+                self.budget
+                    .filter(|budget| self.walked > *budget)
+                    .map(|_| Reach::Beyond)
+            })
+            .unwrap_or(Reach::Within)
     }
 
     #[must_use]

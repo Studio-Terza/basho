@@ -45,8 +45,8 @@ impl<'day> Buffer<'day> {
     }
 
     #[must_use]
-    pub fn reaches_by(&self, time: ClockTime) -> bool {
-        self.projected <= time.since_midnight()
+    pub fn reaches_by(&self, time: ClockTime) -> Option<ClockTime> {
+        Some(time).filter(|time| self.projected <= time.since_midnight())
     }
 
     #[must_use]
@@ -89,23 +89,26 @@ impl<'day> Buffer<'day> {
 
     #[must_use]
     pub fn state(&self) -> BufferState {
-        let calm = match (BufferState::for_spare(self.spare()), self.footing) {
-            (BufferState::Tight, Footing::Seated) => BufferState::Comfortable,
-            (state, _) => state,
-        };
+        let spare = BufferState::for_spare(self.spare());
+        let calm = Some(spare)
+            .filter(|state| *state == BufferState::Tight)
+            .filter(|_| self.footing == Footing::Seated)
+            .map_or(spare, |_| BufferState::Comfortable);
         self.boarding().map_or(calm, |_| BufferState::Waiting)
     }
 
     #[must_use]
     pub fn boarding(&self) -> Option<Minutes> {
-        self.floor.filter(|now| {
-            self.projected <= *now && self.projected <= self.deadline.event().since_midnight()
-        })
+        self.floor
+            .filter(|now| self.projected <= *now)
+            .filter(|_| self.projected <= self.deadline.event().since_midnight())
     }
 
     #[must_use]
-    pub fn reaches_before_event(&self) -> bool {
-        self.floor.is_none() && self.projected <= self.deadline.event().since_midnight()
+    pub fn reaches_before_event(&self) -> Option<Buffer<'day>> {
+        Some(*self)
+            .filter(|buffer| buffer.floor.is_none())
+            .filter(|buffer| buffer.projected <= buffer.deadline.event().since_midnight())
     }
 
     #[must_use]
