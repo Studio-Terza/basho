@@ -1,4 +1,5 @@
 mod content_list;
+mod ports;
 mod trip_error;
 mod trip_file;
 
@@ -7,7 +8,6 @@ use crate::TripSource;
 use crate::KnownNames;
 pub use content_list::ContentList;
 
-use std::fs;
 use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -29,12 +29,7 @@ pub struct Trip {
 
 impl Trip {
     pub fn load(path: &Path) -> Result<Trip, TripError> {
-        fs::read_to_string(path)
-            .map_err(|error| TripError::Unreadable {
-                path: path.to_path_buf(),
-                error,
-            })
-            .and_then(|text| text.parse())
+        ports::TripFile::read(path).and_then(Trip::try_from)
     }
 
     #[must_use]
