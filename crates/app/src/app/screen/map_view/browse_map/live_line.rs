@@ -20,7 +20,7 @@ impl IntoDynNode for LiveLine<'_> {
             .filter(|check| check.late_by().is_some());
         let buffer = self.narration.guidance().buffer();
         rsx! {
-            {(late.is_some() || buffer.is_some()).then(|| rsx! {
+            {late.map(|_| (late, buffer)).or_else(|| buffer.map(|_| (late, buffer))).map(|(late, buffer)| rsx! {
                 p { class: "live-line", role: "status", lang: language.class(), "aria-label": "Now, for where you are",
                     strong { class: "live-now", "NOW" }
                     {late.map(|check| rsx! { " · " span { class: "late", "{check}" } })}

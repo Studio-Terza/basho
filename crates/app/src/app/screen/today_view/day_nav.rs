@@ -2,6 +2,7 @@ use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
 use guide::itinerary::Day;
+use std::fmt;
 
 use crate::app::screen::day_name::DayName;
 use crate::app::screen::look::Look;
@@ -19,7 +20,7 @@ impl<'view> DayNav<'view> {
         DayNav { session, day }
     }
 
-    fn link(&self, target: &Day, look: Look, label: &str) -> Element {
+    fn link(&self, target: &Day, look: Look, label: impl fmt::Display) -> Element {
         let session = self.session.clone();
         let number = target.number();
         rsx! {
@@ -38,9 +39,9 @@ impl IntoDynNode for DayNav<'_> {
         rsx! {
             nav { class: "day-nav",
                 button { class: "days-open", "aria-label": "Days", onclick: move |_| SessionEvent::OpenMenu.applied(&opener), "Days" }
-                {previous.map(|target| self.link(target, Look::DayBack, &format!("‹ {}", DayName::new(target.number()))))}
+                {previous.map(|target| self.link(target, Look::DayBack, format_args!("‹ {}", DayName::new(target.number()))))}
                 h1 { class: "day-title", "{DayName::new(self.day.number())} · {self.day.date().short()}" }
-                {next.map(|target| self.link(target, Look::DayNext, &format!("{} ›", DayName::new(target.number()))))}
+                {next.map(|target| self.link(target, Look::DayNext, format_args!("{} ›", DayName::new(target.number()))))}
             }
         }
         .into_dyn_node()

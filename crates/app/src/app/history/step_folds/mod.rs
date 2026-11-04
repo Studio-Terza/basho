@@ -14,15 +14,9 @@ pub struct StepFolds {
 impl StepFolds {
     #[must_use]
     pub fn fold(&self, day: DayNumber, step: StepNumber, state: StepState) -> Fold {
-        let usual = match state {
-            StepState::Current => Fold::Open,
-            StepState::Done | StepState::Later => Fold::Closed,
-        };
-        if self.day == Some(day) && self.flipped.contains(&step) {
-            usual.flipped()
-        } else {
-            usual
-        }
+        let usual = Fold::from(state);
+        self.flipped_at(day, step)
+            .map_or(usual, |_| usual.flipped())
     }
 
     #[must_use]
@@ -33,10 +27,16 @@ impl StepFolds {
             .copied()
             .filter(|_| self.day == Some(day))
             .filter(|flipped| *flipped != step);
-        let added = (!self.flipped.contains(&step) || self.day != Some(day)).then_some(step);
+        let added = self.flipped_at(day, step).map_or(Some(step), |_| None);
         StepFolds {
             day: Some(day),
             flipped: kept.chain(added).collect(),
         }
+    }
+
+    fn flipped_at(&self, day: DayNumber, step: StepNumber) -> Option<&StepNumber> {
+        Some(day)
+            .filter(|day| self.day == Some(*day))
+            .and_then(|_| self.flipped.iter().find(|flipped| **flipped == step))
     }
 }

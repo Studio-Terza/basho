@@ -1,55 +1,67 @@
+use super::markup::Markup;
+use guide::words::Label;
 use newtype::Newtype;
 use std::fmt;
 
 #[derive(Newtype)]
 pub struct Uncited<'text> {
-    markup: &'text str,
+    markup: &'text Markup,
 }
 
 impl Uncited<'_> {
-    const SOURCES: [&'static str; 3] = ["OpenStreetMap", "OSM", "GSI"];
-    const MAP: &'static str = "the map";
-    const MAP_OPENING: &'static str = "The map";
+    const SOURCES: [Label; 3] = [
+        Label::new("OpenStreetMap"),
+        Label::new("OSM"),
+        Label::new("GSI"),
+    ];
+    const MAP: Label = Label::new("the map");
+    const MAP_OPENING: Label = Label::new("The map");
     const SENTENCE_END: &'static str = ". ";
 
-    fn untagged(&self) -> String {
+    fn untagged(&self) -> Markup {
         self.markup.split_once('(').map_or_else(
-            || self.markup.to_owned(),
+            || Markup::new(String::from(&**self.markup)),
             |(lead, rest)| {
                 rest.split('(')
-                    .fold(lead.to_owned(), Self::joined_unless_cited)
+                    .map(|piece| Markup::new(piece.to_owned()))
+                    .fold(Markup::new(lead.to_owned()), |text, piece| {
+                        Self::joined_unless_cited(&text, &piece)
+                    })
             },
         )
     }
 
-    fn joined_unless_cited(text: String, piece: &str) -> String {
-        let cited = piece.split_once(')').filter(|(inside, _)| {
-            Self::SOURCES.contains(&inside.split_whitespace().next().unwrap_or_default())
-        });
-        match cited {
-            Some((_, after)) => text.trim_end().to_owned() + after,
-            None => text + "(" + piece,
-        }
+    fn joined_unless_cited(text: &Markup, piece: &Markup) -> Markup {
+        piece
+            .split_once(')')
+            .filter(|(inside, _)| {
+                let first = inside.split_whitespace().next().unwrap_or_default();
+                Self::SOURCES.iter().any(|source| source.as_ref() == first)
+            })
+            .map_or_else(
+                || Markup::new(format!("{text}({piece}")),
+                |(_, after)| Markup::new(format!("{}{after}", text.trim_end())),
+            )
     }
 
-    fn renamed(text: &str, source: &str) -> String {
-        text.split_once(source).map_or_else(
-            || text.to_owned(),
+    fn renamed(text: &Markup, source: &Label) -> Markup {
+        text.split_once(source.as_ref()).map_or_else(
+            || Markup::new(String::from(&**text)),
             |(lead, rest)| {
-                rest.split(source).fold(lead.to_owned(), |before, piece| {
-                    let name = Self::name_after(&before);
-                    before + name + piece
-                })
+                rest.split(source.as_ref())
+                    .fold(Markup::new(lead.to_owned()), |before, piece| {
+                        let name = Self::name_after(&before);
+                        Markup::new(format!("{before}{name}{piece}"))
+                    })
             },
         )
     }
 
-    fn name_after(before: &str) -> &'static str {
-        if before.trim_end().is_empty() || before.ends_with(Self::SENTENCE_END) {
-            Self::MAP_OPENING
-        } else {
-            Self::MAP
-        }
+    fn name_after(before: &Markup) -> Label {
+        Some(before)
+            .filter(|text| text.trim_end().is_empty())
+            .or(Some(before).filter(|text| text.ends_with(Self::SENTENCE_END)))
+            .map_or(Self::MAP, |_| Self::MAP_OPENING)
     }
 }
 

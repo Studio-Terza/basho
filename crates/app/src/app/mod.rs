@@ -1,9 +1,12 @@
 pub mod history;
 mod map_feed;
+mod position;
 pub mod screen;
 pub mod session;
 pub mod step;
 pub mod visit;
+
+pub use position::Position;
 
 use dioxus::prelude::*;
 use guide::Trip;

@@ -35,9 +35,11 @@ impl IntoDynNode for DayHead<'_> {
         let day = self.guidance.day();
         let now = self.guidance.now();
         let inn = self.session.wiki().find(&EntryKey::Inn(day.number()));
-        let arrival = self.guidance.arrival().filter(|arrival| {
-            arrival.time(ArrivalMark::AfterSunset).is_some()
-                || arrival.time(ArrivalMark::AfterCheckIn).is_some()
+        let arrival = self.guidance.arrival().and_then(|arrival| {
+            arrival
+                .time(ArrivalMark::AfterSunset)
+                .or(arrival.time(ArrivalMark::AfterCheckIn))
+                .map(|_| arrival)
         });
         rsx! {
             header { class: "day-head",

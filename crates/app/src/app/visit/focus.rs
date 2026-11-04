@@ -12,11 +12,9 @@ pub enum Focus {
 impl Focus {
     #[must_use]
     pub fn toward(spot: Spot, now: Option<Spot>) -> Focus {
-        if now == Some(spot) {
-            Focus::Now
-        } else {
-            Focus::Browsing(spot)
-        }
+        Some(spot)
+            .filter(|spot| now != Some(*spot))
+            .map_or(Focus::Now, Focus::Browsing)
     }
 
     #[must_use]

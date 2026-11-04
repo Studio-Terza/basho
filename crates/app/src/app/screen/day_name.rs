@@ -14,10 +14,9 @@ impl DayName {
 
 impl fmt::Display for DayName {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.number == Self::ARRIVAL {
-            formatter.write_str("Arrival")
-        } else {
-            write!(formatter, "Day {}", self.number)
-        }
+        let words = Some(self.number)
+            .filter(|number| *number == Self::ARRIVAL)
+            .map_or_else(|| format!("Day {}", self.number), |_| "Arrival".to_owned());
+        formatter.write_str(&words)
     }
 }

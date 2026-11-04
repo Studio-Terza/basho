@@ -1,6 +1,7 @@
 mod contact;
 mod fingers;
 use dioxus::prelude::*;
+use guide::plane::PlanePoint;
 
 use crate::app::session::{Session, SessionEvent};
 use contact::Contact;
@@ -40,44 +41,60 @@ impl TouchSurface {
         }
     }
 
-    #[expect(
-        clippy::needless_for_each,
-        reason = "iterators are driven by combinators here"
-    )]
     fn relay(self, contact: Contact, session: &Session, event: &Event<TouchData>) {
         contact
             .top(event)
+            .map(SessionEvent::NoteTouchTop)
             .into_iter()
-            .for_each(|top| SessionEvent::NoteTouchTop(top).applied(session));
-        match (
-            self,
-            contact,
-            contact.point(event),
-            Fingers::touching(event),
-        ) {
-            (_, Contact::Began, Some(at), Fingers::Pair) => {
-                SessionEvent::PairTouched {
-                    at,
-                    spread: Fingers::spread(event).unwrap_or_default(),
-                }
-                .applied(session);
-            }
-            (TouchSurface::Page, Contact::Began, Some(at), Fingers::Single) => {
-                SessionEvent::PageTouchBegan(at).applied(session);
-            }
-            (TouchSurface::Menu, Contact::Began, Some(at), Fingers::Single) => {
-                SessionEvent::MenuTouchBegan(at).applied(session);
-            }
-            (_, Contact::Moved, Some(at), _) => {
-                Fingers::spread(event)
-                    .into_iter()
-                    .for_each(|spread| SessionEvent::PairSpread(spread).applied(session));
-                SessionEvent::TouchMoved(at).applied(session);
-            }
-            (_, Contact::Ended, Some(at), _) => SessionEvent::TouchEnded(at).applied(session),
-            (_, Contact::Cancelled, _, _) => SessionEvent::TouchCancelled.applied(session),
-            (TouchSurface::Tabs, Contact::Began, Some(_), Fingers::Single)
-            | (_, Contact::Began | Contact::Moved | Contact::Ended, None, _) => (),
+            .chain(self.touched(contact, event))
+            .for_each(|touch| touch.applied(session));
+    }
+
+    fn touched(self, contact: Contact, event: &Event<TouchData>) -> Vec<SessionEvent> {
+        match contact {
+            Contact::Began => self
+                .began(Fingers::touching(event), contact.point(event), event)
+                .into_iter()
+                .collect(),
+            Contact::Moved => contact
+                .point(event)
+                .into_iter()
+                .flat_map(|at| {
+                    Fingers::spread(event)
+                        .map(SessionEvent::PairSpread)
+                        .into_iter()
+                        .chain([SessionEvent::TouchMoved(at)])
+                })
+                .collect(),
+            Contact::Ended => contact
+                .point(event)
+                .map(SessionEvent::TouchEnded)
+                .into_iter()
+                .collect(),
+            Contact::Cancelled => vec![SessionEvent::TouchCancelled],
+        }
+    }
+
+    fn began(
+        self,
+        fingers: Fingers,
+        at: Option<PlanePoint>,
+        event: &Event<TouchData>,
+    ) -> Option<SessionEvent> {
+        match fingers {
+            Fingers::Pair => at.map(|at| SessionEvent::PairTouched {
+                at,
+                spread: Fingers::spread(event).unwrap_or_default(),
+            }),
+            Fingers::Single => at.and_then(|at| self.single(at)),
+        }
+    }
+
+    fn single(self, at: PlanePoint) -> Option<SessionEvent> {
+        match self {
+            TouchSurface::Page => Some(SessionEvent::PageTouchBegan(at)),
+            TouchSurface::Menu => Some(SessionEvent::MenuTouchBegan(at)),
+            TouchSurface::Tabs => None,
         }
     }
 }

@@ -1,3 +1,4 @@
+use crate::app::Position;
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
@@ -52,7 +53,7 @@ impl MenuView<'_> {
                 ol { class: "menu-goals",
                     {day.goals().iter().enumerate().map(|(position, goal)| {
                         let session = self.session.clone();
-                        let goal_number = GoalNumber::from_position(position);
+                        let goal_number = GoalNumber::from_position(Position::new(position));
                         let last = goal.leg(End::Finish);
                         rsx! {
                             li {

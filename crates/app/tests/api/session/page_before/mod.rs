@@ -1,3 +1,4 @@
+use basho::app::Position;
 use std::cell::RefCell;
 
 use dioxus::prelude::*;
@@ -93,7 +94,7 @@ impl Walk {
                             leg: LegIndex::new(LATER_STEP),
                         })
                         .expect("the later step has a page");
-                    let later = StepNumber::from_position(LATER_STEP);
+                    let later = StepNumber::from_position(Position::new(LATER_STEP));
                     seen.folds.push(Self::fold_of(&session, later));
                     SessionEvent::Follow {
                         entry: step,

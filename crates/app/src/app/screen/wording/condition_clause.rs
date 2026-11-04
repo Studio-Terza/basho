@@ -1,9 +1,10 @@
+use super::markup::Markup;
 use newtype::Newtype;
 use std::fmt;
 
 #[derive(Newtype)]
 pub struct ConditionClause<'text> {
-    markup: &'text str,
+    markup: &'text Markup,
 }
 
 impl fmt::Display for ConditionClause<'_> {

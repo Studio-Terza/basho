@@ -32,7 +32,7 @@ impl History {
 
     #[must_use]
     pub fn can_turn(&self, toward: Toward) -> Option<Toward> {
-        Some(toward).filter(|toward| !self.source(*toward).is_empty())
+        self.source(toward).first().map(|_| toward)
     }
 
     #[must_use]
@@ -45,18 +45,21 @@ impl History {
                 .cloned()
                 .chain([here])
                 .collect();
-            let history = match toward {
-                Toward::Previous => History {
-                    behind: kept,
-                    ahead: passed,
-                },
-                Toward::Next => History {
-                    behind: passed,
-                    ahead: kept,
-                },
-            };
-            Turn::new(history, mark.clone())
+            Turn::new(Self::oriented(toward, kept, passed), mark.clone())
         })
+    }
+
+    fn oriented(toward: Toward, kept: Vec<Mark>, passed: Vec<Mark>) -> History {
+        match toward {
+            Toward::Previous => History {
+                behind: kept,
+                ahead: passed,
+            },
+            Toward::Next => History {
+                behind: passed,
+                ahead: kept,
+            },
+        }
     }
 
     fn source(&self, toward: Toward) -> &[Mark] {
