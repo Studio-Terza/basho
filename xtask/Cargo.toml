@@ -10,6 +10,8 @@ publish = false
 [dependencies]
 derive_more.workspace = true
 newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
+console-ports = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
+file-ports = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 basho_lints = { path = "../tools/basho_lints" }
 guide = { path = "../crates/guide" }
 day_print = { path = "../tools/day_print" }
@@ -28,6 +30,7 @@ thiserror = "2"
 toml = "0.9"
 
 [dev-dependencies]
+file-ports = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 tempfile = "3"
 wiki = { path = "../crates/wiki" }
 laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }

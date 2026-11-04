@@ -5,7 +5,9 @@ mod style_rules;
 use std::fs;
 use std::path::Path;
 
+use crate::SheetRule;
 use basho_lints::Failure;
+use basho_lints::Report;
 use basho_lints::Site;
 use basho_lints::source_file::{RelativePath, SourceText};
 pub use quoting::Quoting;
@@ -30,6 +32,11 @@ impl StyleSheet {
                 site: Site::File(RelativePath::new(Self::SHEET.to_owned())),
                 error,
             })
+    }
+
+    #[must_use]
+    pub fn found<Rule: SheetRule>(&self) -> Option<Report> {
+        Rule::report(self).unclean()
     }
 
     #[must_use]

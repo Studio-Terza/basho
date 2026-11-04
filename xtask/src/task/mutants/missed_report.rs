@@ -1,8 +1,8 @@
 use std::collections::BTreeMap;
 use std::fmt;
-use std::fs;
-use std::io::{self, ErrorKind};
 use std::path::{Path, PathBuf};
+
+use file_ports::{FileFailure, Files};
 
 use crate::task::failure::Failure;
 use crate::task::problem_count::ProblemCount;
@@ -15,33 +15,29 @@ impl MissedReport {
     const LIST: &str = "mutants.out/missed.txt";
     const GROUPS: [&str; 2] = ["crates", "tools"];
 
-    pub fn in_directory(directory: &Path) -> Result<MissedReport, Failure> {
-        Self::runs(directory)?
+    pub fn in_directory(directory: &Path, files: &impl Files) -> Result<MissedReport, Failure> {
+        let lists: Vec<PathBuf> = files
+            .entries(directory)
+            .or_else(|failure| Self::absent_as_empty(directory, failure))?
             .iter()
-            .try_fold(MissedReport::default(), |all, run| {
-                Ok(all.merged(MissedReport::from(Self::listed(run)?.as_str())))
-            })
+            .map(|run| run.join(Self::LIST))
+            .collect();
+        lists.iter().zip(files.read_text_many(&lists)).try_fold(
+            MissedReport::default(),
+            |all, (list, text)| {
+                let text = text.or_else(|failure| Self::absent_as_empty(list, failure))?;
+                Ok(all.merged(MissedReport::from(text.as_ref())))
+            },
+        )
     }
 
-    fn runs(directory: &Path) -> Result<Vec<PathBuf>, Failure> {
-        fs::read_dir(directory)
-            .and_then(Iterator::collect::<io::Result<Vec<fs::DirEntry>>>)
-            .map(|runs| runs.iter().map(fs::DirEntry::path).collect())
-            .or_else(|error| {
-                (error.kind() == ErrorKind::NotFound)
-                    .then(Vec::new)
-                    .ok_or(error)
-            })
-            .map_err(|error| Failure::unreadable(directory, error))
-    }
-
-    fn listed(run: &Path) -> Result<String, Failure> {
-        let list = run.join(Self::LIST);
-        match fs::read_to_string(&list) {
-            Err(error) if error.kind() != ErrorKind::NotFound => {
-                Err(Failure::unreadable(&list, error))
-            }
-            found => Ok(found.unwrap_or_default()),
+    fn absent_as_empty<Found: Default>(
+        path: &Path,
+        failure: FileFailure,
+    ) -> Result<Found, Failure> {
+        match failure {
+            FileFailure::Missing(_) => Ok(Found::default()),
+            FileFailure::Failed(error) => Err(Failure::unreadable(path, error)),
         }
     }
 

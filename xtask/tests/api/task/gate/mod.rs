@@ -122,20 +122,11 @@ fn the_record_of_a_passed_gate_counts_the_facts_by_evidence_kind() {
 #[test]
 fn a_status_is_posted_only_for_a_passed_gate_on_a_clean_tree() {
     let failed = Outcome::Failed(Detail::from(&std::fmt::Error));
+    assert_eq!(Outcome::Passed.posting(Tree::Clean), Posting::Post);
     assert_eq!(
-        Posting::decide(Tree::Clean, &Outcome::Passed),
-        Posting::Post
-    );
-    assert_eq!(
-        Posting::decide(Tree::Dirty, &Outcome::Passed),
+        Outcome::Passed.posting(Tree::Dirty),
         Posting::WithheldDirtyTree
     );
-    assert_eq!(
-        Posting::decide(Tree::Clean, &failed),
-        Posting::WithheldFailure
-    );
-    assert_eq!(
-        Posting::decide(Tree::Dirty, &failed),
-        Posting::WithheldFailure
-    );
+    assert_eq!(failed.posting(Tree::Clean), Posting::WithheldFailure);
+    assert_eq!(failed.posting(Tree::Dirty), Posting::WithheldFailure);
 }

@@ -16,6 +16,10 @@ pub enum Failure {
     Shared(Box<dyn Error>),
     #[error("{site}: {error}")]
     Io { site: Site, error: io::Error },
+    #[error("an argument is not UTF-8 text: {0:?}")]
+    NotText(std::ffi::OsString),
+    #[error("writing to the console: {0}")]
+    Console(io::Error),
     #[error("missing or invalid environment variable {0}")]
     Environment(Label),
     #[error("{tool} failed:\n{detail}")]

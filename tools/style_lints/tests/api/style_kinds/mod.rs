@@ -75,7 +75,7 @@ fn kind_and_state_selectors_pass() {
         RelativePath::new(SHEET.to_owned()),
         SourceText::new(ALLOWED.to_owned()),
     ));
-    assert!(report.is_clean(), "{report}");
+    assert_eq!(report.unclean().map(|report| report.to_string()), None);
 }
 
 #[test]
@@ -104,6 +104,6 @@ fn the_real_sheet_reaches_no_id_aria_or_data_anchor() {
         SourceText::new(ANCHORS.to_owned()),
     ))
     .to_string();
-    assert!(real.is_clean(), "{real}");
+    assert_eq!(real.unclean().map(|report| report.to_string()), None);
     assert_eq!(anchors.lines().skip(1).count(), ANCHOR_COUNT, "{anchors}");
 }

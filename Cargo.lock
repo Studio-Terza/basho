@@ -568,6 +568,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "console-ports"
+version = "0.1.0"
+source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.2.0#375d40167440c14c53210bc75bc81755be2a878c"
+
+[[package]]
 name = "const-serialize"
 version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1794,6 +1799,15 @@ checksum = "38e2275cc4e4fc009b0669731a1e5ab7ebf11f469eaede2bab9309a5b4d6057f"
 dependencies = [
  "memoffset",
  "rustc_version",
+]
+
+[[package]]
+name = "file-ports"
+version = "0.1.0"
+source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.2.0#375d40167440c14c53210bc75bc81755be2a878c"
+dependencies = [
+ "newtype",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -7768,8 +7782,10 @@ name = "xtask"
 version = "0.1.0"
 dependencies = [
  "basho_lints",
+ "console-ports",
  "day_print",
  "derive_more 2.1.1",
+ "file-ports",
  "guide",
  "laws",
  "meta-xtask",
