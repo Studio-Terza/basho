@@ -8,6 +8,7 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+tool_text = { path = "../tool_text" }
 sim_suite = { path = "../sim_suite" }
 serde = { version = "1", features = ["derive"] }
 thiserror = "2"

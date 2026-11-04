@@ -1,6 +1,7 @@
 use std::fmt;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use tool_text::ToolOutput;
 
 use crate::bounded::Bounded;
 use crate::failure::Failure;
@@ -31,7 +32,7 @@ impl Device {
             .map(|udid| Device {
                 udid: Udid(udid.to_owned()),
             })
-            .ok_or_else(|| Failure::Simulator(udid.clone()))
+            .ok_or_else(|| Failure::Simulator(ToolOutput::new(udid.clone())))
     }
 
     pub fn booted(self) -> Result<Device, Failure> {
@@ -62,7 +63,9 @@ impl Device {
                 .printed()?
                 .lines()
                 .rfind(|line| line.starts_with('/'))
-                .ok_or_else(|| Failure::Simulator("the app has no data folder".to_owned()))?,
+                .ok_or_else(|| {
+                    Failure::Simulator(ToolOutput::new("the app has no data folder".to_owned()))
+                })?,
         ))
     }
 }

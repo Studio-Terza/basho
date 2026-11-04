@@ -1,6 +1,5 @@
-use std::env;
+use crate::failure::VariableName;
 use std::fs;
-use std::path::PathBuf;
 
 use serde::Deserialize;
 
@@ -17,12 +16,10 @@ pub struct Credentials {
 
 impl Credentials {
     const FILE: &str = ".appstoreconnect/basho.json";
+    const HOME: VariableName = VariableName::new("HOME");
 
     pub fn load() -> Result<Credentials, Failure> {
-        let path = env::var_os("HOME")
-            .map(PathBuf::from)
-            .ok_or(Failure::Environment("HOME"))?
-            .join(Self::FILE);
+        let path = Self::HOME.folder()?.join(Self::FILE);
         let text = fs::read(&path).map_err(Staging::io_failure(&path))?;
         serde_json::from_slice(&text).map_err(Failure::Response)
     }
