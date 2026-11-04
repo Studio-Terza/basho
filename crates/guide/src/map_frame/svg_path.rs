@@ -1,4 +1,4 @@
-#[derive(newtype::Newtype, newtype::Display, Clone, Debug, PartialEq, Eq)]
+#[derive(newtype::Newtype, newtype::Arbitrary, newtype::Display, Clone, Debug, PartialEq, Eq)]
 pub struct SvgPath(String);
 
 impl SvgPath {

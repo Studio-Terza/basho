@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(
     newtype::Newtype,
+    newtype::Arbitrary,
     newtype::Display,
     Clone,
     Copy,

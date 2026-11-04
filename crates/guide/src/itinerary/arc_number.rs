@@ -5,6 +5,7 @@ use serde::Deserialize;
 #[derive(
     newtype::Display,
     Newtype,
+    newtype::Arbitrary,
     Clone,
     Copy,
     Debug,

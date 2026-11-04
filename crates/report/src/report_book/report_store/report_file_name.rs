@@ -7,7 +7,7 @@ use newtype::Newtype;
 use crate::ReportNumber;
 use crate::report_book::report_error::ReportError;
 
-#[derive(Newtype, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ReportFileName(ReportNumber);
 
 impl ReportFileName {

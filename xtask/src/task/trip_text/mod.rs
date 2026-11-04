@@ -9,7 +9,16 @@ use crate::task::failure::Failure;
 use crate::task::workspace::Workspace;
 use basho_lints::Site;
 
-#[derive(newtype::Newtype, newtype::Display, derive_more::AsRef, Clone, Debug, PartialEq, Eq)]
+#[derive(
+    newtype::Newtype,
+    newtype::Arbitrary,
+    newtype::Display,
+    derive_more::AsRef,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+)]
 #[as_ref(str)]
 pub struct SectionText(String);
 

@@ -1,6 +1,6 @@
 use std::fmt;
 
-#[derive(newtype::Newtype, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(newtype::Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct SectionAnchor {
     position_index: usize,
 }

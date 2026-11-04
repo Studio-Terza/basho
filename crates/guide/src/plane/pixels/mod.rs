@@ -7,7 +7,7 @@ use std::ops::{AddAssign, Div, Mul};
 
 pub use halving::Halving;
 
-#[derive(Newtype, Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, Default, PartialEq)]
 pub struct Pixels(f64);
 
 added!(Pixels);

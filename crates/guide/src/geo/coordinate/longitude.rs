@@ -1,4 +1,5 @@
 use newtype::Newtype;
+use newtype::proptest::strategy::Strategy;
 use serde::Deserialize;
 
 use crate::geo::coordinate::Coordinate;
@@ -6,11 +7,14 @@ use crate::geo::degrees::Degrees;
 use crate::geo::distance::Distance;
 use crate::geo::share::Share;
 
-#[derive(Newtype, Clone, Copy, Debug, PartialEq, PartialOrd, Deserialize)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, PartialOrd, Deserialize)]
 #[serde(transparent)]
+#[newtype(strategy = (-Self::FURTHEST..=Self::FURTHEST).prop_map(Degrees::new))]
 pub struct Longitude(Degrees);
 
 impl Longitude {
+    const FURTHEST: f64 = 180.0;
+
     #[must_use]
     pub const fn angle(self) -> Degrees {
         self.0

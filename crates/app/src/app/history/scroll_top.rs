@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use guide::plane::Pixels;
 
-#[derive(newtype::Newtype, Clone, Copy, Debug, Default, PartialEq)]
+#[derive(newtype::Newtype, newtype::Arbitrary, Clone, Copy, Debug, Default, PartialEq)]
 pub struct ScrollTop {
     top: Pixels,
 }

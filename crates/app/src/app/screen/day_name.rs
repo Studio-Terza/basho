@@ -3,7 +3,7 @@ use std::fmt;
 
 use guide::day_number::DayNumber;
 
-#[derive(Newtype, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct DayName {
     number: DayNumber,
 }

@@ -6,7 +6,7 @@ use guide::times::ListedTime;
 use crate::EntryId;
 use crate::entry::{LoopRow, StopRow};
 
-#[derive(newtype::Newtype, Clone, Debug)]
+#[derive(newtype::Newtype, newtype::Arbitrary, Clone, Debug)]
 pub struct SourcedFact {
     fact: Fact,
 }

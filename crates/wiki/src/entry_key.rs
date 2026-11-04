@@ -2,7 +2,7 @@ use guide::day_number::DayNumber;
 use guide::leg::LegIndex;
 use guide::words::{Slug, StarName};
 
-#[derive(newtype::Newtype, Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(newtype::Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct StopIndex(usize);
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]

@@ -1,5 +1,6 @@
 #[derive(
     newtype::Newtype,
+    newtype::Arbitrary,
     newtype::Display,
     derive_more::AsRef,
     derive_more::Deref,

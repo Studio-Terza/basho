@@ -3,6 +3,7 @@ use serde::Deserialize;
 
 #[derive(
     newtype::Newtype,
+    newtype::Arbitrary,
     newtype::Display,
     derive_more::AsRef,
     derive_more::Debug,
@@ -16,6 +17,7 @@ use serde::Deserialize;
 #[as_ref(str)]
 #[debug("{_0:?}")]
 #[serde(try_from = "String")]
+#[newtype(strategy = "\\PC{0,24}")]
 pub struct FeatureName(String);
 
 impl TryFrom<String> for FeatureName {

@@ -5,7 +5,16 @@ use std::str::FromStr;
 use basho_lints::Failure;
 pub use css_value::CssValue;
 
-#[derive(newtype::Newtype, newtype::Display, derive_more::Deref, Clone, Debug, PartialEq, Eq)]
+#[derive(
+    newtype::Newtype,
+    newtype::Arbitrary,
+    newtype::Display,
+    derive_more::Deref,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+)]
 #[deref(forward)]
 pub struct CssProperty(String);
 

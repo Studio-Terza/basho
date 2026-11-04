@@ -1,7 +1,8 @@
 use newtype::Newtype;
 use std::ops::Div;
 
-#[derive(Newtype, Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[newtype(strategy = 0.0..=1.0)]
 pub struct Share(f64);
 
 impl Share {

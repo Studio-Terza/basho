@@ -8,7 +8,7 @@ use guide::itinerary::Day;
 use guide::end::End;
 use newtype::Newtype;
 
-#[derive(Newtype, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, Eq)]
 pub struct LegsStamp(u64);
 
 impl LegsStamp {

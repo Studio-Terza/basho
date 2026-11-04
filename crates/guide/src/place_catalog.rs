@@ -2,13 +2,17 @@ use crate::itinerary::{Day, Finding, Itinerary, Problem};
 use crate::leg::LegIndex;
 use crate::place::Place;
 use newtype::Newtype;
+use newtype::proptest::collection::vec;
 
-#[derive(Newtype, Debug)]
+#[derive(Newtype, newtype::Arbitrary, Debug)]
+#[newtype(strategy = vec(Place::drawn(), 0..Self::MOST_DRAWN))]
 pub struct PlaceCatalog {
     places: Vec<Place>,
 }
 
 impl PlaceCatalog {
+    const MOST_DRAWN: usize = 3;
+
     #[must_use]
     pub fn places(&self) -> &[Place] {
         &self.places
