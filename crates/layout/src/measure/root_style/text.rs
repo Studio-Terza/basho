@@ -17,11 +17,7 @@ pub enum Text {
 }
 
 impl Text {
-    pub const ASCENT: Share = Share::new(0.8);
     pub const DESCENT: Share = Share::new(0.25);
-    pub const MIDDLE: Share = Share::new(0.35);
-    pub const ADVANCE: Share = Share::new(0.62);
-    pub const HEAVY_ADVANCE: Share = Share::new(0.7);
     const BODY: Pixels = Pixels::new(19.0);
     const COMPACT: Pixels = Pixels::new(15.0);
     const MAJOR: Pixels = Pixels::new(12.0);

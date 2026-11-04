@@ -1,15 +1,12 @@
 use guide::classed::Classed;
 use guide::geo::{Degrees, Share};
 use guide::plane::Pixels;
-use guide::plane::Scale;
 
 use crate::scale::Gap;
 use crate::scale::Token;
 
 #[derive(strum::IntoStaticStr, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MarkSize {
-    #[strum(serialize = "tiny")]
-    Tiny,
     #[strum(serialize = "small-mark")]
     Small,
     #[strum(serialize = "large")]
@@ -24,15 +21,8 @@ impl MarkSize {
     const STAR_STEP: Degrees = Degrees::new(36.0);
     const FULL_TURN: Degrees = Degrees::new(360.0);
     const QUARTER: Degrees = Degrees::new(90.0);
-    const TINY: Pixels = Pixels::new(3.0);
     const SMALL: Pixels = Pixels::new(4.0);
     const LARGE: Pixels = Pixels::new(6.5);
-    const TRAIL_DOT_SHARE: Share = Share::new(0.5);
-    const CONE_REACH_SCALE: Scale = Scale::new(3.0);
-    pub const TRAIL_DOT: Pixels =
-        Pixels::new(Self::TINY.pixels() * Self::TRAIL_DOT_SHARE.fraction());
-    pub const CONE_REACH: Pixels =
-        Pixels::new(Self::LARGE.pixels() * Self::CONE_REACH_SCALE.factor());
 
     #[must_use]
     pub fn outline_reach() -> Pixels {
@@ -52,7 +42,6 @@ impl MarkSize {
     #[must_use]
     pub fn half(self) -> Pixels {
         match self {
-            MarkSize::Tiny => Self::TINY,
             MarkSize::Small => Self::SMALL,
             MarkSize::Large => Self::LARGE,
         }
