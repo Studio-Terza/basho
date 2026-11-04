@@ -9,7 +9,7 @@ publish = false
 
 [dependencies]
 derive_more.workspace = true
-newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 proc-macro2 = { version = "1", features = ["span-locations"] }
 strum = { version = "0.28", features = ["derive"] }
 syn = { version = "2", features = ["full", "parsing", "visit"] }

@@ -10,7 +10,7 @@ publish = false
 [dependencies]
 plain_text = { path = "../plain_text" }
 derive_more.workspace = true
-newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 chrono.workspace = true
 strum = { version = "0.28", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
@@ -19,7 +19,7 @@ toml = "0.9"
 dioxus-core = "0.7.10"
 
 [dev-dependencies]
-laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 serde_json = "1"
 rayon = "1"
 toml = "0.9"
