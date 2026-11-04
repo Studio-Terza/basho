@@ -1,8 +1,8 @@
 use std::fmt;
 
 use super::InfoPlist;
+use crate::boundary::Tool;
 use crate::failure::Failure;
-use crate::tool::Tool;
 
 pub struct Sdk {
     version: String,

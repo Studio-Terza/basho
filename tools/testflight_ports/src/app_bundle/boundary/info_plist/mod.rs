@@ -5,8 +5,8 @@ mod sdk;
 use std::fmt;
 use std::path::{Path, PathBuf};
 
+use crate::boundary::Tool;
 use crate::failure::Failure;
-use crate::tool::Tool;
 use apple_text::XcodeVersion;
 pub use build_number::BuildNumber;
 use merge_command::MergeCommand;

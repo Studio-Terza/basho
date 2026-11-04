@@ -1,3 +1,3 @@
-mod chrome_session;
+mod boundary;
 
-pub use chrome_session::ChromeSession;
+pub use boundary::ChromeSession;

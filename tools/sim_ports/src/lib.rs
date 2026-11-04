@@ -1,4 +1,4 @@
-mod bounded;
+mod boundary;
 mod device;
 mod failure;
 mod phase_length;
@@ -8,7 +8,7 @@ mod suite_run;
 use std::path::Path;
 use std::time::{Duration, SystemTime};
 
-use bounded::Bounded;
+use boundary::Bounded;
 use device::{Device, Udid};
 use sim_project::SimProject;
 use sim_suite::{CrashReports, SimFindings};

@@ -2,12 +2,12 @@ use std::cmp::Reverse;
 use std::collections::BTreeSet;
 use std::fmt;
 
-mod piece;
+mod boundary;
 
+use boundary::Piece;
 use guide::catch_words::Readings;
 use guide::ruby_text::RubyText;
 use guide::{DraftPart, KnownNames};
-use piece::Piece;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct NoteText {

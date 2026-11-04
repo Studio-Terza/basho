@@ -3,7 +3,7 @@ use std::fs::{self, DirEntry};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use crate::bounded::Bounded;
+use crate::boundary::Bounded;
 use crate::device::Udid;
 use crate::failure::Failure;
 use crate::phase_length::PhaseLength;

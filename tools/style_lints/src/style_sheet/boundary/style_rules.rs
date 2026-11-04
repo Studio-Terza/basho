@@ -5,8 +5,8 @@ use std::str::FromStr;
 
 use basho_lints::LineNumber;
 
-use super::boundary::Quoting;
-use super::style_rule::{Context, Declaration, Selector, StyleRule};
+use super::Quoting;
+use crate::style_sheet::style_rule::{Context, Declaration, Selector, StyleRule};
 use uncommented::Uncommented;
 
 pub struct StyleRules(Vec<StyleRule>);

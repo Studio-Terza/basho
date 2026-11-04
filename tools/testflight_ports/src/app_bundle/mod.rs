@@ -1,16 +1,14 @@
-mod icon_catalog;
-mod info_plist;
+mod boundary;
 
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::boundary::Tool;
 use crate::failure::Failure;
 use crate::identity::Identity;
 use crate::profile::Profile;
 use crate::staging::Staging;
-use crate::tool::Tool;
-use icon_catalog::IconCatalog;
-use info_plist::{BuildNumber, InfoPlist};
+use boundary::{BuildNumber, IconCatalog, InfoPlist};
 
 pub struct AppBundle {
     path: PathBuf,

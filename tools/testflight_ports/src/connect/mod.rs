@@ -9,8 +9,8 @@ use std::path::Path;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 
+use crate::boundary::Tool;
 use crate::failure::Failure;
-use crate::tool::Tool;
 use crate::xcrun_tool::XcrunTool;
 use apple_text::Bearer;
 use credentials::Credentials;

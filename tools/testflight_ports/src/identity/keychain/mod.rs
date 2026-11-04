@@ -4,9 +4,9 @@ mod issuer_location;
 use std::fs;
 use std::path::Path;
 
+use crate::boundary::Tool;
 use crate::failure::Failure;
 use crate::staging::Staging;
-use crate::tool::Tool;
 use apple_text::{Fingerprint, Listing};
 pub use identities::Identities;
 use issuer_location::IssuerLocation;

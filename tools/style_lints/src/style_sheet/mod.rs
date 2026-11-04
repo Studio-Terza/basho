@@ -1,6 +1,5 @@
 mod boundary;
 mod style_rule;
-mod style_rules;
 
 use std::fs;
 use std::path::Path;
@@ -9,8 +8,8 @@ use basho_lints::Failure;
 use basho_lints::Site;
 use basho_lints::source_file::{RelativePath, SourceText};
 pub use boundary::Quoting;
+use boundary::StyleRules;
 pub use style_rule::{Context, CssClass, CssValue, Declaration, Selector, StyleRule};
-use style_rules::StyleRules;
 
 pub struct StyleSheet {
     path: RelativePath,
