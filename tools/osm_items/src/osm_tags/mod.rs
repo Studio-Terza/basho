@@ -5,8 +5,8 @@ use tile_draft::{TagKey, TileTag};
 mod boundary;
 mod labels;
 
-use labels::Labels;
 pub use boundary::OsmTags;
+use labels::Labels;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OsmKey(&'static str);

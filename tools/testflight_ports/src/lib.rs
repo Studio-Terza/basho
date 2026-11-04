@@ -1,5 +1,6 @@
 mod app_bundle;
 mod bits;
+mod boundary;
 mod connect;
 mod failure;
 mod identity;
