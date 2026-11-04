@@ -18,13 +18,13 @@ impl LoggedDecision {
     }
 
     #[must_use]
-    pub fn decided(self, decision: TrackerDecision) -> bool {
-        self.decision == decision
+    pub fn decision(self) -> TrackerDecision {
+        self.decision
     }
 
     #[must_use]
-    pub fn since(self, earliest: TripTime) -> bool {
-        self.at >= earliest
+    pub fn logged_at(self) -> TripTime {
+        self.at
     }
 }
 

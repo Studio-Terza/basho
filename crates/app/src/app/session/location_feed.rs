@@ -45,7 +45,7 @@ impl LocationFeed {
         use_effect(move || easing.ease(tracked.halted().is_some()));
         use_effect(move || feed.aim_compass(&screen.read()));
         use_effect(move || {
-            wakes.read().ever().then(|| woken.restart());
+            wakes.read().ever().map(|_| woken.restart());
         });
     }
 

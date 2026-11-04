@@ -62,9 +62,9 @@ impl FromStr for DarkAfterSunset {
 
 impl fmt::Display for DarkAfterSunset {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(match self {
-            DarkAfterSunset::Off => Self::OFF,
-            DarkAfterSunset::On => Self::ON,
-        })
+        match self {
+            DarkAfterSunset::Off => formatter.write_str(Self::OFF),
+            DarkAfterSunset::On => formatter.write_str(Self::ON),
+        }
     }
 }

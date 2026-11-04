@@ -6,7 +6,7 @@ mod tracker_reading;
 use dioxus::prelude::*;
 use guide::clock::TripTime;
 use guide::clock::trip_stamp::TripStamp;
-use report::{Capture, Fact, ReportText};
+use report::{Capture, Fact, ReportBook, ReportText};
 
 use crate::app::session::{Session, SessionEvent};
 use crate::app::step::{DayPoint, Spot, Step};
@@ -25,35 +25,35 @@ pub enum ReportEvent {
 
 impl ReportEvent {
     pub fn reported(self, session: &Session) {
-        let mut reports = session.reports;
         match self {
-            ReportEvent::Capture => {
-                let now = session.catch_up_clock().unwrap_or_else(|| session.now());
-                let captured = reports
-                    .peek()
-                    .clone()
-                    .captured(Self::capture_at(session, now));
-                reports.set(captured);
-                SessionEvent::CloseMenu.applied(session);
-                SessionEvent::OpenTab {
-                    screen: Screen::Reports,
-                    top: *session.touch_top.peek(),
-                }
-                .applied(session);
-            }
-            ReportEvent::Export => {
-                let exported = reports.peek().clone().exported();
-                reports.set(exported);
-            }
-            ReportEvent::Show => {
-                SessionEvent::CloseMenu.applied(session);
-                SessionEvent::OpenTab {
-                    screen: Screen::Reports,
-                    top: *session.touch_top.peek(),
-                }
-                .applied(session);
-            }
+            ReportEvent::Capture => Self::captured(session, session.reports),
+            ReportEvent::Export => Self::exported(session.reports),
+            ReportEvent::Show => Self::shown(session),
         }
+    }
+
+    pub fn captured(session: &Session, mut reports: Signal<ReportBook>) {
+        let now = session.catch_up_clock().unwrap_or_else(|| session.now());
+        let captured = reports
+            .peek()
+            .clone()
+            .captured(Self::capture_at(session, now));
+        reports.set(captured);
+        Self::shown(session);
+    }
+
+    pub fn exported(mut reports: Signal<ReportBook>) {
+        let exported = reports.peek().clone().exported();
+        reports.set(exported);
+    }
+
+    pub fn shown(session: &Session) {
+        SessionEvent::CloseMenu.applied(session);
+        SessionEvent::OpenTab {
+            screen: Screen::Reports,
+            top: *session.touch_top.peek(),
+        }
+        .applied(session);
     }
 
     fn capture_at(session: &Session, now: TripTime) -> Capture {

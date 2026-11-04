@@ -1,9 +1,10 @@
 use dioxus::prelude::*;
 use guide::guidance::timeline::Halt;
-use guide::guidance::{Guidance, Sighting};
+use guide::guidance::{Guidance, LegProgress, Sighting};
 
 use crate::app::session::Session;
 use crate::app::session::tracker_decision::TrackerDecision;
+use crate::app::session::tracker_log::DecisionLog;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ProgressEvent {
@@ -15,45 +16,49 @@ pub enum ProgressEvent {
 impl ProgressEvent {
     pub fn progressed(self, session: &Session) {
         match self {
-            ProgressEvent::TrackWalk => {
-                let mut trail = session.trail;
-                let mut halt = session.halt;
-                let sighting = *session.position.read();
-                let before = trail.peek().clone();
-                let grown = sighting.map_or_else(
-                    || before.clone(),
-                    |sighting| sighting.recorded_on(before.clone()),
-                );
-                (grown != before).then(|| trail.set(grown));
-                let previous = *halt.peek();
-                let tracked = sighting
-                    .and_then(Sighting::fresh)
-                    .map(|at| Halt::tracked(previous, at, session.clock.time()))
-                    .or(previous);
-                (tracked != previous).then(|| halt.set(tracked));
-            }
-            ProgressEvent::Confirm => {
-                let mut progress = session.progress;
-                let previous = *progress.peek();
-                let fresh = session.position.read().and_then(Sighting::fresh);
-                let now = session.catch_up_clock().unwrap_or_else(|| session.now());
-                session
-                    .day_at(now)
-                    .map(|day| Guidance::new(day, previous, now, fresh).confirmed(previous))
-                    .filter(|confirmed| *confirmed != previous)
-                    .into_iter()
-                    .for_each(|confirmed| progress.set(confirmed));
-            }
-            ProgressEvent::NoteDecision => {
-                let mut decisions = session.decisions;
-                let now = session.now();
-                session
-                    .day_at(now)
-                    .map(|day| TrackerDecision::seen_in(&session.guidance(day), session.progress()))
-                    .and_then(|decision| decisions.peek().noted(now, decision))
-                    .into_iter()
-                    .for_each(|noted| decisions.set(noted));
-            }
+            ProgressEvent::TrackWalk => Self::tracked_walk(session),
+            ProgressEvent::Confirm => Self::confirmed(session, session.progress),
+            ProgressEvent::NoteDecision => Self::noted_decision(session, session.decisions),
         }
+    }
+
+    fn tracked_walk(session: &Session) {
+        let mut trail = session.trail;
+        let mut halt = session.halt;
+        let sighting = *session.position.read();
+        let before = trail.peek().clone();
+        let grown = sighting.map_or_else(
+            || before.clone(),
+            |sighting| sighting.recorded_on(before.clone()),
+        );
+        (grown != before).then(|| trail.set(grown));
+        let previous = *halt.peek();
+        let tracked = sighting
+            .and_then(Sighting::fresh)
+            .map(|at| Halt::tracked(previous, at, session.clock.time()))
+            .or(previous);
+        (tracked != previous).then(|| halt.set(tracked));
+    }
+
+    fn confirmed(session: &Session, mut progress: Signal<LegProgress>) {
+        let previous = *progress.peek();
+        let fresh = session.position.read().and_then(Sighting::fresh);
+        let now = session.catch_up_clock().unwrap_or_else(|| session.now());
+        session
+            .day_at(now)
+            .map(|day| Guidance::new(day, previous, now, fresh).confirmed(previous))
+            .filter(|confirmed| *confirmed != previous)
+            .into_iter()
+            .for_each(|confirmed| progress.set(confirmed));
+    }
+
+    fn noted_decision(session: &Session, mut decisions: Signal<DecisionLog>) {
+        let now = session.now();
+        session
+            .day_at(now)
+            .map(|day| TrackerDecision::seen_in(&session.guidance(day), session.progress()))
+            .and_then(|decision| decisions.peek().noted(now, decision))
+            .into_iter()
+            .for_each(|noted| decisions.set(noted));
     }
 }

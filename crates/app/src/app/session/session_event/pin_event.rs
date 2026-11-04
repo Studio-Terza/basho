@@ -27,10 +27,14 @@ impl PinEvent {
         steps
             .iter()
             .find(|step| step.number() == self.spot().step())
-            .map(|step| match self {
-                PinEvent::Here(_) => step.placing(),
-                PinEvent::Done(_) => step.finished_in(steps),
-            })
+            .map(|step| self.placing_of(step, steps))
+    }
+
+    fn placing_of(self, step: &Step<'_>, steps: &[Step<'_>]) -> Placing {
+        match self {
+            PinEvent::Here(_) => step.placing(),
+            PinEvent::Done(_) => step.finished_in(steps),
+        }
     }
 
     fn pin_in(self, session: &Session, day: &Day, now: TripTime) {

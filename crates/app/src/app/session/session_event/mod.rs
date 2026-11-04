@@ -15,6 +15,7 @@ use crate::app::session::gesture::Gesture;
 use crate::app::step::{Spot, Toward};
 use crate::app::visit::Screen;
 use history_event::HistoryEvent;
+use map_plan::MapMode;
 use menu_event::MenuEvent;
 use pin_event::PinEvent;
 use progress_event::ProgressEvent;
@@ -91,23 +92,27 @@ impl SessionEvent {
             SessionEvent::TurnHistory { toward, top } => {
                 HistoryEvent::Turn { toward, top }.moved(session);
             }
-            SessionEvent::NoteTouchTop(top) => {
-                let mut touched = session.touch_top;
-                touched.set(top);
-            }
-            SessionEvent::SwitchMapMode => {
-                let mut mode = session.map_mode;
-                let switched = mode.peek().switched();
-                mode.set(switched);
-            }
-            SessionEvent::SwitchDark => {
-                let mut dark = session.dark;
-                let switched = dark.peek().switched();
-                switched
-                    .kept_in(session.shelf().home().as_ref())
-                    .unwrap_or_default();
-                dark.set(switched);
-            }
+            SessionEvent::NoteTouchTop(top) => Self::noted_touch_top(session.touch_top, top),
+            SessionEvent::SwitchMapMode => Self::switched_map_mode(session.map_mode),
+            SessionEvent::SwitchDark => Self::switched_dark(session),
         }
+    }
+
+    fn noted_touch_top(mut touched: Signal<ScrollTop>, top: ScrollTop) {
+        touched.set(top);
+    }
+
+    fn switched_map_mode(mut mode: Signal<MapMode>) {
+        let switched = mode.peek().switched();
+        mode.set(switched);
+    }
+
+    fn switched_dark(session: &Session) {
+        let mut dark = session.dark;
+        let switched = dark.peek().switched();
+        switched
+            .kept_in(session.shelf().home().as_ref())
+            .unwrap_or_default();
+        dark.set(switched);
     }
 }

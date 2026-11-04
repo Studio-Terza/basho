@@ -18,45 +18,51 @@ pub enum HistoryEvent {
 }
 
 impl HistoryEvent {
+    pub fn moved(self, session: &Session) {
+        match self {
+            HistoryEvent::Remember(top) => Self::remember(session, top),
+            HistoryEvent::Follow { entry, top } => Self::followed(session, entry, top),
+            HistoryEvent::OpenTab { screen, top } => Self::opened_tab(session, screen, top),
+            HistoryEvent::Turn { toward, top } => Self::turned(session, toward, top),
+        }
+    }
+
+    pub fn followed(session: &Session, entry: EntryId, top: ScrollTop) {
+        Self::remember(session, top);
+        session.wiki.entry(entry).and_then(Entry::home).map_or_else(
+            || Self::read(session, entry),
+            |home| Self::jump_home(session, home),
+        );
+    }
+
+    pub fn opened_tab(session: &Session, screen: Screen, top: ScrollTop) {
+        (*session.screen.peek() != screen).then(|| Self::remember(session, top));
+        session.show(screen);
+    }
+
     #[expect(
         clippy::needless_for_each,
         reason = "iterators are driven by combinators here"
     )]
-    pub fn moved(self, session: &Session) {
-        match self {
-            HistoryEvent::Remember(top) => Self::remember(session, top),
-            HistoryEvent::Follow { entry, top } => {
-                Self::remember(session, top);
-                session.wiki.entry(entry).and_then(Entry::home).map_or_else(
-                    || Self::read(session, entry),
-                    |home| Self::jump_home(session, home),
-                );
-            }
-            HistoryEvent::OpenTab { screen, top } => {
-                (*session.screen.peek() != screen).then(|| Self::remember(session, top));
-                session.show(screen);
-            }
-            HistoryEvent::Turn { toward, top } => {
-                let turn = session
-                    .history
-                    .peek()
-                    .turned(toward, Self::mark(session, top));
-                turn.into_iter().for_each(|turn| {
-                    let mut history = session.history;
-                    let mut screen = session.screen;
-                    let mut visit = session.visit;
-                    let mut landing = session.landing_top;
-                    let mark = turn.mark();
-                    let mut folds = session.folds;
-                    history.set(turn.history().clone());
-                    let held = visit.peek().jumped(mark.visit().focus(), Landing::Held);
-                    visit.set(held);
-                    folds.set(mark.folds().clone());
-                    screen.set(mark.screen());
-                    landing.set(Some(mark.top()));
-                });
-            }
-        }
+    pub fn turned(session: &Session, toward: Toward, top: ScrollTop) {
+        let turn = session
+            .history
+            .peek()
+            .turned(toward, Self::mark(session, top));
+        turn.into_iter().for_each(|turn| {
+            let mut history = session.history;
+            let mut screen = session.screen;
+            let mut visit = session.visit;
+            let mut landing = session.landing_top;
+            let mark = turn.mark();
+            let mut folds = session.folds;
+            history.set(turn.history().clone());
+            let held = visit.peek().jumped(mark.visit().focus(), Landing::Held);
+            visit.set(held);
+            folds.set(mark.folds().clone());
+            screen.set(mark.screen());
+            landing.set(Some(mark.top()));
+        });
     }
 
     fn remember(session: &Session, top: ScrollTop) {

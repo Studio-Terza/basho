@@ -24,20 +24,33 @@ impl PageShift {
     }
 }
 
+struct Follow(Duration);
+
+impl fmt::Display for Follow {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(formatter, "{}ms", self.0.as_millis())
+    }
+}
+
 impl fmt::Display for PageShift {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let follow = Duration::from(Motion::Slide).as_millis();
         match self.toward {
-            None => write!(formatter, "--shift: none; --follow: {follow}ms"),
+            None => write!(
+                formatter,
+                "--shift: none; --follow: {}",
+                Follow(Duration::from(Motion::Slide))
+            ),
             Some(Toward::Next) => write!(
                 formatter,
-                "--shift: translateX({}px); --follow: {follow}ms",
-                -self.nudge
+                "--shift: translateX({}px); --follow: {}",
+                -self.nudge,
+                Follow(Duration::from(Motion::Slide))
             ),
             Some(Toward::Previous) => write!(
                 formatter,
-                "--shift: translateX({}px); --follow: {follow}ms",
-                self.nudge
+                "--shift: translateX({}px); --follow: {}",
+                self.nudge,
+                Follow(Duration::from(Motion::Slide))
             ),
         }
     }

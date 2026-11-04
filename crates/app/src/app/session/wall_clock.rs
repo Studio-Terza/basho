@@ -20,6 +20,6 @@ impl WallClock {
     #[must_use]
     pub fn moved_on(self, shown: TripTime) -> Option<TripTime> {
         let real = self.time();
-        (real.time() != shown.time() || real.trip_date() != shown.trip_date()).then_some(real)
+        ((real.time(), real.trip_date()) != (shown.time(), shown.trip_date())).then_some(real)
     }
 }

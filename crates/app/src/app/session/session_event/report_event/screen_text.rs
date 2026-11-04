@@ -1,13 +1,14 @@
 use std::fmt;
 
 use guide::reading::Reading;
+use guide::words::Spelling;
 use wiki::entry::Entry;
 
 use crate::app::visit::Screen;
 
 pub struct ScreenText {
     screen: Screen,
-    page: Option<String>,
+    page: Option<Spelling>,
 }
 
 impl ScreenText {
@@ -15,10 +16,10 @@ impl ScreenText {
         ScreenText {
             screen,
             page: entry.map(|entry| {
-                entry.english().map_or_else(
+                Spelling::new(entry.english().map_or_else(
                     || entry.name().text(Reading::Written).to_string(),
                     ToString::to_string,
-                )
+                ))
             }),
         }
     }
