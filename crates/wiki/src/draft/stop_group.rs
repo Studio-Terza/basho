@@ -30,13 +30,6 @@ impl<'trip> StopGroup<'trip> {
         }
     }
 
-    pub fn gathered(
-        groups: Vec<StopGroup<'trip>>,
-        stops: impl Iterator<Item = StopRef<'trip>>,
-    ) -> Vec<StopGroup<'trip>> {
-        stops.fold(groups, Self::with_stop)
-    }
-
     #[must_use]
     pub fn group_kind(&self) -> EntryKind {
         self.kind
@@ -57,8 +50,11 @@ impl<'trip> StopGroup<'trip> {
         &self.stops
     }
 
-    fn with_stop(mut groups: Vec<StopGroup<'trip>>, stop: StopRef<'trip>) -> Vec<StopGroup<'trip>> {
-        let home = groups.iter().position(|group| group.holds(&stop));
+    pub fn with_stop(
+        mut groups: Vec<StopGroup<'trip>>,
+        stop: StopRef<'trip>,
+    ) -> Vec<StopGroup<'trip>> {
+        let home = groups.iter().position(|group| group.holds(&stop).is_some());
         let fresh = home
             .is_none()
             .then(|| stop.entry_kind())
@@ -74,15 +70,16 @@ impl<'trip> StopGroup<'trip> {
         let last_index = groups.len().checked_sub(1);
         groups
             .get_mut(home.or(last_index).unwrap_or_default())
-            .filter(|group| group.holds(&stop))
+            .filter(|group| group.holds(&stop).is_some())
             .into_iter()
             .for_each(|group| group.stops.push(stop));
         groups
     }
 
-    fn holds(&self, stop: &StopRef<'trip>) -> bool {
-        stop.entry_kind() == Some(self.kind)
-            && NameForms::head(self.name) == NameForms::head(stop.stop_name())
-            && self.at.distance_to(stop.point()) <= Self::SAME_SPOT
+    fn holds<'stop>(&self, stop: &'stop StopRef<'trip>) -> Option<&'stop StopRef<'trip>> {
+        Some(stop)
+            .filter(|stop| stop.entry_kind() == Some(self.kind))
+            .filter(|stop| NameForms::head(self.name) == NameForms::head(stop.stop_name()))
+            .filter(|stop| self.at.distance_to(stop.point()) <= Self::SAME_SPOT)
     }
 }

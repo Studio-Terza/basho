@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use crate::EntryId;
 use crate::entry::EntryKind;
 
@@ -23,15 +25,13 @@ impl Claim {
 
     #[must_use]
     pub fn joined(self, other: Claim) -> Claim {
-        if other.kind < self.kind {
-            other
-        } else if other.kind == self.kind && other.entry != self.entry {
-            Claim {
-                entry: None,
+        match other.kind.cmp(&self.kind) {
+            Ordering::Less => other,
+            Ordering::Equal => Claim {
+                entry: self.entry.filter(|entry| other.entry == Some(*entry)),
                 ..self
-            }
-        } else {
-            self
+            },
+            Ordering::Greater => self,
         }
     }
 }

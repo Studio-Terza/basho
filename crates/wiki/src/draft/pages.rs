@@ -53,14 +53,15 @@ impl<'roster, 'trip> Pages<'roster, 'trip> {
                     .collect(),
             )
         };
-        if groups.len() > Self::SHELVES_AFTER_LEN {
-            vec![on_shelf(Shelf::Souvenirs), on_shelf(Shelf::Supplies)]
-        } else {
-            vec![Section::new(
-                Heading::Shops,
-                groups.iter().map(|stop| stop.row(self.roster)).collect(),
-            )]
-        }
+        groups.get(Self::SHELVES_AFTER_LEN).map_or_else(
+            || {
+                vec![Section::new(
+                    Heading::Shops,
+                    groups.iter().map(|stop| stop.row(self.roster)).collect(),
+                )]
+            },
+            |_| vec![on_shelf(Shelf::Souvenirs), on_shelf(Shelf::Supplies)],
+        )
     }
 
     #[must_use]

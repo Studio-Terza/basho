@@ -1,3 +1,5 @@
+use std::num::NonZeroUsize;
+
 use crate::entry::{Heading, Row};
 
 #[derive(Clone, Debug)]
@@ -10,6 +12,11 @@ impl Section {
     #[must_use]
     pub fn new(heading: Heading, rows: Vec<Row>) -> Section {
         Section { heading, rows }
+    }
+
+    #[must_use]
+    pub fn filled(self) -> Option<Section> {
+        NonZeroUsize::new(self.rows.len()).map(|_| self)
     }
 
     #[must_use]

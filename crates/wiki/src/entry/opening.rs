@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 use guide::clock::ClockTime;
 use guide::leg::Cutoff;
 use strum::Display;
@@ -13,12 +15,17 @@ pub enum Opening {
 impl Opening {
     #[must_use]
     pub fn judged(arrival: Option<ClockTime>, cutoff: Option<&Cutoff>) -> Option<Opening> {
-        arrival.zip(cutoff).map(|(arrival, cutoff)| {
-            if arrival < cutoff.deadline() {
-                Opening::Open
-            } else {
-                Opening::Closed
-            }
-        })
+        arrival
+            .zip(cutoff)
+            .map(|(arrival, cutoff)| Opening::from(arrival.cmp(&cutoff.deadline())))
+    }
+}
+
+impl From<Ordering> for Opening {
+    fn from(order: Ordering) -> Opening {
+        match order {
+            Ordering::Less => Opening::Open,
+            Ordering::Equal | Ordering::Greater => Opening::Closed,
+        }
     }
 }

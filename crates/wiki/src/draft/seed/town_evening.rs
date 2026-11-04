@@ -26,13 +26,24 @@ pub enum Want {
 impl Want {
     #[must_use]
     pub fn kept<'stop, 'trip>(self, stop: &'stop StopRef<'trip>) -> Option<&'stop StopRef<'trip>> {
-        match (self, stop.along().kind()) {
-            (Want::Dinner, StopKind::Food)
-            | (Want::Sights, StopKind::Sight)
-            | (Want::Practical, StopKind::Service) => Some(stop),
-            (Want::Practical, StopKind::Shop) => {
-                Some(stop).filter(|stop| Shelf::of_stop(stop) == Shelf::Supplies)
-            }
+        match self {
+            Want::Dinner => Self::of_kind(stop, StopKind::Food),
+            Want::Sights => Self::of_kind(stop, StopKind::Sight),
+            Want::Practical => Self::practical(stop),
+        }
+    }
+
+    fn of_kind<'stop, 'trip>(
+        stop: &'stop StopRef<'trip>,
+        kind: StopKind,
+    ) -> Option<&'stop StopRef<'trip>> {
+        Some(stop).filter(|stop| stop.along().kind() == kind)
+    }
+
+    fn practical<'stop, 'trip>(stop: &'stop StopRef<'trip>) -> Option<&'stop StopRef<'trip>> {
+        match stop.along().kind() {
+            StopKind::Service => Some(stop),
+            StopKind::Shop => Some(stop).filter(|stop| Shelf::of_stop(stop) == Shelf::Supplies),
             _ => None,
         }
     }
@@ -68,7 +79,11 @@ impl<'trip> TownEvening<'trip> {
 
     #[must_use]
     pub fn filled(&self) -> Option<&TownEvening<'trip>> {
-        (!self.night.notes().is_empty() || !self.near.is_empty()).then_some(self)
+        self.night
+            .notes()
+            .first()
+            .map(|_| self)
+            .or_else(|| self.near.first().map(|_| self))
     }
 
     #[must_use]

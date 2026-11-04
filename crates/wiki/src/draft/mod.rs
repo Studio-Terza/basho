@@ -47,11 +47,13 @@ impl<'trip> Roster<'trip> {
         let taken: HashSet<Spelling> = named.iter().flat_map(Seed::names).collect();
         let seeds: Vec<Seed<'trip>> = named
             .into_iter()
-            .chain(
-                Seed::features(landmarks)
+            .chain(Seed::features(landmarks).into_iter().filter(|feature| {
+                feature
+                    .names()
                     .into_iter()
-                    .filter(|feature| feature.names().iter().all(|name| !taken.contains(name))),
-            )
+                    .collect::<HashSet<Spelling>>()
+                    .is_disjoint(&taken)
+            }))
             .collect();
         let keys = seeds
             .iter()
@@ -142,7 +144,9 @@ impl<'trip> Roster<'trip> {
             .iter()
             .map(StopGroup::of_star)
             .collect();
-        StopGroup::gathered(stars, days.iter().flat_map(StopRef::of_day))
+        days.iter()
+            .flat_map(StopRef::of_day)
+            .fold(stars, StopGroup::with_stop)
             .into_iter()
             .map(Seed::Group)
             .collect()

@@ -4,6 +4,9 @@ use strum::{EnumIter, IntoEnumIterator};
 
 use crate::entry::Heading;
 
+#[derive(Clone, Copy)]
+struct Word(&'static str);
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, EnumIter)]
 pub enum Cuisine {
     Soba,
@@ -19,7 +22,7 @@ impl Cuisine {
     pub fn of_name(name: &RubyText) -> Cuisine {
         let written = name.text(Reading::Written).to_lowercase();
         Cuisine::iter()
-            .find(|cuisine| cuisine.words().iter().any(|word| written.contains(word)))
+            .find(|cuisine| cuisine.words().iter().any(|word| written.contains(word.0)))
             .unwrap_or(Cuisine::Other)
     }
 
@@ -35,13 +38,13 @@ impl Cuisine {
         }
     }
 
-    fn words(self) -> &'static [&'static str] {
+    fn words(self) -> &'static [Word] {
         match self {
-            Cuisine::Soba => &["soba", "udon"],
-            Cuisine::Ramen => &["ramen", "ラーメン", "noodles"],
-            Cuisine::Seafood => &["seafood", "tuna", "eel"],
-            Cuisine::SetMeals => &["set meals", "shokudo", "kitchen"],
-            Cuisine::Cafes => &["cafe", "teahouse"],
+            Cuisine::Soba => &[Word("soba"), Word("udon")],
+            Cuisine::Ramen => &[Word("ramen"), Word("ラーメン"), Word("noodles")],
+            Cuisine::Seafood => &[Word("seafood"), Word("tuna"), Word("eel")],
+            Cuisine::SetMeals => &[Word("set meals"), Word("shokudo"), Word("kitchen")],
+            Cuisine::Cafes => &[Word("cafe"), Word("teahouse")],
             Cuisine::Other => &[],
         }
     }
