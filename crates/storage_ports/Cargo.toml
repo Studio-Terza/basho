@@ -11,7 +11,7 @@ publish = false
 derive_more.workspace = true
 
 [dev-dependencies]
-laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 tempfile = "3"
 
 [[test]]

@@ -11,7 +11,7 @@ publish = false
 plain_text = { path = "../plain_text" }
 strum = { version = "0.28", features = ["derive"] }
 derive_more.workspace = true
-newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 dioxus = "0.7.10"
 guide = { path = "../guide" }
 manganis = "0.7.10"
@@ -27,7 +27,7 @@ thiserror = "2"
 tokio = { version = "1", features = ["time"] }
 
 [dev-dependencies]
-laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 dioxus-ssr = "0.7.10"
 rayon = "1"
 serde_json = "1"

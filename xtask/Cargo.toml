@@ -9,7 +9,7 @@ publish = false
 
 [dependencies]
 derive_more.workspace = true
-newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 basho_lints = { path = "../tools/basho_lints" }
 guide = { path = "../crates/guide" }
 day_print = { path = "../tools/day_print" }
@@ -30,7 +30,7 @@ toml = "0.9"
 [dev-dependencies]
 tempfile = "3"
 wiki = { path = "../crates/wiki" }
-laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.1.5" }
+laws = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 
 [lints]
 workspace = true

@@ -3029,7 +3029,7 @@ dependencies = [
 [[package]]
 name = "laws"
 version = "0.1.0"
-source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.1.5#8e79c8d00b87606d25237d84a29eb927965bf3fb"
+source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.2.0#375d40167440c14c53210bc75bc81755be2a878c"
 dependencies = [
  "proptest",
 ]
@@ -3742,15 +3742,16 @@ checksum = "650eef8c711430f1a879fdd01d4745a7deea475becfb90269c06775983bbf086"
 [[package]]
 name = "newtype"
 version = "0.1.0"
-source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.1.5#8e79c8d00b87606d25237d84a29eb927965bf3fb"
+source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.2.0#375d40167440c14c53210bc75bc81755be2a878c"
 dependencies = [
  "newtype-derive",
+ "proptest",
 ]
 
 [[package]]
 name = "newtype-derive"
 version = "0.1.0"
-source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.1.5#8e79c8d00b87606d25237d84a29eb927965bf3fb"
+source = "git+https://github.com/Studio-Terza/meta-dev?tag=v0.2.0#375d40167440c14c53210bc75bc81755be2a878c"
 dependencies = [
  "proc-macro2",
  "quote",
