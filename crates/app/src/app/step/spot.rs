@@ -35,7 +35,7 @@ impl Spot {
         let wanted = day.goals().get(usize::from(goal))?;
         Step::of_day(day)
             .into_iter()
-            .find(|step| wanted.holds(step.index()))
+            .find_map(|step| wanted.holds(step.index()).map(|_| step))
             .map(|step| Spot::new(day.number(), step.number()))
     }
 
@@ -88,7 +88,8 @@ impl Spot {
         let position = day
             .goals()
             .iter()
-            .position(|goal| goal.holds(shown.index()))?;
+            .enumerate()
+            .find_map(|(position, goal)| goal.holds(shown.index()).map(|_| position))?;
         match toward {
             Toward::Next => Some(position + 1).filter(|next| *next < day.goals().len()),
             Toward::Previous => position.checked_sub(1),

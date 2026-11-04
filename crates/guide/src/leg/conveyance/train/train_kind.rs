@@ -13,12 +13,12 @@ pub enum TrainKind {
 
 impl From<&TrainKind> for Label {
     fn from(kind: &TrainKind) -> Label {
-        Label::new(match kind {
-            TrainKind::Local => "Local",
-            TrainKind::Rapid => "Rapid",
-            TrainKind::LimitedExpress => "Limited express",
-            TrainKind::Shinkansen => "Shinkansen",
-            TrainKind::Subway => "Subway",
-        })
+        match kind {
+            TrainKind::Local => Label::new("Local"),
+            TrainKind::Rapid => Label::new("Rapid"),
+            TrainKind::LimitedExpress => Label::new("Limited express"),
+            TrainKind::Shinkansen => Label::new("Shinkansen"),
+            TrainKind::Subway => Label::new("Subway"),
+        }
     }
 }

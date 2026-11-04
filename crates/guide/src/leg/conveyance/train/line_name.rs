@@ -12,10 +12,11 @@ impl TryFrom<RubyText> for LineName {
     type Error = TrainTextError;
 
     fn try_from(text: RubyText) -> Result<LineName, TrainTextError> {
-        if text.text(Reading::Written).trim().is_empty() {
-            Err(TrainTextError::NamelessLine)
-        } else {
-            Ok(LineName(text))
-        }
+        text.text(Reading::Written)
+            .trim()
+            .chars()
+            .next()
+            .map(|_| LineName(text))
+            .ok_or(TrainTextError::NamelessLine)
     }
 }

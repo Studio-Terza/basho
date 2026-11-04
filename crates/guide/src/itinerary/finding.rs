@@ -41,10 +41,18 @@ impl Finding {
 
 impl fmt::Display for Finding {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match (self.day, self.leg) {
-            (Some(day), Some(leg)) => write!(formatter, "day {day} leg {leg}: {}", self.message),
-            (Some(day), None) => write!(formatter, "day {day}: {}", self.message),
-            _ => formatter.write_str(&self.message),
+        match self.day {
+            Some(day) => self.located(formatter, day),
+            None => formatter.write_str(&self.message),
+        }
+    }
+}
+
+impl Finding {
+    fn located(&self, formatter: &mut fmt::Formatter<'_>, day: DayNumber) -> fmt::Result {
+        match self.leg {
+            Some(leg) => write!(formatter, "day {day} leg {leg}: {}", self.message),
+            None => write!(formatter, "day {day}: {}", self.message),
         }
     }
 }

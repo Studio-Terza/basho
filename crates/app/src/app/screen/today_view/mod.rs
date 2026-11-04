@@ -68,7 +68,7 @@ impl TodayView<'_> {
                             p { class: "goal-why", lang: language.class(), {LinkedView::new(self.session, AsRef::<Content>::as_ref(goal))} }
                             {LinkedHere::new(self.session, EntryKey::Goal { day: day.number(), first })}
                             ol { class: "steps",
-                                {steps.iter().filter(|step| goal.holds(step.index())).map(|step| rsx! {
+                                {steps.iter().filter_map(|step| goal.holds(step.index()).map(|_| step)).map(|step| rsx! {
                                     {StepView::new(self.session, &guidance, step, point.state_of(step.number()))}
                                 })}
                             }

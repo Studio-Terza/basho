@@ -16,16 +16,18 @@ impl LegRule for Cues {
             .iter()
             .filter(|branch| branch.cue().is_none())
             .map(|branch| branch.line_text(BranchLine::Trigger).text(Reading::Written))
-            .filter(|trigger| {
+            .filter_map(|trigger| {
                 trigger
                     .parse::<Moments>()
-                    .is_ok_and(|moments| !moments.is_empty())
-            })
-            .map(|trigger| Problem::UncuedTime { trigger });
+                    .ok()
+                    .and_then(|moments| moments.first())
+                    .map(|_| Problem::UncuedTime { trigger })
+            });
         let departed = leg
             .branches()
             .iter()
-            .filter(|branch| leg.mode() == Mode::Walk && branch.cue() == Some(Cue::Departed))
+            .filter(|_| leg.mode() == Mode::Walk)
+            .filter(|branch| branch.cue() == Some(Cue::Departed))
             .map(|_| Problem::DepartedOnWalk);
         uncued.chain(departed).collect()
     }

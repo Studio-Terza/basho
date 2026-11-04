@@ -17,14 +17,14 @@ pub enum Reason {
 impl Reason {
     #[must_use]
     pub fn label(&self) -> Label {
-        Label::new(match self {
-            Reason::Star(_) => "Star",
-            Reason::Loop(_) => "Loop",
-            Reason::Sight => "Sight",
-            Reason::Landmark => "Landmark",
-            Reason::Meal => "Meal",
-            Reason::Supplies => "Shop",
-        })
+        match self {
+            Reason::Star(_) => Label::new("Star"),
+            Reason::Loop(_) => Label::new("Loop"),
+            Reason::Sight => Label::new("Sight"),
+            Reason::Landmark => Label::new("Landmark"),
+            Reason::Meal => Label::new("Meal"),
+            Reason::Supplies => Label::new("Shop"),
+        }
     }
 
     #[must_use]
@@ -49,15 +49,17 @@ impl Reason {
     }
 
     pub fn sight_names(&self) -> impl Iterator<Item = &Content> {
+        self.sights().into_iter().flat_map(SightLoop::names)
+    }
+
+    fn sights(&self) -> Option<&SightLoop> {
         match self {
-            Reason::Loop(sights) => Some(sights.names()),
+            Reason::Loop(sights) => Some(sights),
             Reason::Star(_)
             | Reason::Sight
             | Reason::Landmark
             | Reason::Meal
             | Reason::Supplies => None,
         }
-        .into_iter()
-        .flatten()
     }
 }

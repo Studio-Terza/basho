@@ -20,8 +20,8 @@ impl TryFrom<RubyText> for Headsign {
         Self::ENDINGS
             .iter()
             .filter_map(|ending| written.strip_suffix(ending))
-            .any(|destination| !destination.is_empty())
-            .then_some(Headsign(text))
+            .find_map(|destination| destination.chars().next())
+            .map(|_| Headsign(text))
             .ok_or(TrainTextError::Headsign(written))
     }
 }

@@ -94,11 +94,11 @@ impl Day {
         let spans_before = std::iter::once(Minutes::ZERO)
             .chain(legs.iter().scan(Minutes::ZERO, |total, leg| {
                 *total = *total
-                    + if leg.mode() == Mode::Walk {
-                        leg.minutes() + leg.paused(Pause::Along) + leg.paused(Pause::AtEnd)
-                    } else {
-                        Minutes::ZERO
-                    };
+                    + Some(leg)
+                        .filter(|leg| leg.mode() == Mode::Walk)
+                        .map_or(Minutes::ZERO, |leg| {
+                            leg.minutes() + leg.paused(Pause::Along) + leg.paused(Pause::AtEnd)
+                        });
                 Some(*total)
             }))
             .collect();
@@ -125,9 +125,10 @@ impl Day {
     }
 
     #[must_use]
-    pub fn follows(&self, previous: &Day) -> bool {
-        self.number.number() == previous.number.number().wrapping_add(1)
-            && self.date.is_day_after(previous.date)
+    pub fn follows(&self, previous: &Day) -> Option<&Day> {
+        Some(self)
+            .filter(|day| day.number.number() == previous.number.number().wrapping_add(1))
+            .filter(|day| day.date.is_day_after(previous.date))
     }
 
     #[must_use]
@@ -146,9 +147,10 @@ impl Day {
         [index]
             .into_iter()
             .chain(ride)
-            .filter(|found| {
-                self.leg(*found)
-                    .is_some_and(|leg| !leg.branches().is_empty())
+            .filter_map(|found| {
+                self.leg(found)
+                    .and_then(|leg| leg.branches().first())
+                    .map(|_| found)
             })
             .collect()
     }
@@ -223,7 +225,9 @@ impl Day {
 
     #[must_use]
     pub fn goal_holding(&self, leg: LegIndex) -> Option<&Goal> {
-        self.goals.iter().find(|goal| goal.holds(leg))
+        self.goals
+            .iter()
+            .find_map(|goal| goal.holds(leg).map(|_| goal))
     }
 
     #[must_use]
@@ -235,11 +239,11 @@ impl Day {
     }
 
     #[must_use]
-    pub fn claims(&self, point: &StarName) -> bool {
+    pub fn claims<'name>(&'name self, point: &StarName) -> Option<&'name StarName> {
         self.goals
             .iter()
             .flat_map(|goal| goal.purpose().claims())
-            .any(|name| name == point)
+            .find(|name| *name == point)
     }
 
     #[must_use]
@@ -294,7 +298,8 @@ impl Day {
         let unanchored = self
             .legs
             .first()
-            .filter(|leg| leg.mode() != Mode::Walk && self.leave_from().is_none())
+            .filter(|leg| leg.mode() != Mode::Walk)
+            .filter(|_| self.leave_from().is_none())
             .map(|_| Problem::RideFirstWithNoStart);
         let early = self
             .leave_from()
@@ -320,13 +325,15 @@ impl Day {
             let leaves = pair[0]
                 .time(End::Finish)
                 .later_by(pair[0].paused(Pause::AtEnd));
-            (pair[0].mode() == Mode::Walk && leaves > target && leaves < boards).then(|| {
-                Problem::PastDeadline {
+            (pair[0].mode() == Mode::Walk)
+                .then_some(leaves)
+                .filter(|leaves| *leaves > target)
+                .filter(|leaves| *leaves < boards)
+                .map(|leaves| Problem::PastDeadline {
                     place: pair[1].line_text(LegLine::Way).text(Reading::Written),
                     arrival: ListedTime::Planned(PlanTime::new(leaves)),
                     deadline: ListedTime::Planned(PlanTime::new(target)),
-                }
-            })
+                })
         });
         early
             .into_iter()

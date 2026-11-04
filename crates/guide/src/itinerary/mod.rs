@@ -72,17 +72,20 @@ impl From<&Itinerary> for Vec<Finding> {
         let membership = itinerary
             .days
             .iter()
-            .filter(|day| {
-                itinerary
-                    .arc_of(day)
-                    .is_none_or(|arc| !arc.day_numbers().contains(&day.number()))
+            .filter_map(|day| {
+                Some(day).xor(
+                    itinerary
+                        .arc_of(day)
+                        .filter(|arc| arc.day_numbers().contains(&day.number()))
+                        .map(|_| day),
+                )
             })
             .map(|day| Finding::on_day(day.number(), Problem::ArcMissesDay { arc: day.arc() }));
         let order = itinerary
             .days
             .windows(Itinerary::DAY_PAIR_LENGTH)
-            .filter(|pair| !pair[1].follows(&pair[0]))
-            .map(|pair| Finding::on_day(pair[1].number(), Problem::DayOutOfOrder));
+            .filter_map(|pair| Some(&pair[1]).xor(pair[1].follows(&pair[0])))
+            .map(|day| Finding::on_day(day.number(), Problem::DayOutOfOrder));
         let repeated = itinerary
             .arcs
             .iter()

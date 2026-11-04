@@ -13,8 +13,8 @@ impl Moments {
     const SERVICE: &str = "the ";
 
     #[must_use]
-    pub fn is_empty(&self) -> bool {
-        self.times.is_empty()
+    pub fn first(&self) -> Option<ClockTime> {
+        self.times.first().copied()
     }
 }
 
@@ -34,9 +34,8 @@ impl FromStr for Moments {
                 let start = colon.checked_sub(hour).filter(|_| hour > 0)?;
                 let written = text.get(start..=colon + Self::MINUTE_LENGTH)?;
                 let prefix = before.get(..start)?;
-                ClockTime::try_from(written.to_owned())
-                    .ok()
-                    .filter(|_| !prefix.ends_with(Self::SERVICE))
+                let time = ClockTime::try_from(written.to_owned()).ok();
+                time.xor(prefix.strip_suffix(Self::SERVICE).and(time))
             })
             .collect();
         Ok(Moments { times })

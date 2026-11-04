@@ -40,11 +40,9 @@ impl Margin {
 
     #[must_use]
     pub fn stricter(self, other: Margin) -> Margin {
-        if other.before > self.before {
-            other
-        } else {
-            self
-        }
+        Some(other)
+            .filter(|other| other.before > self.before)
+            .unwrap_or(self)
     }
 
     #[must_use]

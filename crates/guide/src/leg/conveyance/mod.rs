@@ -41,12 +41,12 @@ impl Conveyance {
 impl Mode {
     #[must_use]
     pub fn label(self) -> Label {
-        Label::new(match self {
-            Mode::Walk => "Walk",
-            Mode::Train => "Train",
-            Mode::Bus => "Bus",
-            Mode::Boat => "Boat",
-            Mode::Car => "Car",
-        })
+        match self {
+            Mode::Walk => Label::new("Walk"),
+            Mode::Train => Label::new("Train"),
+            Mode::Bus => Label::new("Bus"),
+            Mode::Boat => Label::new("Boat"),
+            Mode::Car => Label::new("Car"),
+        }
     }
 }

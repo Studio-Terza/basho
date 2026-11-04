@@ -95,6 +95,8 @@ pub struct Leg {
 }
 
 impl Leg {
+    const NO_TIME_LEFT: f64 = 0.0;
+
     #[must_use]
     pub fn attached(self, path: &LegPath) -> Leg {
         Leg {
@@ -164,11 +166,9 @@ impl Leg {
 
     #[must_use]
     pub fn planned_after(&self, along: Distance) -> Minutes {
-        let share = if self.length > Distance::default() {
-            (along / self.length).clamp(0.0, 1.0)
-        } else {
-            1.0
-        };
+        let share = Some(self.length)
+            .filter(|length| *length > Distance::default())
+            .map_or(1.0, |length| (along / length).clamp(0.0, 1.0));
         let stops: Minutes = self
             .along
             .iter()
@@ -183,11 +183,9 @@ impl Leg {
         let pace = self.minutes.amount().max(1.0) / self.length.meters().max(1.0);
         let walked = |from: Distance, minutes: f64| {
             let reached = from + Distance::new(minutes.max(0.0) / pace);
-            if reached > self.length {
-                self.length
-            } else {
-                reached
-            }
+            Some(self.length)
+                .filter(|length| reached > *length)
+                .unwrap_or(reached)
         };
         let arrives = |stop: &Along| {
             stop.distance_along().meters() * pace
@@ -207,11 +205,12 @@ impl Leg {
             || walked(Distance::default(), elapsed.amount()),
             |stop| {
                 let left = elapsed.amount() - arrives(stop) - stop.dwell_minutes().amount();
-                if left < 0.0 {
-                    stop.distance_along()
-                } else {
-                    walked(stop.distance_along(), left)
-                }
+                Some(left)
+                    .filter(|left| *left < Self::NO_TIME_LEFT)
+                    .map_or_else(
+                        || walked(stop.distance_along(), left),
+                        |_| stop.distance_along(),
+                    )
             },
         )
     }
@@ -224,15 +223,19 @@ impl Leg {
             .train()
             .map(AsRef::<TrainKind>::as_ref)
             .filter(|kind| **kind == TrainKind::Shinkansen);
-        let usual = self
-            .transfer
-            .map_or(Margin::from(pay), |transfer| match (pay, shinkansen) {
-                (Pay::StoredValue | Pay::Held, None) => Margin::from(transfer),
-                (Pay::StoredValue | Pay::Held | Pay::Buy | Pay::Pickup | Pay::OnBoard, _) => {
-                    Margin::from(pay).stricter(Margin::from(transfer))
-                }
-            });
+        let usual = self.transfer.map_or(Margin::from(pay), |transfer| {
+            shinkansen
+                .map_or(Self::waived(pay, transfer), |_| None)
+                .unwrap_or_else(|| Margin::from(pay).stricter(Margin::from(transfer)))
+        });
         (self.mode() != Mode::Walk).then(|| self.margin.map_or(usual, Margin::from))
+    }
+
+    fn waived(pay: Pay, transfer: Transfer) -> Option<Margin> {
+        match pay {
+            Pay::StoredValue | Pay::Held => Some(Margin::from(transfer)),
+            Pay::Buy | Pay::Pickup | Pay::OnBoard => None,
+        }
     }
 
     #[must_use]
