@@ -1,11 +1,11 @@
 mod app_bundle;
 mod bits;
+mod boundary;
 mod connect;
 mod failure;
 mod identity;
 mod profile;
 mod staging;
-mod tool;
 mod xcrun_tool;
 
 use std::path::Path;

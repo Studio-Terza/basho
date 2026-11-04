@@ -1,26 +1,12 @@
-use std::collections::BTreeMap;
 use std::fmt;
-
-use plain_text::PlainText;
-use serde::Deserialize;
-use serde::de::IgnoredAny;
 
 use tile_draft::{TagKey, TileTag};
 
+mod boundary;
 mod labels;
 
+pub use boundary::OsmTags;
 use labels::Labels;
-
-#[derive(Clone, Debug, Deserialize)]
-#[serde(untagged)]
-enum OsmText {
-    Text(PlainText),
-    Other(IgnoredAny),
-}
-
-#[derive(Clone, Debug, Deserialize, Default)]
-#[serde(transparent)]
-pub struct OsmTags(BTreeMap<PlainText, OsmText>);
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct OsmKey(&'static str);
@@ -60,13 +46,6 @@ impl OsmKey {
 
 impl OsmTags {
     const ABSENT: &str = "no";
-
-    pub(crate) fn text(&self, key: OsmKey) -> Option<&str> {
-        match self.0.get(key.0)? {
-            OsmText::Text(text) => Some(text.as_ref()),
-            OsmText::Other(_) => None,
-        }
-    }
 
     pub fn parsed<Tag: std::str::FromStr>(&self, key: OsmKey) -> Option<Tag> {
         self.text(key)?.parse().ok()

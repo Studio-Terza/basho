@@ -16,7 +16,9 @@ impl Piece {
         }
     }
 
-    pub(super) fn parsed(text: impl AsRef<str>) -> Vec<Piece> {
+    pub(in crate::task::catch_import::day_file::note_text) fn parsed(
+        text: impl AsRef<str>,
+    ) -> Vec<Piece> {
         let text = text.as_ref();
         text.split('{')
             .take(1)

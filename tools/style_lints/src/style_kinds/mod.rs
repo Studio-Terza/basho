@@ -1,12 +1,12 @@
+mod boundary;
 mod picked;
-mod selector_parts;
 
 use crate::SheetRule;
 use crate::style_sheet::StyleSheet;
 use basho_lints::Report;
 use basho_lints::Violation;
+use boundary::SelectorParts;
 use picked::Picked;
-use selector_parts::SelectorParts;
 
 pub struct StyleKinds;
 

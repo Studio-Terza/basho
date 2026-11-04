@@ -1,8 +1,8 @@
 use std::path::{Path, PathBuf};
 
+use crate::boundary::Tool;
 use crate::failure::Failure;
 use crate::staging::Staging;
-use crate::tool::Tool;
 use crate::xcrun_tool::XcrunTool;
 
 pub struct IconCatalog {

@@ -4,10 +4,10 @@ use std::path::PathBuf;
 
 use serde::Deserialize;
 
+use crate::boundary::Tool;
 use crate::connect::identifier::Identifier;
 use crate::failure::Failure;
 use crate::staging::Staging;
-use crate::tool::Tool;
 
 #[derive(Deserialize)]
 pub struct Credentials {

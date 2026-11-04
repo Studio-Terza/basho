@@ -1,6 +1,6 @@
 use std::fmt;
 
-use super::selector_parts::SimplePart;
+use super::boundary::SimplePart;
 use crate::style_sheet::Selector;
 
 pub struct Picked<'rule> {

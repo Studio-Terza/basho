@@ -14,8 +14,8 @@ impl ProcessRow {
     }
 
     #[must_use]
-    pub fn child_of(&self, host: &ProcessRow) -> bool {
-        self.parent == host.pid
+    pub fn child_of(&self, host: &ProcessRow) -> Option<&ProcessRow> {
+        Some(self).filter(|row| row.parent == host.pid)
     }
 
     #[must_use]

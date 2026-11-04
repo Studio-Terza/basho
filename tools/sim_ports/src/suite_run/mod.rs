@@ -1,12 +1,12 @@
-mod top_probe;
+mod boundary;
 
 use crate::phase_length::PhaseLength;
 use sim_suite::map_phase::PhaseFigures;
-use sim_suite::{CrashReports, SimFindings, Standing, SuiteEar, SuiteLine, SuiteWord, TestName};
+use sim_suite::{CrashReports, SimFindings, Standing, SuiteEar, SuiteWord, TestName};
 
 use crate::device::Udid;
 use crate::failure::Failure;
-use top_probe::TopProbe;
+use boundary::TopProbe;
 
 #[derive(Default)]
 pub struct SuiteRun {
@@ -18,12 +18,6 @@ pub struct SuiteRun {
 impl SuiteRun {
     pub fn watching(&mut self, udid: Udid) {
         self.udid = udid;
-    }
-
-    pub fn heard(&mut self, line: &str) {
-        line.parse::<SuiteLine>()
-            .into_iter()
-            .for_each(|line| line.told_to(self));
     }
 
     #[must_use]

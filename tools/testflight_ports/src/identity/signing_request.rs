@@ -1,9 +1,9 @@
 use std::fs;
 use std::path::PathBuf;
 
+use crate::boundary::Tool;
 use crate::failure::Failure;
 use crate::staging::Staging;
-use crate::tool::Tool;
 
 pub struct SigningRequest {
     key: PathBuf,

@@ -13,9 +13,8 @@ impl Selector {
         self.0
             .split('.')
             .skip(1)
-            .filter_map(|rest| rest.split(|character| !Self::in_class(character)).next())
-            .filter(|class| !class.is_empty())
-            .map(|class| CssClass(class.to_owned()))
+            .map(|rest| &rest[..rest.len() - rest.trim_start_matches(Self::in_class).len()])
+            .filter_map(|class| class.chars().next().map(|_| CssClass(class.to_owned())))
             .collect()
     }
 
@@ -28,7 +27,7 @@ impl Selector {
     }
 
     fn in_class(character: char) -> bool {
-        character.is_ascii_alphanumeric() || character == '-' || character == '_'
+        matches!(character, 'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_')
     }
 }
 

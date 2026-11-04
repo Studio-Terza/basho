@@ -5,11 +5,11 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Value, json};
 
+use crate::boundary::Tool;
 use crate::connect::{Connect, Document, Endpoint, Resource};
 use crate::failure::Failure;
 use crate::identity::Identity;
 use crate::staging::Staging;
-use crate::tool::Tool;
 use profile_content::ProfileContent;
 
 pub struct Profile {

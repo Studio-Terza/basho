@@ -2,7 +2,7 @@ use std::fmt;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use crate::bounded::Bounded;
+use crate::boundary::Bounded;
 use crate::failure::Failure;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]

@@ -38,7 +38,7 @@ impl TopProbe {
                 .is_some()
         });
         rows.iter()
-            .filter(|row| host.is_some_and(|host| row.child_of(host)))
+            .filter_map(|row| host.and_then(|host| row.child_of(host)))
             .filter(|row| Self::WATCHED.iter().any(|name| row.runs(name).is_some()))
             .map(|row| row.pid().to_owned())
             .collect()
