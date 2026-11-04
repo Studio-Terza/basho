@@ -11,6 +11,7 @@ use guide::reading::Reading;
 use std::fmt;
 
 use guide::itinerary::{Caption, Day};
+use guide::leg::LegIndex;
 
 use escaped::Escaped;
 use fact_markup::FactMarkup;
@@ -35,11 +36,11 @@ impl<'day> DayPage<'day> {
             .legs()
             .chunk_by(|one, other| one.mode() == other.mode())
             .scan(0, |start, run| {
-                let first = LegNumber::from_index(*start);
+                let first = LegNumber::from(LegIndex::new(*start));
                 *start += run.len();
                 Some(SectionSketch::new(first, run))
             })
-            .filter(SectionSketch::walks)
+            .filter_map(SectionSketch::walking)
             .collect()
     }
 
@@ -86,7 +87,7 @@ impl fmt::Display for DayPage<'_> {
                 write!(
                     formatter,
                     "{}",
-                    LegRow::new(LegNumber::from_index(index), leg)
+                    LegRow::new(LegNumber::from(LegIndex::new(index)), leg)
                 )
             })?;
         formatter.write_str("</table></section>")
