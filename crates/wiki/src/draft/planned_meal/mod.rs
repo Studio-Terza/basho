@@ -8,6 +8,7 @@ use guide::itinerary::{Caption, Day};
 use guide::leg::{LegIndex, StopKind};
 use guide::reading::Reading;
 use guide::ruby_text::RubyText;
+use newtype::Counter;
 use strum::IntoEnumIterator;
 
 use crate::EntryKey;
@@ -16,6 +17,9 @@ use crate::draft::shelf::Shelf;
 use crate::draft::stop_ref::StopRef;
 use crate::entry::{Heading, Row, Section};
 use cuisine::Cuisine;
+
+#[derive(newtype::Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, Eq)]
+struct MealIndex(usize);
 
 #[derive(Clone, Copy, Debug)]
 pub enum Choice<'trip> {
@@ -36,21 +40,17 @@ impl<'trip> PlannedMeal<'trip> {
     #[must_use]
     pub fn of_day(day: &'trip Day) -> Vec<PlannedMeal<'trip>> {
         let stops: Vec<StopRef<'trip>> = StopRef::of_day(day).collect();
-        let seated: Vec<StopRef<'trip>> = stops
-            .iter()
-            .filter(|stop| Self::seated(stop))
-            .copied()
-            .collect();
-        let goals = day
+        let seated: Vec<StopRef<'trip>> = stops.iter().filter_map(Self::seated).copied().collect();
+        let (_covered, goals): (Vec<&Goal>, Vec<&Goal>) = day
             .goals()
             .iter()
             .filter(|goal| matches!(goal.purpose(), Purpose::Aim(Reason::Meal)))
-            .filter(|goal| !seated.iter().any(|stop| goal.holds(stop.leg_index())));
+            .partition(|goal| seated.iter().any(|stop| goal.holds(stop.leg_index())));
         let mut choices: Vec<Choice<'trip>> = seated
             .iter()
             .copied()
             .map(Choice::Stop)
-            .chain(goals.map(Choice::Goal))
+            .chain(goals.into_iter().map(Choice::Goal))
             .collect();
         choices.sort_by_key(Choice::meal_leg);
         let legs: Vec<LegIndex> = choices.iter().map(Choice::meal_leg).collect();
@@ -60,7 +60,7 @@ impl<'trip> PlannedMeal<'trip> {
             .map(|(position, choice)| PlannedMeal {
                 day,
                 choice: *choice,
-                stretch: Self::stretch_around(&stops, &legs, position),
+                stretch: Self::stretch_around(&stops, &legs, MealIndex::new(position)),
             })
             .collect()
     }
@@ -113,28 +113,28 @@ impl<'trip> PlannedMeal<'trip> {
     fn stretch_around(
         stops: &[StopRef<'trip>],
         legs: &[LegIndex],
-        meal_index: usize,
+        meal: MealIndex,
     ) -> Vec<StopRef<'trip>> {
-        let leg = legs.get(meal_index).copied().unwrap_or_default();
+        let leg = legs.get(meal.count()).copied().unwrap_or_default();
         let halfway = |other: &LegIndex| usize::from(*other).midpoint(usize::from(leg));
-        let from_index = meal_index
+        let from_index = meal
+            .count()
             .checked_sub(1)
             .and_then(|before| legs.get(before))
             .map(halfway);
-        let to_index = legs.get(meal_index + 1).map(halfway);
+        let to_index = legs.get(meal.incremented().count()).map(halfway);
         stops
             .iter()
-            .filter(|stop| {
-                let at_index = usize::from(stop.leg_index());
-                from_index.is_none_or(|from| at_index > from)
-                    && to_index.is_none_or(|to| at_index <= to)
-            })
+            .filter(|stop| from_index.is_none_or(|from| usize::from(stop.leg_index()) > from))
+            .filter(|stop| to_index.is_none_or(|to| usize::from(stop.leg_index()) <= to))
             .copied()
             .collect()
     }
 
-    fn seated(stop: &StopRef<'trip>) -> bool {
-        stop.along().kind() == StopKind::Food && stop.along().dwell_minutes() >= Self::SIT_DOWN
+    fn seated<'stop>(stop: &'stop StopRef<'trip>) -> Option<&'stop StopRef<'trip>> {
+        Some(stop)
+            .filter(|stop| stop.along().kind() == StopKind::Food)
+            .filter(|stop| stop.along().dwell_minutes() >= Self::SIT_DOWN)
     }
 }
 

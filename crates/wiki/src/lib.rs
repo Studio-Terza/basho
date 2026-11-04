@@ -42,16 +42,11 @@ impl Wiki {
             .enumerate()
             .map(|(position, entry)| {
                 let id = EntryId::new(position);
-                let entry = entry.with_appended(linked.get(&id).map(|sources| {
-                    Section::new(
-                        Heading::LinkedHere,
-                        sources.iter().copied().map(Row::Entry).collect(),
-                    )
-                }));
-                match index {
-                    Some(home) if home == id => entry.with_sections(listed.clone()),
-                    _ => entry,
-                }
+                entry.with_sections(
+                    index
+                        .filter(|home| *home == id)
+                        .map_or_else(|| Self::linked_here(linked.get(&id)), |_| listed.clone()),
+                )
             })
             .collect();
         Wiki {
@@ -82,6 +77,18 @@ impl Wiki {
     #[must_use]
     pub fn names(&self) -> &NameTable {
         &self.names
+    }
+
+    fn linked_here(sources: Option<&BTreeSet<EntryId>>) -> Vec<Section> {
+        sources
+            .map(|sources| {
+                Section::new(
+                    Heading::LinkedHere,
+                    sources.iter().copied().map(Row::Entry).collect(),
+                )
+            })
+            .into_iter()
+            .collect()
     }
 
     fn backlinks(entries: &[Entry], names: &NameTable) -> BTreeMap<EntryId, BTreeSet<EntryId>> {

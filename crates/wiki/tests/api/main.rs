@@ -103,7 +103,7 @@ fn a_mention_in_a_detail_links_and_the_named_entry_lists_who_linked_it() {
         sample
             .rows(shop, Heading::LinkedHere)
             .iter()
-            .any(|row| row.links() == [cafe])
+            .any(|row| row.links().into_iter().eq([cafe]))
     );
 }
 
@@ -183,13 +183,12 @@ fn a_loop_goal_page_lists_its_sights_numbered_in_order_with_their_times() {
         .days()
         .iter()
         .flat_map(|day| {
-            day.goals()
-                .iter()
-                .filter(|goal| !goal.purpose().stops().is_empty())
-                .map(|goal| EntryKey::Goal {
+            day.goals().iter().filter_map(|goal| {
+                goal.purpose().stops().first().map(|_| EntryKey::Goal {
                     day: day.number(),
                     first: goal.leg(End::Start),
                 })
+            })
         })
         .filter_map(|key| wiki.find(&key))
         .map(|id| {

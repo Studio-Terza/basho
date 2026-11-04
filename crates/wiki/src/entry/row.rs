@@ -104,7 +104,7 @@ impl Row {
     }
 
     #[must_use]
-    pub fn links(&self) -> Vec<EntryId> {
+    pub fn links(&self) -> RowLinks {
         self.entry()
             .into_iter()
             .chain(self.stop().and_then(StopRow::stop_entry))
@@ -112,7 +112,7 @@ impl Row {
     }
 
     #[must_use]
-    pub fn texts(&self) -> Vec<&Content> {
+    pub fn texts(&self) -> RowTexts<'_> {
         let fact = self
             .note()
             .or_else(|| self.sourced().map(AsRef::as_ref))
@@ -138,5 +138,49 @@ impl Row {
             .chain(quoted)
             .chain(disputed)
             .collect()
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct RowLinks {
+    linked: Vec<EntryId>,
+}
+
+impl FromIterator<EntryId> for RowLinks {
+    fn from_iter<Ids: IntoIterator<Item = EntryId>>(ids: Ids) -> RowLinks {
+        RowLinks {
+            linked: ids.into_iter().collect(),
+        }
+    }
+}
+
+impl IntoIterator for RowLinks {
+    type Item = EntryId;
+    type IntoIter = std::vec::IntoIter<EntryId>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.linked.into_iter()
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct RowTexts<'row> {
+    texts: Vec<&'row Content>,
+}
+
+impl<'row> FromIterator<&'row Content> for RowTexts<'row> {
+    fn from_iter<Texts: IntoIterator<Item = &'row Content>>(texts: Texts) -> RowTexts<'row> {
+        RowTexts {
+            texts: texts.into_iter().collect(),
+        }
+    }
+}
+
+impl<'row> IntoIterator for RowTexts<'row> {
+    type Item = &'row Content;
+    type IntoIter = std::vec::IntoIter<&'row Content>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.texts.into_iter()
     }
 }

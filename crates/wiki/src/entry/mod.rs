@@ -69,20 +69,13 @@ impl Entry {
     }
 
     #[must_use]
-    pub fn with_sections(self, sections: Vec<Section>) -> Entry {
+    pub fn with_sections(self, sections: impl IntoIterator<Item = Section>) -> Entry {
         Entry {
-            sections: sections
+            sections: self
+                .sections
                 .into_iter()
-                .filter(|section| !section.rows().is_empty())
+                .chain(sections.into_iter().filter_map(Section::filled))
                 .collect(),
-            ..self
-        }
-    }
-
-    #[must_use]
-    pub fn with_appended(self, section: Option<Section>) -> Entry {
-        Entry {
-            sections: self.sections.into_iter().chain(section).collect(),
             ..self
         }
     }

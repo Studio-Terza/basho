@@ -181,13 +181,28 @@ impl<'trip> Seed<'trip> {
     #[must_use]
     pub fn first_stop(&self, kind: EntryKind) -> Option<StopRef<'trip>> {
         match self {
-            Seed::Group(group) if group.group_kind() == kind => group.stops().first().copied(),
+            Seed::Group(group) => Some(group)
+                .filter(|group| group.group_kind() == kind)
+                .and_then(|group| group.stops().first().copied()),
             _ => None,
         }
     }
 
     #[must_use]
     pub fn names(&self) -> Vec<Spelling> {
+        self.name_forms().into_forms()
+    }
+
+    fn aim_forms(goal: &Goal) -> NameForms {
+        goal.purpose()
+            .stops()
+            .iter()
+            .flat_map(|stop| AsRef::<Content>::as_ref(stop).mentions())
+            .map(NameForms::of_name)
+            .fold(NameForms::of_name(&goal[Caption::Name]), NameForms::joined)
+    }
+
+    fn name_forms(&self) -> NameForms {
         match self {
             Seed::Place(place) => {
                 NameForms::of_name(place.text(Naming::Name)).also(place.english())
@@ -195,13 +210,9 @@ impl<'trip> Seed<'trip> {
             Seed::Inn { night, .. } => {
                 NameForms::of_name(&night[Caption::Name]).also(AsRef::as_ref(*night))
             }
-            Seed::Goal { goal, .. } if matches!(goal.purpose(), Purpose::Aim(_)) => goal
-                .purpose()
-                .stops()
-                .iter()
-                .flat_map(|stop| AsRef::<Content>::as_ref(stop).mentions())
-                .map(NameForms::of_name)
-                .fold(NameForms::of_name(&goal[Caption::Name]), NameForms::joined),
+            Seed::Goal { goal, .. } => Some(*goal)
+                .filter(|goal| matches!(goal.purpose(), Purpose::Aim(_)))
+                .map_or_else(NameForms::default, Self::aim_forms),
             Seed::Group(group) => group
                 .star()
                 .into_iter()
@@ -209,24 +220,26 @@ impl<'trip> Seed<'trip> {
                     forms.also(star.english()).also(&star.short_english())
                 }),
             Seed::Feature { name, english } => NameForms::of_name(name).also(english),
-            Seed::Day(day) if day.number() > DayNumber::default() => {
-                NameForms::of_day(day.number())
-            }
+            Seed::Day(day) => Some(day.number())
+                .filter(|number| *number > DayNumber::default())
+                .map_or_else(NameForms::default, NameForms::of_day),
             Seed::Index
             | Seed::Shops
-            | Seed::Day(_)
-            | Seed::Goal { .. }
             | Seed::Step { .. }
             | Seed::Evening { .. }
             | Seed::Meal(_) => NameForms::default(),
         }
-        .into_forms()
     }
 
     #[must_use]
     pub fn entry(&self, pages: &Pages<'_, 'trip>) -> Entry {
-        let roster = pages.roster();
-        let entry = Entry::new(self.entry_kind(), self.entry_name()).homed(self.home());
+        self.drafted(
+            Entry::new(self.entry_kind(), self.entry_name()).homed(self.home()),
+            pages,
+        )
+    }
+
+    fn drafted(&self, entry: Entry, pages: &Pages<'_, 'trip>) -> Entry {
         match self {
             Seed::Index => entry,
             Seed::Shops => entry.with_sections(pages.shops()),
@@ -246,8 +259,11 @@ impl<'trip> Seed<'trip> {
             Seed::Evening { day, night } => entry
                 .titled(Some(AsRef::<EnglishName>::as_ref(*night).clone()), None)
                 .backed_by(night.as_ref())
-                .with_sections(TownEvening::new(roster.itinerary(), day, night).sections(roster)),
-            Seed::Meal(meal) => entry.with_sections(meal.sections(roster)),
+                .with_sections(
+                    TownEvening::new(pages.roster().itinerary(), day, night)
+                        .sections(pages.roster()),
+                ),
+            Seed::Meal(meal) => entry.with_sections(meal.sections(pages.roster())),
             Seed::Group(group) => entry
                 .titled(group.star().map(|star| star.english().clone()), None)
                 .with_sections(pages.group(group)),
