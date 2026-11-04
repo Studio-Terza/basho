@@ -5,7 +5,7 @@ use guide::plane::Halving;
 use guide::plane::PlanePoint;
 use layout::MarkSize;
 use map_plan::KeyEntry;
-use map_plan::map_mark::MarkAt;
+use map_plan::MarkAt;
 use newtype::Newtype;
 
 use crate::app::session::Session;
