@@ -12,6 +12,7 @@ use guide::end::End;
 use guide::geo::RouteLine;
 
 use guide::leg_line::LegLine;
+use guide::words::Label;
 
 use guide::place::NoteKind;
 
@@ -34,11 +35,10 @@ impl<'leg> LegRow<'leg> {
         LegRow { number, leg }
     }
 
-    fn arrival(&self) -> &'static str {
-        if self.leg.mode() == Mode::Walk {
-            "Get to"
-        } else {
-            "Get off at"
+    fn arrival(&self) -> Label {
+        match self.leg.mode() {
+            Mode::Walk => Label::new("Get to"),
+            Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => Label::new("Get off at"),
         }
     }
 

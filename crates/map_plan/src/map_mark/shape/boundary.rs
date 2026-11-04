@@ -1,45 +1,57 @@
-use guide::classed::Classed;
 use std::fmt::Write;
 
 use dioxus::prelude::*;
-use guide::plane::Pixels;
-use guide::plane::PlanePoint;
-
-use guide::plane::Halving;
+use guide::classed::Classed;
+use guide::plane::{Axis, Halving, Pixels, PlanePoint};
 use layout::measure::MarkSize;
 
-use super::look::Look;
+use super::Shape;
+use crate::map_mark::look::Look;
+use crate::map_mark::tone::Tone;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Shape {
-    Square,
-    Diamond,
-    Cross,
-    Bar,
-    Star,
-    Triangle,
-    Dot,
-    Target,
-    House,
-    Ringed,
-    Tick,
-    Flag,
-    Ex,
+pub(super) struct Stamp {
+    at: PlanePoint,
+    size: Pixels,
+    across: f64,
+    down: f64,
+    half: f64,
+    reach: f64,
+    tone: Tone,
+    mark_size: MarkSize,
 }
 
-impl Shape {
-    pub fn draw(self, at: PlanePoint, size: Pixels, look: Look) -> Element {
-        let across = at[guide::plane::Axis::Across].pixels();
-        let down = at[guide::plane::Axis::Down].pixels();
-        let half = size.pixels();
-        let tone = look.tone();
-        let mark_size = look.size();
-        match self {
+impl Stamp {
+    pub(super) fn new(at: PlanePoint, size: Pixels, look: Look) -> Stamp {
+        Stamp {
+            at,
+            size,
+            across: at[Axis::Across].pixels(),
+            down: at[Axis::Down].pixels(),
+            half: size.pixels(),
+            reach: size.pixels() + MarkSize::outline_reach().pixels(),
+            tone: look.tone(),
+            mark_size: look.size(),
+        }
+    }
+
+    pub(super) fn drawn(
+        Stamp {
+            at,
+            size,
+            across,
+            down,
+            half,
+            reach,
+            tone,
+            mark_size,
+        }: Stamp,
+        shape: Shape,
+    ) -> Element {
+        match shape {
             Shape::Square => {
                 rsx! { rect { class: "mark {tone.class()} {mark_size.class()}", x: across - half, y: down - half, width: size.twice().pixels(), height: size.twice().pixels() } }
             }
             Shape::Diamond => {
-                let reach = half + MarkSize::outline_reach().pixels();
                 rsx! { path { class: "mark {tone.class()} {mark_size.class()}", d: "M{across} {down - reach}L{across + reach} {down}L{across} {down + reach}L{across - reach} {down}Z" } }
             }
             Shape::Cross => {
@@ -49,7 +61,7 @@ impl Shape {
                 rsx! { path { class: "mark {tone.class()} {mark_size.class()}", d: "M{across} {down - half}V{down + half}" } }
             }
             Shape::Star => {
-                rsx! { polygon { class: "mark {tone.class()} {mark_size.class()}", points: "{Self::star(at, size + MarkSize::outline_reach())}" } }
+                rsx! { polygon { class: "mark {tone.class()} {mark_size.class()}", points: "{PathData::star(at, size)}" } }
             }
             Shape::Triangle => {
                 rsx! { path { class: "mark {tone.class()} {mark_size.class()}", d: "M{across} {down - half}l{half} {half * (1.0 + MarkSize::PEAK_DROP.fraction())}h{-2.0 * half}z" } }
@@ -79,24 +91,32 @@ impl Shape {
             }
         }
     }
+}
 
-    fn star(at: PlanePoint, reach: Pixels) -> String {
+#[derive(newtype::Newtype, newtype::Arbitrary, newtype::Display, Debug)]
+pub(super) struct PathData(String);
+
+impl PathData {
+    pub(super) fn star(at: PlanePoint, size: Pixels) -> PathData {
+        let reach = size + MarkSize::outline_reach();
         let radii = [
             reach.pixels(),
             reach.pixels() * MarkSize::STAR_INNER.fraction(),
         ];
-        MarkSize::star_corners()
-            .into_iter()
-            .zip(radii.into_iter().cycle())
-            .fold(String::new(), |mut corners, (angle, radius)| {
-                let angle = angle.degrees().to_radians();
-                let _ = write!(
-                    corners,
-                    "{:.1},{:.1} ",
-                    at[guide::plane::Axis::Across].pixels() + radius * angle.cos(),
-                    at[guide::plane::Axis::Down].pixels() + radius * angle.sin()
-                );
-                corners
-            })
+        PathData(
+            MarkSize::star_corners()
+                .into_iter()
+                .zip(radii.into_iter().cycle())
+                .fold(String::new(), |mut corners, (angle, radius)| {
+                    let angle = angle.degrees().to_radians();
+                    let _ = write!(
+                        corners,
+                        "{:.1},{:.1} ",
+                        at[Axis::Across].pixels() + radius * angle.cos(),
+                        at[Axis::Down].pixels() + radius * angle.sin()
+                    );
+                    corners
+                }),
+        )
     }
 }

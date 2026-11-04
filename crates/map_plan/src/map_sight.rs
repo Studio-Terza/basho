@@ -36,16 +36,17 @@ impl<'view> MapSight<'view> {
     #[must_use]
     pub fn walker(&self) -> Option<Coordinate> {
         self.walker
-            .marker()
-            .filter(|_| !matches!(self.walker.phase(), Phase::Preview | Phase::Done))
+            .phase()
+            .stance()
+            .underway()
+            .and_then(|_| self.walker.marker())
     }
 
+    #[must_use]
     pub fn passed(&self, current: Option<LegIndex>) -> Option<Distance> {
         self.guiding()
-            .filter(|walker| {
-                current == Some(walker.leg_index()) && walker.phase() != Phase::Preview
-            })
-            .map(Guidance::along)
+            .filter(|walker| current == Some(walker.leg_index()))
+            .and_then(|walker| walker.phase().progress(walker.along()))
     }
 
     #[must_use]

@@ -13,7 +13,6 @@ map_class = { path = "../map_class" }
 thiserror = "2"
 
 [dev-dependencies]
-tempfile = "3"
 
 [[test]]
 name = "api"

@@ -1,6 +1,7 @@
 use crate::Stance;
 use crate::clock::Minutes;
 use crate::end::End;
+use crate::geo::Distance;
 use crate::guidance::tracking::Stage;
 use crate::leg::{Leg, Mode};
 use crate::readout::Status;
@@ -34,6 +35,18 @@ impl Phase {
         match self {
             Phase::Waiting { minutes } => Some(minutes),
             Phase::Preview | Phase::Moving | Phase::Overdue | Phase::Missed | Phase::Done => None,
+        }
+    }
+
+    #[must_use]
+    pub fn progress(self, along: Distance) -> Option<Distance> {
+        match self {
+            Phase::Preview => None,
+            Phase::Waiting { .. }
+            | Phase::Moving
+            | Phase::Overdue
+            | Phase::Missed
+            | Phase::Done => Some(along),
         }
     }
 

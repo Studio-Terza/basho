@@ -88,60 +88,55 @@ impl KeyEntry {
 
     #[must_use]
     pub fn meaning(self) -> Label {
-        self.mark().map_or_else(
-            || {
-                Label::new(match self {
-                    KeyEntry::RouteCurrent => "This leg",
-                    KeyEntry::RouteLater => "Legs to come",
-                    KeyEntry::RouteDone => "Legs walked",
-                    KeyEntry::RouteRide => "Train, bus or boat",
-                    KeyEntry::RouteNoPath => "No mapped path",
-                    KeyEntry::Trail => "Where you have been",
-                    KeyEntry::RoadHighway => "Highway",
-                    KeyEntry::RoadMajor => "Major road",
-                    KeyEntry::RoadMinor => "Minor road",
-                    KeyEntry::RoadStreet => "Street",
-                    KeyEntry::RoadLane => "Lane or paved path",
-                    KeyEntry::RoadUnpaved => "Unpaved track",
-                    KeyEntry::RoadTrail => "Trail",
-                    KeyEntry::Bridge => "Bridge",
-                    KeyEntry::Tunnel => "Tunnel",
-                    KeyEntry::Rail => "Railway",
-                    KeyEntry::Ferry => "Ferry",
-                    KeyEntry::Water => "Water",
-                    KeyEntry::Forest => "Forest",
-                    KeyEntry::Building => "Building",
-                    KeyEntry::PoiKonbini => "Konbini",
-                    KeyEntry::PoiFood => "Food, not on the plan",
-                    KeyEntry::PoiShop => "Shop, not on the plan",
-                    KeyEntry::PoiService => "Bank, post, clinic, bath",
-                    KeyEntry::PoiToilet => "Toilet or water",
-                    KeyEntry::PoiLodging => "Lodging",
-                    KeyEntry::PoiWorship => "Shrine or temple",
-                    KeyEntry::PoiSight => "Sight, not on the plan",
-                    KeyEntry::PoiStation => "Station",
-                    KeyEntry::PoiPeak => "Mountain",
-                    KeyEntry::Unlisted
-                    | KeyEntry::Food
-                    | KeyEntry::Shop
-                    | KeyEntry::Sight
-                    | KeyEntry::Service
-                    | KeyEntry::Landmark
-                    | KeyEntry::Catch
-                    | KeyEntry::Star
-                    | KeyEntry::Peak
-                    | KeyEntry::DayStart
-                    | KeyEntry::LegEnd
-                    | KeyEntry::Goal
-                    | KeyEntry::LoopStop
-                    | KeyEntry::Night
-                    | KeyEntry::You
-                    | KeyEntry::YouEstimate
-                    | KeyEntry::YouLastFix
-                    | KeyEntry::NoPath => "",
-                })
-            },
-            MapMark::meaning,
-        )
+        match self {
+            KeyEntry::RouteCurrent => Label::new("This leg"),
+            KeyEntry::RouteLater => Label::new("Legs to come"),
+            KeyEntry::RouteDone => Label::new("Legs walked"),
+            KeyEntry::RouteRide => Label::new("Train, bus or boat"),
+            KeyEntry::RouteNoPath => Label::new("No mapped path"),
+            KeyEntry::Trail => Label::new("Where you have been"),
+            KeyEntry::RoadHighway => Label::new("Highway"),
+            KeyEntry::RoadMajor => Label::new("Major road"),
+            KeyEntry::RoadMinor => Label::new("Minor road"),
+            KeyEntry::RoadStreet => Label::new("Street"),
+            KeyEntry::RoadLane => Label::new("Lane or paved path"),
+            KeyEntry::RoadUnpaved => Label::new("Unpaved track"),
+            KeyEntry::RoadTrail => Label::new("Trail"),
+            KeyEntry::Bridge => Label::new("Bridge"),
+            KeyEntry::Tunnel => Label::new("Tunnel"),
+            KeyEntry::Rail => Label::new("Railway"),
+            KeyEntry::Ferry => Label::new("Ferry"),
+            KeyEntry::Water => Label::new("Water"),
+            KeyEntry::Forest => Label::new("Forest"),
+            KeyEntry::Building => Label::new("Building"),
+            KeyEntry::PoiKonbini => Label::new("Konbini"),
+            KeyEntry::PoiFood => Label::new("Food, not on the plan"),
+            KeyEntry::PoiShop => Label::new("Shop, not on the plan"),
+            KeyEntry::PoiService => Label::new("Bank, post, clinic, bath"),
+            KeyEntry::PoiToilet => Label::new("Toilet or water"),
+            KeyEntry::PoiLodging => Label::new("Lodging"),
+            KeyEntry::PoiWorship => Label::new("Shrine or temple"),
+            KeyEntry::PoiSight => Label::new("Sight, not on the plan"),
+            KeyEntry::PoiStation => Label::new("Station"),
+            KeyEntry::PoiPeak => Label::new("Mountain"),
+            KeyEntry::Unlisted
+            | KeyEntry::Food
+            | KeyEntry::Shop
+            | KeyEntry::Sight
+            | KeyEntry::Service
+            | KeyEntry::Landmark
+            | KeyEntry::Catch
+            | KeyEntry::Star
+            | KeyEntry::Peak
+            | KeyEntry::DayStart
+            | KeyEntry::LegEnd
+            | KeyEntry::Goal
+            | KeyEntry::LoopStop
+            | KeyEntry::Night
+            | KeyEntry::You
+            | KeyEntry::YouEstimate
+            | KeyEntry::YouLastFix
+            | KeyEntry::NoPath => self.mark().map_or(Label::new(""), MapMark::meaning),
+        }
     }
 }

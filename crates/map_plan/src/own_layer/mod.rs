@@ -1,6 +1,8 @@
 mod bits;
 mod geo_heading;
 
+use std::cmp::Ordering;
+
 use guide::classed::Classed;
 use guide::geo::{Bearing, Coordinate};
 use guide::leg::{LegIndex, Mode};
@@ -8,7 +10,7 @@ use serde::Serialize;
 
 use crate::map_mark::{MapMark, Strength};
 use crate::map_text::MapText;
-use bits::GeoPoint;
+pub(crate) use bits::GeoPoint;
 use geo_heading::GeoHeading;
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -80,10 +82,9 @@ pub enum Travel {
 impl Travel {
     #[must_use]
     pub fn of_mode(mode: Mode) -> Travel {
-        if mode == Mode::Walk {
-            Travel::Walk
-        } else {
-            Travel::Ride
+        match mode {
+            Mode::Walk => Travel::Walk,
+            Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => Travel::Ride,
         }
     }
 }
@@ -100,9 +101,16 @@ impl LegState {
     #[must_use]
     pub fn of_progress(index: LegIndex, current: Option<LegIndex>) -> LegState {
         match current {
-            Some(current) if index == current => LegState::Current,
-            Some(current) if index > current => LegState::Later,
-            Some(_) | None => LegState::Done,
+            Some(current) => Self::against(index.cmp(&current)),
+            None => LegState::Done,
+        }
+    }
+
+    fn against(order: Ordering) -> LegState {
+        match order {
+            Ordering::Equal => LegState::Current,
+            Ordering::Greater => LegState::Later,
+            Ordering::Less => LegState::Done,
         }
     }
 }

@@ -68,9 +68,11 @@ fn every_walking_leg_is_drawn_as_the_current_line() {
         .filter(|walking| {
             let guidance = walking.guidance(None);
             let route = Walking::plan(&guidance, walking.sight(&guidance), MapLevel::Leg).route();
-            !serde_json::to_string(&route)
+            serde_json::to_string(&route)
                 .expect("a route serializes")
-                .contains(r#""state":"current""#)
+                .matches(r#""state":"current""#)
+                .count()
+                == 0
         })
         .map(|walking| format!("day {} leg {}", walking.day.number(), walking.position))
         .collect();
@@ -130,8 +132,10 @@ fn a_position_fix_sends_only_the_walker() {
             None,
         )
         .expect("the walker moved");
-    assert!(whole.route().is_some() && whole.marks().is_some());
-    assert!(fix.route().is_none() && fix.marks().is_none());
+    assert!(whole.route().is_some());
+    assert!(whole.marks().is_some());
+    assert!(fix.route().is_none());
+    assert!(fix.marks().is_none());
     assert!(fix.walker().is_some());
 }
 
@@ -180,7 +184,8 @@ fn a_loop_shows_numbered_stops_in_order_on_the_goal_map_and_nowhere_else() {
             walking
                 .day
                 .goal_holding(LegIndex::new(walking.position))
-                .is_some_and(|goal| !goal.purpose().stops().is_empty())
+                .map_or(0, |goal| goal.purpose().stops().len())
+                > 0
         })
         .expect("the trip holds a loop");
     let guidance = looped.guidance(None);
@@ -208,8 +213,8 @@ fn a_loop_shows_numbered_stops_in_order_on_the_goal_map_and_nowhere_else() {
     assert_eq!(places.len(), labels.len());
     assert!(places.is_sorted());
     assert_eq!(goal.matches("loop_stop").count(), labels.len());
-    assert!(!marks(MapLevel::Leg).contains("loop_stop"));
-    assert!(!marks(MapLevel::Day).contains("loop_stop"));
+    assert_eq!(marks(MapLevel::Leg).matches("loop_stop").count(), 0);
+    assert_eq!(marks(MapLevel::Day).matches("loop_stop").count(), 0);
 }
 
 #[test]
@@ -241,6 +246,7 @@ fn an_unverified_inn_goal_carries_the_mark_in_its_map_label() {
         .flat_map(|walking| walking.day.goals().iter())
         .map(|goal| matches!(goal.purpose(), Purpose::Inn))
         .collect();
-    assert!(inns.contains(&true) && inns.contains(&false));
+    assert!(inns.contains(&true));
+    assert!(inns.contains(&false));
     assert_eq!(labels, inns);
 }

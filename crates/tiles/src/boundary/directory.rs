@@ -1,12 +1,10 @@
 use std::collections::BTreeMap;
-use std::fs::File;
 use std::io::{self, ErrorKind};
-use std::os::unix::fs::FileExt;
 
-use crate::bits::GridAxis;
+use crate::boundary::GridAxis;
 use map_class::Zoom;
 
-use super::TileId;
+use super::{ArchiveSource, TileId};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Slot {
@@ -36,9 +34,9 @@ impl Directory {
     pub const HEAD_LENGTH: usize = Self::MAGIC.len() + 4;
     pub const ENTRY_LENGTH: usize = 21;
 
-    pub fn read_from(file: &File) -> io::Result<BTreeMap<TileId, Slot>> {
+    pub fn read_from(source: &impl ArchiveSource) -> io::Result<BTreeMap<TileId, Slot>> {
         let mut head = [0; Self::HEAD_LENGTH];
-        file.read_exact_at(&mut head, 0)?;
+        source.read_at(&mut head, 0)?;
         let (magic, count) = head.split_at(Self::MAGIC.len());
         (magic == Self::MAGIC)
             .then_some(())
@@ -46,7 +44,7 @@ impl Directory {
         let count = usize::try_from(u32::from_le_bytes(Self::fixed(count)?))
             .map_err(|error| io::Error::new(ErrorKind::InvalidData, error))?;
         let mut table = vec![0; count * Self::ENTRY_LENGTH];
-        file.read_exact_at(&mut table, u64::try_from(head.len()).unwrap_or(u64::MAX))?;
+        source.read_at(&mut table, u64::try_from(head.len()).unwrap_or(u64::MAX))?;
         table
             .as_chunks::<{ Self::ENTRY_LENGTH }>()
             .0
