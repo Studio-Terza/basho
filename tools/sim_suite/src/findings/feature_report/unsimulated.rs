@@ -1,10 +1,11 @@
+use crate::findings::wording::Wording;
 use crate::suite::{Feature, Standing};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize)]
 pub struct Unsimulated {
     feature: Feature,
-    what: &'static str,
-    why: &'static str,
+    what: Wording,
+    why: Wording,
     standing: Standing,
 }
 
@@ -12,32 +13,32 @@ impl Unsimulated {
     const ALL: [Unsimulated; 5] = [
         Unsimulated::new(
             Feature::TripPicker,
-            "a file from iCloud Drive or another app",
-            "no account is signed in; the picker is proved on On My iPhone",
+            Wording::new("a file from iCloud Drive or another app"),
+            Wording::new("no account is signed in; the picker is proved on On My iPhone"),
         ),
         Unsimulated::new(
             Feature::BugReport,
-            "real GPS accuracy in a report",
-            "simulated fixes always read ± 10 m",
+            Wording::new("real GPS accuracy in a report"),
+            Wording::new("simulated fixes always read ± 10 m"),
         ),
         Unsimulated::new(
             Feature::Maps,
-            "drawing on the phone's GPU",
-            "the simulator draws WebGL with the Mac's GPU",
+            Wording::new("drawing on the phone's GPU"),
+            Wording::new("the simulator draws WebGL with the Mac's GPU"),
         ),
         Unsimulated::new(
             Feature::SetNow,
-            "the compass",
-            "the simulator has no heading hardware",
+            Wording::new("the compass"),
+            Wording::new("the simulator has no heading hardware"),
         ),
         Unsimulated::new(
             Feature::MapPerf,
-            "battery drain",
-            "the simulator has no battery; the figures are the Mac's",
+            Wording::new("battery drain"),
+            Wording::new("the simulator has no battery; the figures are the Mac's"),
         ),
     ];
 
-    const fn new(feature: Feature, what: &'static str, why: &'static str) -> Unsimulated {
+    const fn new(feature: Feature, what: Wording, why: Wording) -> Unsimulated {
         Unsimulated {
             feature,
             what,

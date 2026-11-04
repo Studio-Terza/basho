@@ -17,11 +17,10 @@ impl FeatureReport {
     pub fn new(feature: Feature, passed: Vec<SuiteWord>, failed: Vec<SuiteWord>) -> FeatureReport {
         FeatureReport {
             feature,
-            standing: if passed.is_empty() || !failed.is_empty() {
-                Standing::Failed
-            } else {
-                Standing::Passed
-            },
+            standing: passed
+                .first()
+                .filter(|_| failed.is_empty())
+                .map_or(Standing::Failed, |_| Standing::Passed),
             unsimulated: Unsimulated::listed_for(feature),
             passed,
             failed,

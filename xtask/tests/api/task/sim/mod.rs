@@ -1,12 +1,11 @@
-use std::fs::File;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use std::time::{Duration, UNIX_EPOCH};
-
-use tempfile::TempDir;
 
 use sim_suite::TopSample;
 use sim_suite::map_phase::PhaseFigures;
-use sim_suite::{CrashReports, SimFindings, Standing, SuiteEar, SuiteLine, SuiteWord, TestName};
+use sim_suite::{
+    CrashFile, CrashReports, SimFindings, Standing, SuiteEar, SuiteLine, SuiteWord, TestName,
+};
 
 const PASSED: &str = "Test Case '-[BashoUITests.MapTests testPinch]' passed (20.1 seconds).";
 const FAILED: &str = "Test Case '-[BashoUITests.WikiTests testBack]' failed (3.0 seconds).";
@@ -37,21 +36,21 @@ impl Heard {
             .closed(CrashReports::default(), None::<&std::io::Error>)
     }
 
-    fn written(folder: &Path, name: &str, seconds: u64) {
-        let path = folder.join(name);
-        let file = File::create(path).unwrap();
-        file.set_modified(UNIX_EPOCH + Duration::from_secs(seconds))
-            .unwrap();
+    fn written(name: &str, seconds: u64) -> CrashFile {
+        CrashFile::new(
+            PathBuf::from(name),
+            UNIX_EPOCH + Duration::from_secs(seconds),
+        )
     }
 
-    fn crash_folder() -> TempDir {
-        let folder = TempDir::new().unwrap();
-        Self::written(folder.path(), "basho-1.ips", 1001);
-        Self::written(folder.path(), "Basho-2.ips", 1000);
-        Self::written(folder.path(), "basho-old.ips", 999);
-        Self::written(folder.path(), "Safari-1.ips", 1001);
-        Self::written(folder.path(), "basho-3.diag", 1001);
-        folder
+    fn crash_folder() -> Vec<CrashFile> {
+        vec![
+            Self::written("basho-1.ips", 1001),
+            Self::written("Basho-2.ips", 1000),
+            Self::written("basho-old.ips", 999),
+            Self::written("Safari-1.ips", 1001),
+            Self::written("basho-3.diag", 1001),
+        ]
     }
 }
 
@@ -124,7 +123,7 @@ fn a_full_pass_or_a_crash_decides_the_verdict() {
     assert!(Heard::findings(&lines).verdict().is_ok());
     assert!(Heard::findings(&lines[1..]).verdict().is_err());
     let folder = Heard::crash_folder();
-    let crash = CrashReports::written_in(folder.path(), UNIX_EPOCH + Duration::from_secs(1000));
+    let crash = CrashReports::written_since(&folder, UNIX_EPOCH + Duration::from_secs(1000));
     assert!(
         Heard::findings(&lines)
             .closed(crash, None::<&std::io::Error>)
@@ -143,7 +142,7 @@ fn what_cannot_be_simulated_says_so() {
 #[test]
 fn only_our_reports_written_since_the_start_count_as_crashes() {
     let folder = Heard::crash_folder();
-    let found = CrashReports::written_in(folder.path(), UNIX_EPOCH + Duration::from_secs(1000));
+    let found = CrashReports::written_since(&folder, UNIX_EPOCH + Duration::from_secs(1000));
     let mut names: Vec<PathBuf> = found
         .found()
         .iter()

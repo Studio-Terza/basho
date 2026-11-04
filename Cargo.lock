@@ -5725,6 +5725,7 @@ dependencies = [
 name = "sim_suite"
 version = "0.1.0"
 dependencies = [
+ "newtype",
  "serde",
  "strum",
  "thiserror 2.0.20",

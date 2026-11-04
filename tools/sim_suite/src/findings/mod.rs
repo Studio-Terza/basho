@@ -1,6 +1,7 @@
 mod feature_report;
 pub mod map_phase;
 mod test_tally;
+mod wording;
 
 use std::fmt;
 
@@ -9,11 +10,12 @@ use crate::suite::{Standing, TestName};
 use feature_report::FeatureReport;
 use map_phase::PhaseFigures;
 use test_tally::TestTally;
+use wording::Wording;
 
 #[derive(Clone, Debug, Default, serde::Serialize)]
 pub struct SimFindings {
-    device: &'static str,
-    trouble: Option<String>,
+    device: Wording,
+    trouble: Option<Trouble>,
     crash_reports: CrashReports,
     features: Vec<FeatureReport>,
     map_figures: Vec<PhaseFigures>,
@@ -21,12 +23,25 @@ pub struct SimFindings {
     tally: TestTally,
 }
 
+#[derive(
+    newtype::Newtype,
+    newtype::Arbitrary,
+    newtype::Display,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+)]
+#[serde(transparent)]
+pub struct Trouble(String);
+
 #[derive(Debug, thiserror::Error)]
 #[error("the simulator run failed:\n{0}")]
 pub struct Unproved(String);
 
 impl SimFindings {
-    const DEVICE: &str = "iPhone 16 Plus, 430 x 932";
+    const DEVICE: Wording = Wording::new("iPhone 16 Plus, 430 x 932");
 
     pub fn heard_test(&mut self, test: TestName, standing: Standing) {
         self.tally = std::mem::take(&mut self.tally).heard(test, standing);
@@ -44,7 +59,7 @@ impl SimFindings {
     ) -> SimFindings {
         SimFindings {
             device: Self::DEVICE,
-            trouble: trouble.map(ToString::to_string),
+            trouble: trouble.map(ToString::to_string).map(Trouble::new),
             crash_reports,
             features: self.tally.reports(),
             ..self
@@ -52,14 +67,17 @@ impl SimFindings {
     }
 
     pub fn verdict(&self) -> Result<(), Unproved> {
-        (self.trouble.is_none()
-            && self.crash_reports.found().is_empty()
-            && self
-                .features
-                .iter()
-                .all(|report| report.standing() != Standing::Failed))
-        .then_some(())
-        .ok_or_else(|| Unproved(self.to_string()))
+        Some(self)
+            .filter(|findings| findings.trouble.is_none())
+            .filter(|findings| findings.crash_reports.found().is_empty())
+            .filter(|findings| {
+                findings
+                    .features
+                    .iter()
+                    .all(|report| report.standing() != Standing::Failed)
+            })
+            .map(drop)
+            .ok_or_else(|| Unproved(self.to_string()))
     }
 }
 

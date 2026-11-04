@@ -8,6 +8,7 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 serde = { version = "1", features = ["derive"] }
 strum = { version = "0.28", features = ["derive"] }
 thiserror = "2"

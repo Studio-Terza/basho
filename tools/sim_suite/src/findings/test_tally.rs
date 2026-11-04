@@ -24,7 +24,8 @@ impl TestTally {
     fn cases(&self, feature: Feature, standing: Standing) -> Vec<SuiteWord> {
         self.heard
             .iter()
-            .filter(|heard| heard.test.feature() == feature && heard.standing == standing)
+            .filter(|heard| heard.test.feature() == feature)
+            .filter(|heard| heard.standing == standing)
             .map(|heard| heard.test.case().clone())
             .collect()
     }
