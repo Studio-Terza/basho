@@ -76,11 +76,10 @@ impl ReportBook {
             .iter()
             .cloned()
             .map(|report| {
-                if report.number() == number {
-                    report.noted(note.clone())
-                } else {
-                    report
-                }
+                (report.number() == number)
+                    .then(|| note.clone())
+                    .into_iter()
+                    .fold(report, Report::noted)
             })
             .collect();
         let notice = reports

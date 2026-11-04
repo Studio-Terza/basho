@@ -15,15 +15,25 @@ pub enum Panel {
 impl Panel {
     const MENU: Share = Share::new(0.86);
     const WHOLE: Share = Share::new(1.0);
+    const NO_GUTTERS: Scale = Scale::new(0.0);
     const GUTTERS: Scale = Scale::new(2.0);
 
     #[must_use]
     pub fn width(self, viewport: Viewport) -> Pixels {
+        viewport.across(self.share()) - Gap::Gutter.length(viewport) * self.gutters().factor()
+    }
+
+    fn share(self) -> Share {
         match self {
-            Panel::Menu => viewport.across(Self::MENU),
-            Panel::Page => {
-                viewport.across(Self::WHOLE) - Gap::Gutter.length(viewport) * Self::GUTTERS.factor()
-            }
+            Panel::Menu => Self::MENU,
+            Panel::Page => Self::WHOLE,
+        }
+    }
+
+    fn gutters(self) -> Scale {
+        match self {
+            Panel::Menu => Self::NO_GUTTERS,
+            Panel::Page => Self::GUTTERS,
         }
     }
 }

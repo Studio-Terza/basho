@@ -15,10 +15,10 @@ impl Token for Corner {
     const ALL: &'static [Corner] = &[Corner::Small, Corner::Round];
 
     fn name(self) -> Label {
-        Label::new(match self {
-            Corner::Small => "corner-small",
-            Corner::Round => "corner-round",
-        })
+        match self {
+            Corner::Small => Label::new("corner-small"),
+            Corner::Round => Label::new("corner-round"),
+        }
     }
 
     fn length(self, viewport: Viewport) -> Pixels {

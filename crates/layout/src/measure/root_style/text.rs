@@ -60,15 +60,15 @@ impl Token for Text {
     ];
 
     fn name(self) -> Label {
-        Label::new(match self {
-            Text::Body => "text-body",
-            Text::Compact => "text-compact",
-            Text::Major => "text-major",
-            Text::Town => "text-town",
-            Text::Label => "text-label",
-            Text::Minor => "text-minor",
-            Text::Least => "text-least",
-        })
+        match self {
+            Text::Body => Label::new("text-body"),
+            Text::Compact => Label::new("text-compact"),
+            Text::Major => Label::new("text-major"),
+            Text::Town => Label::new("text-town"),
+            Text::Label => Label::new("text-label"),
+            Text::Minor => Label::new("text-minor"),
+            Text::Least => Label::new("text-least"),
+        }
     }
 
     fn length(self, viewport: Viewport) -> Pixels {

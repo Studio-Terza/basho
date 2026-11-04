@@ -48,36 +48,38 @@ impl Token for Gap {
     ];
 
     fn name(self) -> Label {
-        Label::new(match self {
-            Gap::Hair => "gap-hair",
-            Gap::Thin => "gap-thin",
-            Gap::Tight => "gap-tight",
-            Gap::Snug => "gap-snug",
-            Gap::Close => "gap-close",
-            Gap::Easy => "gap-easy",
-            Gap::Roomy => "gap-roomy",
-            Gap::Gutter => "gap-gutter",
-            Gap::Loose => "gap-loose",
-            Gap::Open => "gap-open",
-        })
+        match self {
+            Gap::Hair => Label::new("gap-hair"),
+            Gap::Thin => Label::new("gap-thin"),
+            Gap::Tight => Label::new("gap-tight"),
+            Gap::Snug => Label::new("gap-snug"),
+            Gap::Close => Label::new("gap-close"),
+            Gap::Easy => Label::new("gap-easy"),
+            Gap::Roomy => Label::new("gap-roomy"),
+            Gap::Gutter => Label::new("gap-gutter"),
+            Gap::Loose => Label::new("gap-loose"),
+            Gap::Open => Label::new("gap-open"),
+        }
     }
 
     fn length(self, viewport: Viewport) -> Pixels {
-        viewport.scaled(
-            Self::STEP
-                * match self {
-                    Gap::Hair => Self::HAIR,
-                    Gap::Thin => Self::THIN,
-                    Gap::Tight => Self::TIGHT,
-                    Gap::Snug => Self::SNUG,
-                    Gap::Close => Self::CLOSE,
-                    Gap::Easy => Self::EASY,
-                    Gap::Roomy => Self::ROOMY,
-                    Gap::Gutter => Self::GUTTER,
-                    Gap::Loose => Self::LOOSE,
-                    Gap::Open => Self::OPEN,
-                }
-                .factor(),
-        )
+        viewport.scaled(Self::STEP * self.steps().factor())
+    }
+}
+
+impl Gap {
+    fn steps(self) -> Scale {
+        match self {
+            Gap::Hair => Self::HAIR,
+            Gap::Thin => Self::THIN,
+            Gap::Tight => Self::TIGHT,
+            Gap::Snug => Self::SNUG,
+            Gap::Close => Self::CLOSE,
+            Gap::Easy => Self::EASY,
+            Gap::Roomy => Self::ROOMY,
+            Gap::Gutter => Self::GUTTER,
+            Gap::Loose => Self::LOOSE,
+            Gap::Open => Self::OPEN,
+        }
     }
 }

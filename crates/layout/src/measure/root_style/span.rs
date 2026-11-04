@@ -11,17 +11,16 @@ impl Span {
     const WIDEST_CLOCK: &str = "23:59";
 
     pub fn name(self) -> Label {
-        Label::new(match self {
-            Span::Clock => "span-clock",
-        })
+        match self {
+            Span::Clock => Label::new("span-clock"),
+        }
     }
 }
 
 impl fmt::Display for Span {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let widest = match self {
-            Span::Clock => Self::WIDEST_CLOCK,
-        };
-        write!(formatter, "{}ch", widest.chars().count())
+        match self {
+            Span::Clock => write!(formatter, "{}ch", Self::WIDEST_CLOCK.chars().count()),
+        }
     }
 }

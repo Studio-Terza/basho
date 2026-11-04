@@ -16,9 +16,9 @@ impl ScreenShare {
     const MAP_LEAST: Share = Share::new(0.35);
 
     pub fn name(self) -> Label {
-        Label::new(match self {
-            ScreenShare::MapLeast => "share-map-least",
-        })
+        match self {
+            ScreenShare::MapLeast => Label::new("share-map-least"),
+        }
     }
 
     fn share(self) -> Share {

@@ -18,13 +18,15 @@ impl Touch {
 
     #[must_use]
     pub fn extent(self) -> Pixels {
-        Self::FINGERTIP
-            * match self {
-                Touch::Tap => Self::TAP,
-                Touch::EdgeZone => Self::EDGE_ZONE,
-                Touch::Slop => Self::SLOP,
-            }
-            .factor()
+        Self::FINGERTIP * self.share_of_fingertip().factor()
+    }
+
+    fn share_of_fingertip(self) -> Scale {
+        match self {
+            Touch::Tap => Self::TAP,
+            Touch::EdgeZone => Self::EDGE_ZONE,
+            Touch::Slop => Self::SLOP,
+        }
     }
 
     #[must_use]

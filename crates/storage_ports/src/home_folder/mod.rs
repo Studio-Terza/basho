@@ -42,7 +42,9 @@ impl HomeFolder {
 
 impl PartialEq for HomeFolder {
     fn eq(&self, other: &HomeFolder) -> bool {
-        self.root == other.root && Arc::ptr_eq(&self.storage, &other.storage)
+        Some(&self.root)
+            .filter(|root| **root == other.root)
+            .is_some_and(|_| Arc::ptr_eq(&self.storage, &other.storage))
     }
 }
 

@@ -20,14 +20,10 @@ impl FromStr for PlainText {
     type Err = NotPlain;
 
     fn from_str(text: &str) -> Result<PlainText, NotPlain> {
-        if text
-            .chars()
-            .any(|letter| letter.is_ascii_control() && !Self::KEPT.contains(&letter))
-        {
-            Err(NotPlain)
-        } else {
-            Ok(PlainText(text.to_owned()))
-        }
+        text.chars()
+            .filter(char::is_ascii_control)
+            .find(|letter| Self::KEPT.iter().all(|kept| kept != letter))
+            .map_or_else(|| Ok(PlainText(text.to_owned())), |_| Err(NotPlain))
     }
 }
 
