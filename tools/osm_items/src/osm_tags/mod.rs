@@ -7,9 +7,9 @@ use serde::de::IgnoredAny;
 
 use tile_draft::{TagKey, TileTag};
 
-mod labels;
+mod boundary;
 
-use labels::Labels;
+use boundary::Labels;
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]

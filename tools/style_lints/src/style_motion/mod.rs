@@ -40,7 +40,7 @@ impl StyleMotion {
             .find(|class| {
                 moving
                     .iter()
-                    .any(|owner| owner.sole_class().as_ref() == Some(class))
+                    .any(|owner| owner.strip_prefix('.') == Some(class.as_ref()))
             })
             .filter(|_| !moving.contains(selector) && motion().next().is_some())
             .map(|class| MotionProblem::MovedFromOutside(selector, class));

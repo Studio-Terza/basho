@@ -3,7 +3,7 @@ mod written;
 
 use tile_draft::{TagKey, TileTag};
 
-use super::{OsmKey, OsmTags};
+use crate::osm_tags::{OsmKey, OsmTags};
 use kana_reading::KanaReading;
 use written::Written;
 
@@ -15,8 +15,14 @@ impl<'tags> Labels<'tags> {
     }
 
     pub fn tags(&self) -> Vec<TileTag> {
+        let named = self.0.text(OsmKey::NAME).map(|name| {
+            name.parse::<Written>().map_or_else(
+                |()| vec![Self::label(name)],
+                |written| self.named(name, &written),
+            )
+        });
         self.plain(&OsmKey::LATIN)
-            .or_else(|| self.named())
+            .or(named)
             .or_else(|| self.plain(&OsmKey::KANA))
             .unwrap_or_default()
     }
@@ -28,15 +34,10 @@ impl<'tags> Labels<'tags> {
             .map(|text| vec![Self::label(text)])
     }
 
-    fn named(&self) -> Option<Vec<TileTag>> {
-        let name = self.0.text(OsmKey::NAME)?;
-        Some(match name.parse::<Written>() {
-            Ok(written) => self
-                .reading(&written)
-                .map(|reading| vec![Self::label(name), reading])
-                .unwrap_or_default(),
-            Err(()) => vec![Self::label(name)],
-        })
+    fn named(&self, name: &str, written: &Written) -> Vec<TileTag> {
+        self.reading(written)
+            .map(|reading| vec![Self::label(name), reading])
+            .unwrap_or_default()
     }
 
     fn reading(&self, written: &Written) -> Option<TileTag> {
