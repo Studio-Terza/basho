@@ -38,18 +38,22 @@ impl DraftPart {
     }
 
     fn words(text: &str) -> Option<DraftPart> {
-        Some(text)
-            .filter(|text| !text.is_empty())
-            .map(|text| DraftPart::Words(Spelling::new(text.to_owned())))
+        text.chars()
+            .next()
+            .map(|_| DraftPart::Words(Spelling::new(text.to_owned())))
+    }
+
+    fn typed(kind: StretchKind, said: Spelling) -> DraftPart {
+        match kind {
+            StretchKind::Clock => DraftPart::Unsure(said),
+            StretchKind::Distance => DraftPart::Length(said),
+        }
     }
 
     fn around(markup: &str, stretch: &TypedStretch) -> Vec<DraftPart> {
         let indexes = stretch.index_range();
         let said = Spelling::new(markup.get(indexes.clone()).unwrap_or_default().to_owned());
-        let typed = match stretch.kind() {
-            StretchKind::Clock => DraftPart::Unsure(said),
-            StretchKind::Distance => DraftPart::Length(said),
-        };
+        let typed = Self::typed(stretch.kind(), said);
         Self::words(markup.get(..indexes.start).unwrap_or_default())
             .into_iter()
             .chain([typed])

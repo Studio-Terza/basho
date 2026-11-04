@@ -37,7 +37,7 @@ impl LateWalker<'_> {
             .legs()
             .iter()
             .enumerate()
-            .filter(|(_, leg)| leg.mode() == Mode::Walk && !leg.line().is_sketch())
+            .filter(|(_, leg)| leg.mode() == Mode::Walk && leg.line().is_sketch().is_none())
             .filter_map(|(position, leg)| {
                 let here = leg.line().point_along(leg.length() * 0.5)?;
                 let guidance =

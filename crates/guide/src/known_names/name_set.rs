@@ -35,16 +35,15 @@ impl NameSet {
     }
 
     #[must_use]
-    pub fn holds(&self, name: &Spelling) -> bool {
-        self.whole.contains(name)
+    pub fn holds(&self, name: &Spelling) -> Option<&Spelling> {
+        self.whole.get(name)
     }
 
     fn length_in(&self, text: &RubyText, written: &[char], at_index: usize) -> Option<usize> {
         self.by_letter
             .get(written.get(at_index)?)?
             .iter()
-            .find(|name| Self::sits_at(text, written, name, at_index))
-            .map(Vec::len)
+            .find_map(|name| Self::sits_at(text, written, name, at_index).map(|_| name.len()))
     }
 
     #[must_use]
@@ -63,22 +62,28 @@ impl NameSet {
         })
     }
 
-    fn sits_at(text: &RubyText, written: &[char], name: &[char], at_index: usize) -> bool {
+    fn sits_at(text: &RubyText, written: &[char], name: &[char], at_index: usize) -> Option<usize> {
         let end_index = at_index + name.len();
-        written.get(at_index..end_index) == Some(name)
-            && text.parts_at(at_index)
-            && text.parts_at(end_index)
-            && Self::clear(
-                at_index
-                    .checked_sub(1)
-                    .and_then(|before| written.get(before)),
-                name.first(),
-            )
-            && Self::clear(written.get(end_index), name.last())
-    }
-
-    fn clear(neighbour: Option<&char>, edge: Option<&char>) -> bool {
-        !(neighbour.is_some_and(char::is_ascii_alphanumeric)
-            && edge.is_some_and(char::is_ascii_alphanumeric))
+        let clash = |neighbour: Option<char>, edge: Option<char>| {
+            neighbour
+                .filter(char::is_ascii_alphanumeric)
+                .and(edge.filter(char::is_ascii_alphanumeric))
+        };
+        Some(name)
+            .filter(|name| written.get(at_index..end_index) == Some(*name))
+            .and_then(|_| text.parts_at(at_index))
+            .and_then(|_| text.parts_at(end_index))
+            .filter(|_| {
+                clash(
+                    at_index
+                        .checked_sub(1)
+                        .and_then(|before| written.get(before))
+                        .copied(),
+                    name.first().copied(),
+                )
+                .is_none()
+            })
+            .filter(|_| clash(written.get(end_index).copied(), name.last().copied()).is_none())
+            .map(|_| at_index)
     }
 }

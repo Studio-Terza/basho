@@ -103,7 +103,7 @@ impl KnownNames {
         let unknown = |kind: NameKind, names: &NameSet| {
             part.named(kind)
                 .map(|name| name.text(Reading::Written))
-                .filter(|name| !names.holds(name))
+                .filter(|name| names.holds(name).is_none())
         };
         unknown(NameKind::Entry, &self.entries)
             .map(|name| Problem::UnknownEntry { name })

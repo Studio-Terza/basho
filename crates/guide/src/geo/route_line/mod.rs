@@ -39,9 +39,10 @@ impl RouteLine {
     }
 
     #[must_use]
-    pub fn is_sketch(&self) -> bool {
+    pub fn is_sketch(&self) -> Option<&RouteLine> {
         self.segment_lengths()
             .any(|length| length > Self::SKETCH_SEGMENT)
+            .then_some(self)
     }
 
     #[must_use]
@@ -103,10 +104,9 @@ impl RouteLine {
     }
 
     fn lone_point(&self) -> Option<Coordinate> {
-        match self.points.as_slice() {
-            [only] => Some(*only),
-            _ => None,
-        }
+        <[Coordinate; 1]>::try_from(self.points.as_slice())
+            .ok()
+            .map(|[only]| only)
     }
 }
 

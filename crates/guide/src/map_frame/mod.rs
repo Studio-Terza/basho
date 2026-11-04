@@ -94,8 +94,12 @@ impl MapFrame {
     pub fn extent(self, axis: Axis) -> Pixels {
         match axis {
             Axis::Across => self.width,
-            Axis::Down => self.width * (self.north / self.east),
+            Axis::Down => self.height(),
         }
+    }
+
+    fn height(self) -> Pixels {
+        self.width * (self.north / self.east)
     }
 
     #[must_use]
@@ -129,7 +133,7 @@ impl MapFrame {
                 .enumerate()
                 .fold(String::new(), |mut path, (index, point)| {
                     let projected = self.project(*point);
-                    let command = if index == 0 { 'M' } else { 'L' };
+                    let command = Some(index).filter(|index| *index == 0).map_or('L', |_| 'M');
                     let _ = write!(
                         path,
                         "{command}{} {} ",

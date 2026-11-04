@@ -26,11 +26,12 @@ pub enum Evidence {
 impl Evidence {
     fn said<'de, Input: Deserializer<'de>>(input: Input) -> Result<Content, Input::Error> {
         let reason = Content::deserialize(input)?;
-        if reason.letters().iter().all(|letter| letter.is_whitespace()) {
-            Err(Input::Error::custom("an unverified fact needs its reason"))
-        } else {
-            Ok(reason)
-        }
+        reason
+            .letters()
+            .iter()
+            .all(|letter| letter.is_whitespace())
+            .then(|| Input::Error::custom("an unverified fact needs its reason"))
+            .map_or(Ok(reason), Err)
     }
 
     fn checked<'de, Input: Deserializer<'de>>(input: Input) -> Result<Source, Input::Error> {
@@ -45,17 +46,15 @@ impl Evidence {
         let latest = today
             .and_then(|today| today.succ_opt())
             .map(CalendarDate::from);
-        if source.url().is_planning() {
-            Err(Input::Error::custom(
+        let planned = source.url().is_planning().map(|_| {
+            Input::Error::custom(
                 "the trip's own plan cannot back a fact: cite an outside source or mark it unverified",
-            ))
-        } else if latest.is_some_and(|latest| source.checked() > latest) {
-            Err(Input::Error::custom(
-                "a source cannot be checked in the future",
-            ))
-        } else {
-            Ok(source)
-        }
+            )
+        });
+        let future = latest
+            .filter(|latest| source.checked() > *latest)
+            .map(|_| Input::Error::custom("a source cannot be checked in the future"));
+        planned.or(future).map_or(Ok(source), Err)
     }
 
     #[must_use]
@@ -96,12 +95,12 @@ impl EvidenceKind {
 
     #[must_use]
     pub fn word(self) -> Label {
-        Label::new(match self {
-            EvidenceKind::Unverified => "Unverified",
-            EvidenceKind::Source => "Checked",
-            EvidenceKind::Simulator => "Seen in simulator",
-            EvidenceKind::Owner => "Confirmed in use",
-        })
+        match self {
+            EvidenceKind::Unverified => Label::new("Unverified"),
+            EvidenceKind::Source => Label::new("Checked"),
+            EvidenceKind::Simulator => Label::new("Seen in simulator"),
+            EvidenceKind::Owner => Label::new("Confirmed in use"),
+        }
     }
 
     #[must_use]

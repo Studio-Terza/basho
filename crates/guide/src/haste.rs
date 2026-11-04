@@ -9,9 +9,9 @@ pub enum Haste {
 
 impl fmt::Display for Haste {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(match self {
-            Haste::DoNotStop => "do not stop",
-            Haste::JogFromTrain => "jog from the train",
-        })
+        match self {
+            Haste::DoNotStop => formatter.write_str("do not stop"),
+            Haste::JogFromTrain => formatter.write_str("jog from the train"),
+        }
     }
 }

@@ -19,7 +19,9 @@ impl Tenths {
 
 impl fmt::Display for Tenths {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let sign = if self.0 < 0 { "-" } else { "" };
+        let sign = Some(self.0)
+            .filter(|tenths| *tenths < 0)
+            .map_or("", |_| "-");
         let whole = self.0.unsigned_abs();
         let per_unit = Self::PER_UNIT.unsigned_abs();
         write!(formatter, "{sign}{}.{}", whole / per_unit, whole % per_unit)

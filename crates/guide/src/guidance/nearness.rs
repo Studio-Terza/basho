@@ -19,12 +19,10 @@ impl Nearness {
 
     #[must_use]
     pub fn beside(self, line: &RouteLine) -> Distance {
-        if line.is_sketch() {
+        line.is_sketch().map_or(self.distance(), |sketch| {
             self.distance()
-                .max(line.longest_segment().unwrap_or_default() * Self::SKETCH_SHARE)
-        } else {
-            self.distance()
-        }
+                .max(sketch.longest_segment().unwrap_or_default() * Self::SKETCH_SHARE)
+        })
     }
 
     #[must_use]

@@ -19,6 +19,25 @@ enum HourPadding {
     Zero,
 }
 
+impl HourPadding {
+    fn written(self, formatter: &mut fmt::Formatter<'_>, said: SaidClock) -> fmt::Result {
+        match self {
+            HourPadding::Bare => write!(
+                formatter,
+                "{}:{:02}",
+                said.since_midnight.count() / SaidClock::HOUR.count(),
+                said.since_midnight.count() % SaidClock::HOUR.count()
+            ),
+            HourPadding::Zero => write!(
+                formatter,
+                "{:02}:{:02}",
+                said.since_midnight.count() / SaidClock::HOUR.count(),
+                said.since_midnight.count() % SaidClock::HOUR.count()
+            ),
+        }
+    }
+}
+
 impl SaidClock {
     const END_OF_DAY: Minutes = Minutes::new(24 * 60);
     const HOUR: Minutes = Minutes::new(60);
@@ -37,11 +56,12 @@ impl SaidClock {
         let hour_count = Self::digits(hours)
             .filter(|_| (1..=Self::LONGEST_HOUR_LENGTH).contains(&hours.len()))?;
         let minute_count = Self::digits(minutes)
-            .filter(|count| *count < Self::HOUR && minutes.len() == Self::MINUTE_LENGTH)?;
-        let padded = match (hours.len(), hours.starts_with('0')) {
-            (Self::LONGEST_HOUR_LENGTH, true) => HourPadding::Zero,
-            _ => HourPadding::Bare,
-        };
+            .filter(|count| *count < Self::HOUR)
+            .filter(|_| minutes.len() == Self::MINUTE_LENGTH)?;
+        let padded = Some(hours)
+            .filter(|hours| hours.len() == Self::LONGEST_HOUR_LENGTH)
+            .filter(|hours| hours.starts_with('0'))
+            .map_or(HourPadding::Bare, |_| HourPadding::Zero);
         Some(SaidClock {
             since_midnight: Minutes::new(hour_count.count() * Self::HOUR.count()) + minute_count,
             padded,
@@ -60,11 +80,6 @@ impl TryFrom<String> for SaidClock {
 
 impl fmt::Display for SaidClock {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let hours = self.since_midnight.count() / Self::HOUR.count();
-        let minutes = self.since_midnight.count() % Self::HOUR.count();
-        match self.padded {
-            HourPadding::Bare => write!(formatter, "{hours}:{minutes:02}"),
-            HourPadding::Zero => write!(formatter, "{hours:02}:{minutes:02}"),
-        }
+        self.padded.written(formatter, *self)
     }
 }

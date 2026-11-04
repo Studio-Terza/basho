@@ -25,22 +25,21 @@ impl EvidenceCounts {
 
 impl From<EvidenceKind> for EvidenceCounts {
     fn from(kind: EvidenceKind) -> EvidenceCounts {
-        let one = FactCount::new(1);
         match kind {
             EvidenceKind::Unverified => EvidenceCounts {
-                unverified: one,
+                unverified: FactCount::new(1),
                 ..Self::default()
             },
             EvidenceKind::Source => EvidenceCounts {
-                source: one,
+                source: FactCount::new(1),
                 ..Self::default()
             },
             EvidenceKind::Simulator => EvidenceCounts {
-                simulator: one,
+                simulator: FactCount::new(1),
                 ..Self::default()
             },
             EvidenceKind::Owner => EvidenceCounts {
-                owner: one,
+                owner: FactCount::new(1),
                 ..Self::default()
             },
         }

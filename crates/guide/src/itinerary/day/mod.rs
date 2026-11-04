@@ -127,7 +127,7 @@ impl Day {
     #[must_use]
     pub fn follows(&self, previous: &Day) -> bool {
         self.number.number() == previous.number.number().wrapping_add(1)
-            && self.date.is_day_after(previous.date)
+            && self.date.is_day_after(previous.date).is_some()
     }
 
     #[must_use]
