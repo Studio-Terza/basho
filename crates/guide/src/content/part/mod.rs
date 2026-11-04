@@ -1,11 +1,15 @@
+mod words;
+
 use std::fmt;
 
 use serde::de::value::MapAccessDeserializer;
 use serde::de::{Error, MapAccess, Visitor};
 use serde::{Deserialize, Deserializer};
 
-use crate::content::{NameKind, TypedPart, Words};
+use crate::content::{NameKind, TypedPart};
 use crate::ruby_text::RubyText;
+
+use words::Words;
 
 #[derive(Clone, Debug)]
 pub enum Part {
