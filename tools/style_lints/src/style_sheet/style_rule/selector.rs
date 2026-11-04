@@ -19,16 +19,14 @@ impl Selector {
             .collect()
     }
 
-    #[must_use]
-    pub fn sole_class(&self) -> Option<CssClass> {
-        self.0
-            .strip_prefix('.')
-            .filter(|class| class.chars().all(Self::in_class))
-            .map(|class| CssClass(class.to_owned()))
-    }
-
     fn in_class(character: char) -> bool {
         character.is_ascii_alphanumeric() || character == '-' || character == '_'
+    }
+}
+
+impl AsRef<str> for CssClass {
+    fn as_ref(&self) -> &str {
+        &self.0
     }
 }
 
