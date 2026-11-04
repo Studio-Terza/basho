@@ -9,6 +9,7 @@ use sim_suite::{
 
 const PASSED: &str = "Test Case '-[BashoUITests.MapTests testPinch]' passed (20.1 seconds).";
 const FAILED: &str = "Test Case '-[BashoUITests.WikiTests testBack]' failed (3.0 seconds).";
+const MAP_FAILED: &str = "Test Case '-[BashoUITests.MapTests testZoom]' failed (2.0 seconds).";
 
 struct Heard;
 
@@ -106,7 +107,16 @@ fn a_feature_with_no_tests_or_a_failure_does_not_pass() {
 }
 
 #[test]
-fn a_full_pass_or_a_crash_decides_the_verdict() {
+fn a_failure_among_passes_fails_the_feature() {
+    let toml = toml::to_string(&Heard::findings(&[PASSED, MAP_FAILED])).unwrap_or_default();
+    assert!(
+        toml.contains("feature = \"maps\"\nstanding = \"failed\""),
+        "{toml}"
+    );
+}
+
+#[test]
+fn a_full_pass_without_trouble_or_a_crash_decides_the_verdict() {
     let all: Vec<String> = [
         "TripPickerTests",
         "BugReportTests",
@@ -127,6 +137,13 @@ fn a_full_pass_or_a_crash_decides_the_verdict() {
     assert!(
         Heard::findings(&lines)
             .closed(crash, None::<&std::io::Error>)
+            .verdict()
+            .is_err()
+    );
+    let trouble = std::io::Error::other("the simulator did not boot");
+    assert!(
+        Heard::findings(&lines)
+            .closed(CrashReports::default(), Some(&trouble))
             .verdict()
             .is_err()
     );

@@ -1,5 +1,6 @@
 mod feature_report;
 pub mod map_phase;
+mod run;
 mod test_tally;
 mod wording;
 
@@ -9,6 +10,7 @@ use crate::crash_reports::CrashReports;
 use crate::suite::{Standing, TestName};
 use feature_report::FeatureReport;
 use map_phase::PhaseFigures;
+use run::Run;
 use test_tally::TestTally;
 use wording::Wording;
 
@@ -67,17 +69,21 @@ impl SimFindings {
     }
 
     pub fn verdict(&self) -> Result<(), Unproved> {
-        Some(self)
-            .filter(|findings| findings.trouble.is_none())
-            .filter(|findings| findings.crash_reports.found().is_empty())
-            .filter(|findings| {
-                findings
-                    .features
-                    .iter()
-                    .all(|report| report.standing() != Standing::Failed)
-            })
-            .map(drop)
-            .ok_or_else(|| Unproved(self.to_string()))
+        match self.run() {
+            Run::Proved => Ok(()),
+            Run::Troubled | Run::Failing | Run::Crashed => Err(Unproved(self.to_string())),
+        }
+    }
+
+    fn run(&self) -> Run {
+        let troubled = self.trouble.is_some().then_some(Run::Troubled);
+        let failing = self
+            .features
+            .iter()
+            .any(|report| report.standing() == Standing::Failed)
+            .then_some(Run::Failing);
+        let crash_free = self.crash_reports.found().is_empty().then_some(Run::Proved);
+        troubled.or(failing).or(crash_free).unwrap_or(Run::Crashed)
     }
 }
 
