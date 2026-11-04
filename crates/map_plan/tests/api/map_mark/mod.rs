@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 
 use dioxus::prelude::*;
 use guide::plane::{Pixels, PlanePoint};
-use layout::measure::MarkSize;
+use layout::MarkSize;
 use map_plan::map_mark::{MapMark, MarkAt};
 
 #[test]

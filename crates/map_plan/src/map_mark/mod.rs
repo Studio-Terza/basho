@@ -9,7 +9,7 @@ use guide::leg::StopKind;
 use guide::words::Label;
 use serde::Serialize;
 
-use layout::measure::MarkSize;
+use layout::MarkSize;
 pub use look::Look;
 pub use mark_at::MarkAt;
 use shape::Shape;

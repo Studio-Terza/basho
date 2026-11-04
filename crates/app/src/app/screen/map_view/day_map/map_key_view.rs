@@ -3,7 +3,7 @@ use dioxus::prelude::*;
 use guide::classed::Classed;
 use guide::plane::Halving;
 use guide::plane::PlanePoint;
-use layout::measure::MarkSize;
+use layout::MarkSize;
 use map_plan::KeyEntry;
 use map_plan::map_mark::MarkAt;
 use newtype::Newtype;
