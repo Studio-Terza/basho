@@ -30,7 +30,8 @@ fn losing_gps_off_the_route_keeps_the_warning_at_the_last_fix() {
         leg.time(End::Start).later_by(SILENCE),
     );
     let guidance = Sighting::Stale { at, since }.guidance(day, LegProgress::default(), now);
-    assert!(guidance.off_route().is_some() && guidance.marker() == Some(at));
+    assert!(guidance.off_route().is_some());
+    assert_eq!(guidance.marker(), Some(at));
     assert_eq!(guidance.source().lost_for(now), Some(SILENCE));
     assert_eq!(guidance.progress(), None);
 }
@@ -48,7 +49,8 @@ fn losing_gps_on_the_route_estimates_but_still_shows_the_last_fix() {
         leg.time(End::Start).later_by(SILENCE),
     );
     let guidance = Sighting::Stale { at, since }.guidance(day, LegProgress::default(), now);
-    assert!(guidance.off_route().is_none() && guidance.marking() == Some(Marker::LastFix(at)));
+    assert!(guidance.off_route().is_none());
+    assert_eq!(guidance.marking(), Some(Marker::LastFix(at)));
     assert_eq!(guidance.source(), PositionSource::GpsLost { since });
 }
 
@@ -69,6 +71,7 @@ fn a_cached_fix_at_reopening_is_read_at_its_own_time_and_shows_its_age() {
     }
     .guidance(day, LegProgress::default(), now);
     assert_eq!(reopened.status(), Some(Status::NoGps(Some(CACHED))));
-    assert!(reopened.arrow().is_none() && reopened.progress().is_none());
+    assert!(reopened.arrow().is_none());
+    assert!(reopened.progress().is_none());
     assert!(reopened.time_check().and_then(TimeCheck::late_by).is_none());
 }

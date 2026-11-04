@@ -1,4 +1,5 @@
 use std::cell::Cell;
+use std::cmp::Ordering;
 use std::ops::Range;
 
 use guide::clock::{ClockTime, Minutes, TripTime};
@@ -157,15 +158,21 @@ impl<'day> Walker<'day> {
                 let gap = guidance
                     .arrow()
                     .map_or(0.0, |arrow| arrow.pointer().bearing().gap_to(truth));
-                let misplaced = (guidance.leg_index() != walk
-                    && (left > Self::NEAR_END || guidance.leg_index() < walk))
-                    .then_some("step");
-                let reversed = (left > Self::NEAR_END
-                    && along >= Self::STRIDE
-                    && gap > Self::WRONG_WAY.degrees())
-                .then_some("arrow");
-                let alarmed = (left > Self::NEAR_END && guidance.status() != Some(Status::OnRoute))
-                    .then_some("status");
+                let misplaced = matches!(
+                    (guidance.leg_index().cmp(&walk), left > Self::NEAR_END),
+                    (Ordering::Less, _) | (Ordering::Greater, true)
+                )
+                .then_some("step");
+                let reversed = (left > Self::NEAR_END)
+                    .then_some(along)
+                    .filter(|along| *along >= Self::STRIDE)
+                    .map(|_| gap)
+                    .filter(|gap| *gap > Self::WRONG_WAY.degrees())
+                    .map(|_| "arrow");
+                let alarmed = (left > Self::NEAR_END)
+                    .then_some(guidance.status())
+                    .filter(|status| *status != Some(Status::OnRoute))
+                    .map(|_| "status");
                 misplaced
                     .or(reversed)
                     .or(alarmed)
@@ -227,13 +234,15 @@ impl<'day> Walker<'day> {
     }
 
     fn clear_of_walks(&self, point: Coordinate, far: Distance) -> bool {
-        self.day.legs().iter().all(|leg| {
-            leg.mode() != Mode::Walk
-                || leg
-                    .line()
+        self.day
+            .legs()
+            .iter()
+            .filter(|leg| leg.mode() == Mode::Walk)
+            .all(|leg| {
+                leg.line()
                     .fix(point)
                     .is_none_or(|fix| fix.off_route() > far)
-        })
+            })
     }
 
     pub fn fixes_on(&self, walk: LegIndex) -> usize {

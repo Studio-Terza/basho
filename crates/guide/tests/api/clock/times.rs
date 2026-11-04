@@ -98,25 +98,27 @@ fn a_live_gap_shows_its_basis_on_both_sides_of_zero() {
 #[test]
 fn facts_and_plans_never_carry_the_approximate_mark() {
     let noon = Written::clock("12:00");
-    assert!(
-        SOURCES
-            .map(|source| FactTime::new(noon, source, &Written::evidence()).to_string())
-            .iter()
-            .all(|fact| !fact.contains(APPROXIMATE))
-    );
-    assert!(!PlanTime::new(noon).to_string().contains(APPROXIMATE));
+    let marked: Vec<String> = SOURCES
+        .map(|source| FactTime::new(noon, source, &Written::evidence()).to_string())
+        .into_iter()
+        .filter(|fact| fact.contains(APPROXIMATE))
+        .collect();
+    assert_eq!(marked, Vec::<String>::new());
+    assert_eq!(PlanTime::new(noon).to_string().find(APPROXIMATE), None);
 }
 
 #[test]
 fn every_time_on_every_bundled_leg_is_free_of_the_approximate_mark() {
     let trip = Fixture::bundled().unwrap();
-    assert!(
-        trip.days()
-            .iter()
-            .flat_map(Day::legs)
-            .flat_map(|leg| [leg.listed(End::Start), leg.listed(End::Finish)])
-            .all(|time| !time.to_string().contains(APPROXIMATE))
-    );
+    let marked: Vec<String> = trip
+        .days()
+        .iter()
+        .flat_map(Day::legs)
+        .flat_map(|leg| [leg.listed(End::Start), leg.listed(End::Finish)])
+        .map(|time| time.to_string())
+        .filter(|time| time.contains(APPROXIMATE))
+        .collect();
+    assert_eq!(marked, Vec::<String>::new());
 }
 
 #[test]

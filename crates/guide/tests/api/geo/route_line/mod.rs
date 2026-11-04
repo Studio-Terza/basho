@@ -26,8 +26,13 @@ fn a_point_beside_a_line_snaps_to_its_middle() {
 
 #[test]
 fn a_line_with_a_multi_kilometer_jump_is_a_sketch() {
-    assert!(!RouteLine::new(vec![WEST, EAST]).is_sketch());
-    assert!(RouteLine::new(vec![WEST, EAST, FAR]).is_sketch());
+    assert_eq!(
+        [
+            RouteLine::new(vec![WEST, EAST]).is_sketch(),
+            RouteLine::new(vec![WEST, EAST, FAR]).is_sketch()
+        ],
+        [false, true]
+    );
 }
 
 #[test]

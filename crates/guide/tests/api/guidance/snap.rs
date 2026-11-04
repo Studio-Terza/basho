@@ -37,14 +37,20 @@ impl LateWalker<'_> {
             .legs()
             .iter()
             .enumerate()
-            .filter(|(_, leg)| leg.mode() == Mode::Walk && !leg.line().is_sketch())
+            .filter(|(_, leg)| (leg.mode(), leg.line().is_sketch()) == (Mode::Walk, false))
             .filter_map(|(position, leg)| {
                 let here = leg.line().point_along(leg.length() * 0.5)?;
                 let guidance =
                     Guidance::new(self.day, LegProgress::default(), evening?, Some(here));
                 let found = guidance.leg().map(Leg::line)?.fix(here)?;
-                (guidance.missed_ride().is_none()
-                    && (found.off_route() > SAME_SPOT || guidance.off_route().is_some()))
+                matches!(
+                    (
+                        guidance.missed_ride(),
+                        found.off_route() > SAME_SPOT,
+                        guidance.off_route().is_some()
+                    ),
+                    (None, true, _) | (None, _, true)
+                )
                 .then(|| {
                     format!(
                         "day {} leg {}: placed on leg {}",

@@ -79,39 +79,52 @@ impl Sequences {
     }
 }
 
-#[test]
-fn a_manual_set_is_never_moved_back_by_what_the_tracker_sees() {
-    for sequence in Sequences::of_length(SEQUENCE_LENGTH) {
-        sequence
-            .iter()
-            .fold(Tracking::Automatic, |tracking, fix| match *fix {
-                Fix::ByHand(placing, baseline) => {
-                    let pinned = Tracking::pinned(placing, baseline);
-                    assert_eq!(pinned.floor(), Some(placing));
-                    pinned
-                }
-                Fix::Observe(seen, source) => {
-                    let observed = tracking.observing(seen, source);
-                    assert!(observed.floor() >= tracking.floor());
-                    if let Some(floor) = tracking.floor() {
-                        assert_eq!(observed.floor(), Some(floor.max(seen)));
-                        assert!(tracking.holding(seen, source).unwrap_or(seen) >= floor);
-                    }
-                    observed
-                }
-            });
+impl Fix {
+    fn pinned_by_hand(placing: Placing, baseline: Placing) -> Tracking {
+        let pinned = Tracking::pinned(placing, baseline);
+        assert_eq!(pinned.floor(), Some(placing));
+        pinned
+    }
+
+    fn observed(tracking: Tracking, seen: Placing, source: PositionSource) -> Tracking {
+        let observed = tracking.observing(seen, source);
+        assert!(observed.floor() >= tracking.floor());
+        tracking.floor().into_iter().for_each(|floor| {
+            assert_eq!(observed.floor(), Some(floor.max(seen)));
+            assert!(tracking.holding(seen, source).unwrap_or(seen) >= floor);
+        });
+        observed
+    }
+
+    fn followed(tracking: Tracking, fix: &Fix) -> Tracking {
+        match *fix {
+            Fix::ByHand(placing, baseline) => Self::pinned_by_hand(placing, baseline),
+            Fix::Observe(seen, source) => Self::observed(tracking, seen, source),
+        }
+    }
+
+    fn followed_through(sequence: &[Fix]) {
+        sequence.iter().fold(Tracking::Automatic, Self::followed);
     }
 }
 
 #[test]
+fn a_manual_set_is_never_moved_back_by_what_the_tracker_sees() {
+    Sequences::of_length(SEQUENCE_LENGTH)
+        .iter()
+        .map(Vec::as_slice)
+        .for_each(Fix::followed_through);
+}
+
+#[test]
 fn an_automatic_tracker_stays_automatic_whatever_it_sees() {
-    for seen in Placings::all() {
+    Placings::all().iter().copied().for_each(|seen| {
         assert_eq!(
             Tracking::Automatic.observing(seen, PositionSource::Gps),
             Tracking::Automatic
         );
         assert_eq!(Tracking::Automatic.holding(seen, PositionSource::Gps), None);
-    }
+    });
 }
 
 #[test]
@@ -140,21 +153,25 @@ impl Clock {
 fn guidance_never_shows_a_step_before_the_manual_set_and_follows_the_tracker_past_it() {
     let trip = Fixture::bundled_days(&[HILL_DAY]);
     let day = trip.day(HILL_DAY);
-    for floor in Placings::on_the_day() {
-        for clock in CLOCKS {
+    Placings::on_the_day()
+        .into_iter()
+        .flat_map(|floor| {
+            CLOCKS
+                .into_iter()
+                .flat_map(move |clock| TRACKER_LEGS.into_iter().map(move |leg| (floor, clock, leg)))
+        })
+        .for_each(|(floor, clock, leg)| {
             let now = Clock::on(day, clock);
-            for leg in TRACKER_LEGS {
-                let kept = LegProgress::confirmed(day.number(), LegIndex::new(leg), Minutes::ZERO);
-                let reading = Guidance::new(day, kept, now, None);
-                let pinned = LegProgress::pinned_at(day, floor, now, reading.placing());
-                let held = reading.held(pinned);
-                assert!(held.placing() >= floor, "{floor} at {clock}");
-                if reading.placing() >= floor {
-                    assert_eq!(held.placing(), reading.placing());
-                }
-            }
-        }
-    }
+            let kept = LegProgress::confirmed(day.number(), LegIndex::new(leg), Minutes::ZERO);
+            let reading = Guidance::new(day, kept, now, None);
+            let pinned = LegProgress::pinned_at(day, floor, now, reading.placing());
+            let held = reading.held(pinned);
+            assert!(held.placing() >= floor, "{floor} at {clock}");
+            Some(reading.placing())
+                .filter(|placing| *placing >= floor)
+                .into_iter()
+                .for_each(|placing| assert_eq!(held.placing(), placing));
+        });
 }
 
 #[test]
@@ -162,7 +179,7 @@ fn a_manual_set_holds_through_a_confirmed_step_that_would_go_back() {
     let trip = Fixture::bundled_days(&[HILL_DAY]);
     let day = trip.day(HILL_DAY);
     let now = Clock::on(day, CLOCKS[0]);
-    for floor in Placings::on_the_day() {
+    Placings::on_the_day().iter().copied().for_each(|floor| {
         let pinned = LegProgress::pinned_at(day, floor, now, floor);
         let behind = LegProgress::confirmed(
             day.number(),
@@ -173,7 +190,7 @@ fn a_manual_set_holds_through_a_confirmed_step_that_would_go_back() {
         assert!(kept.tracking().floor() >= Some(floor));
         let shown = Guidance::new(day, kept, now, None).held(kept);
         assert!(shown.placing() >= floor);
-    }
+    });
 }
 
 #[test]
@@ -181,8 +198,8 @@ fn a_manual_set_reads_back_as_it_was_written() {
     let trip = Fixture::bundled_days(&[HILL_DAY]);
     let day = trip.day(HILL_DAY);
     let now = Clock::on(day, CLOCKS[2]);
-    for floor in Placings::on_the_day() {
+    Placings::on_the_day().iter().copied().for_each(|floor| {
         let pinned = LegProgress::pinned_at(day, floor, now, Placings::on_the_day()[0]);
         assert_eq!(pinned.to_string().parse::<LegProgress>(), Ok(pinned));
-    }
+    });
 }

@@ -99,8 +99,6 @@ fn without_gps_the_estimate_stops_short_of_the_leg_end() {
         now,
         None,
     );
-    assert!(
-        guidance.source() == PositionSource::Estimate
-            && Distance::from(guidance.left()).kilometers().amount() > CLOSE_KM
-    );
+    assert_eq!(guidance.source(), PositionSource::Estimate);
+    assert!(Distance::from(guidance.left()).kilometers().amount() > CLOSE_KM);
 }

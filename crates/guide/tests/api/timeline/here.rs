@@ -1,17 +1,15 @@
+use super::departure::Departure;
 use crate::fixture::Fixture;
 use crate::fixture::WrittenTime;
 use guide::BufferState;
 use guide::clock::ClockTime;
 use guide::clock::Minutes;
-use guide::end::End;
 use guide::geo::Coordinate;
 use guide::geo::Distance;
 use guide::guidance::Guidance;
 use guide::guidance::LegProgress;
 use guide::guidance::timeline::Halt;
-use guide::itinerary::Day;
 use guide::leg::LegIndex;
-use guide::leg::Mode;
 
 const DAY_THREE: usize = 3;
 const DAY_FOUR: usize = 4;
@@ -25,19 +23,6 @@ const BACKUP_LEAVES: &str = "12:17";
 const SHINKANSEN: LegIndex = LegIndex::new(8);
 const ONE_LATE: &str = "17:56";
 const SHORT_OF_THE_END: Distance = Distance::new(3000.0);
-
-struct Departure;
-
-impl Departure {
-    pub fn of(day: &Day, time: &str) -> LegIndex {
-        let departs = ClockTime::try_from(time.to_owned()).unwrap();
-        let found = day
-            .legs()
-            .iter()
-            .position(|leg| leg.mode() != Mode::Walk && leg.time(End::Start) == departs);
-        LegIndex::new(found.unwrap())
-    }
-}
 
 #[test]
 fn arriving_late_at_lunch_keeps_the_lateness_while_eating() {

@@ -62,7 +62,7 @@ const SPOILED: [[&str; 3]; 13] = [
 
 #[test]
 fn a_bare_train_mode_fails_at_load() {
-    let bare = SAMPLE.replacen(WALK, "mode = \"train\"", 1).parse::<Trip>();
+    let bare = Fixture::with_first_walk_as("mode = \"train\"");
     assert!(bare.is_err_and(|error| error.to_string().contains("variant")));
 }
 
@@ -71,11 +71,12 @@ fn each_missing_or_empty_board_fact_is_named_at_load() {
     let unnamed: Vec<&str> = SPOILED
         .iter()
         .filter(|[good, bad, said]| {
-            !SAMPLE
+            SAMPLE
                 .replacen(WALK, &WHOLE.replacen(good, bad, 1), 1)
                 .parse::<Trip>()
                 .map_or_else(|error| error.to_string(), |_| String::new())
-                .contains(said)
+                .find(said)
+                .is_none()
         })
         .map(|[_, bad, _]| *bad)
         .collect();
@@ -92,7 +93,7 @@ fn a_platform_either_keeps_its_evidence_or_says_to_check_the_board() {
         .filter_map(|leg| leg.conveyance().train())
         .map(AsRef::as_ref)
         .collect();
-    assert!(!platforms.is_empty());
+    assert_ne!(platforms.len(), 0);
     assert!(platforms.iter().all(
         |platform| platform.evidence().is_some() != platform.to_string().contains(CHECK_BOARD)
     ));

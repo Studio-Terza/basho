@@ -40,8 +40,10 @@ fn reopened_on_the_way_down_the_walker_is_on_the_descent_and_not_late() {
         .iter()
         .map(|along| walker.fix(later, line.point_along(*along).unwrap()))
         .filter(|guidance| {
-            guidance.leg_index() != DESCENT
-                || guidance.time_check().and_then(TimeCheck::late_by).is_some()
+            (
+                guidance.leg_index(),
+                guidance.time_check().and_then(TimeCheck::late_by),
+            ) != (DESCENT, None)
         })
         .map(|guidance| format!("{} {:?}", guidance.leg_index(), guidance.time_check()))
         .collect();

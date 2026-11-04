@@ -95,12 +95,18 @@ fn a_night_or_a_fact_with_no_evidence_fails_at_load() {
         SAMPLE.replacen(NIGHT_EVIDENCE, "why = [\"Sleep here.\"]", 1),
         SAMPLE.replacen(FACT_EVIDENCE, "", 1),
     ];
-    assert!(spoiled.iter().all(|text| {
-        text != SAMPLE
-            && text
-                .parse::<Trip>()
-                .is_err_and(|error| error.to_string().contains("missing field `evidence`"))
-    }));
+    let unchanged: Vec<&String> = spoiled.iter().filter(|text| *text == SAMPLE).collect();
+    assert_eq!(unchanged, Vec::<&String>::new());
+    let unnamed: Vec<&String> = spoiled
+        .iter()
+        .filter(|text| {
+            text.parse::<Trip>()
+                .map_or_else(|error| error.to_string(), |_| String::new())
+                .find("missing field `evidence`")
+                .is_none()
+        })
+        .collect();
+    assert_eq!(unnamed, Vec::<&String>::new());
 }
 
 #[test]
@@ -166,13 +172,17 @@ fn the_counts_of_a_file_are_the_sum_of_its_kinds_and_stop_at_a_bad_entry() {
 #[test]
 fn a_source_in_the_repo_names_a_file_that_is_there() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let missing: Vec<&str> = BUILT_IN
+    let (_, missing): (Vec<&str>, Vec<&str>) = BUILT_IN
         .split(CITED)
         .skip(1)
         .filter_map(|rest| rest.split(['"', '#']).next())
-        .filter(|cited| !cited.starts_with(WEB) && !cited.starts_with(RESEARCH))
-        .filter(|cited| !root.join(cited).is_file())
-        .collect();
+        .filter(|cited| {
+            cited
+                .strip_prefix(WEB)
+                .or(cited.strip_prefix(RESEARCH))
+                .is_none()
+        })
+        .partition(|cited| root.join(cited).is_file());
     assert_eq!(missing, Vec::<&str>::new());
 }
 

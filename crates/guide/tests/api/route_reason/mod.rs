@@ -86,21 +86,19 @@ fn every_reason_in_the_bundled_trip_names_something_known() {
 
 #[test]
 fn a_reason_that_is_only_free_text_fails_at_load() {
-    let text = SAMPLE
-        .replacen(WALK, "mode = { walk = { reason = \"it is nicer\" } }", 1)
-        .parse::<Trip>();
+    let text = Fixture::with_first_walk_as("mode = { walk = { reason = \"it is nicer\" } }");
     assert!(text.is_err_and(|error| error.to_string().contains("variant")));
 }
 
 #[test]
 fn each_missing_or_unknown_part_of_a_reason_is_named_at_load() {
-    for [good, bad, message] in SPOILED {
+    SPOILED.iter().copied().for_each(|[good, bad, message]| {
         let spoiled = SAMPLE
             .replacen(WALK, &RECORDED.replacen(good, bad, 1), 1)
             .parse::<Trip>();
         let error = spoiled.expect_err(bad).to_string();
         assert!(error.contains(message), "{bad}: {error}");
-    }
+    });
 }
 
 #[test]

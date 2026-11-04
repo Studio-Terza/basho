@@ -164,11 +164,12 @@ fn each_bad_file_fails_at_load_and_says_what_is_wrong() {
     let unnamed: Vec<&str> = SPOILED
         .iter()
         .filter(|[good, bad, said]| {
-            !SAMPLE
+            SAMPLE
                 .replacen(good, bad, 1)
                 .parse::<Trip>()
                 .map_or_else(|error| error.to_string(), |_| String::new())
-                .contains(said)
+                .find(said)
+                .is_none()
         })
         .map(|[good, ..]| *good)
         .collect();

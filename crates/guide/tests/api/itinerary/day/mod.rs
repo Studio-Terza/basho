@@ -90,14 +90,12 @@ impl Sample {
             .and_then(|before| day.leg(before).map(|leg| (before, leg)));
         before
             .map(|(position, leg)| {
-                let visit = if leg.mode() == Mode::Walk
-                    && leg.time(End::Finish).later_by(leg.paused(Pause::AtEnd))
-                        < ride.time(End::Start)
-                {
-                    leg.paused(Pause::AtEnd)
-                } else {
-                    Minutes::ZERO
-                };
+                let visit = (leg.mode() == Mode::Walk)
+                    .then_some(leg.paused(Pause::AtEnd))
+                    .filter(|paused| {
+                        leg.time(End::Finish).later_by(*paused) < ride.time(End::Start)
+                    })
+                    .unwrap_or_default();
                 let from = leg
                     .time(End::Finish)
                     .later_by(visit)
@@ -242,22 +240,33 @@ impl<'day> Audit<'day> {
     ) -> Option<Minutes> {
         let leg = self.day.leg(ride)?;
         let last = self.day.legs().last()?.time(End::Finish).since_midnight();
-        if arrival <= leg.time(End::Start).since_midnight() {
-            Some(last)
-        } else {
-            let backup = self.backup_of(ride)?.backup_ride()?;
-            let target = waiting
-                .map_or(
-                    leg.boarding_margin()?.target(backup.time(End::Start)),
-                    |_| backup.time(End::Start),
-                )
-                .since_midnight();
-            let end = self.run_end(ride);
-            let landed = self.day.leg(end)?.time(End::Finish).since_midnight();
-            (arrival <= target)
-                .then(|| backup.time(End::Finish).since_midnight() - landed)
-                .and_then(|delay| self.delayed(end.incremented(), delay))
-        }
+        Some(arrival)
+            .filter(|arrival| *arrival <= leg.time(End::Start).since_midnight())
+            .map_or_else(
+                || self.after_backup(ride, leg, arrival, waiting),
+                |_| Some(last),
+            )
+    }
+
+    fn after_backup(
+        &self,
+        ride: LegIndex,
+        leg: &Leg,
+        arrival: Minutes,
+        waiting: Option<Minutes>,
+    ) -> Option<Minutes> {
+        let backup = self.backup_of(ride)?.backup_ride()?;
+        let target = waiting
+            .map_or(
+                leg.boarding_margin()?.target(backup.time(End::Start)),
+                |_| backup.time(End::Start),
+            )
+            .since_midnight();
+        let end = self.run_end(ride);
+        let landed = self.day.leg(end)?.time(End::Finish).since_midnight();
+        (arrival <= target)
+            .then(|| backup.time(End::Finish).since_midnight() - landed)
+            .and_then(|delay| self.delayed(end.incremented(), delay))
     }
 
     pub fn delayed(&self, from: LegIndex, delay: Minutes) -> Option<Minutes> {
@@ -303,15 +312,16 @@ impl<'day> Audit<'day> {
                     let expected = self
                         .brute(index, arrival, Some(arrival))
                         .map(|minutes| self.clock_of(minutes));
-                    (arrival > ride.time(End::Start).since_midnight() && shown != expected).then(
-                        || {
+                    (arrival > ride.time(End::Start).since_midnight())
+                        .then_some(shown)
+                        .filter(|shown| *shown != expected)
+                        .map(|shown| {
                             format!(
                                 "day {} {} late {late}: inn shown {shown:?}, expected {expected:?}",
                                 self.day.number(),
                                 ride.listed(End::Start)
                             )
-                        },
-                    )
+                        })
                 })
             })
             .collect()
@@ -347,10 +357,13 @@ impl<'day> Audit<'day> {
                         backup.time(End::Finish).since_midnight() - landed,
                     )
                     .map(|minutes| self.clock_of(minutes));
-                (riding.is_some()
-                    && middle < backup.time(End::Finish).since_midnight()
-                    && shown != expected)
-                    .then(|| {
+                riding
+                    .and_then(|leg| {
+                        (middle < backup.time(End::Finish).since_midnight()).then_some(leg)
+                    })
+                    .map(|_| shown)
+                    .filter(|shown| *shown != expected)
+                    .map(|shown| {
                         format!(
                             "day {} on the {} backup: inn shown {shown:?}, expected {expected:?}",
                             self.day.number(),
@@ -376,40 +389,51 @@ impl<'day> Audit<'day> {
                 };
                 let buffer = self.live_buffer(&sample)?;
                 let spare = buffer.spare();
-                (buffer.deadline().event() == ride.time(End::Start) && spare >= Minutes::ZERO).then(
-                    || {
+                (buffer.deadline().event() == ride.time(End::Start))
+                    .then_some(spare)
+                    .filter(|spare| *spare >= Minutes::ZERO)
+                    .map(|spare| {
                         format!(
                             "day {} {}: {spare} to spare after it left",
                             self.day.number(),
                             ride.listed(End::Start)
                         )
-                    },
-                )
+                    })
             })
             .collect()
     }
 
     pub fn closer(&self, sample: &Sample) -> Option<LegIndex> {
         let legs = self.day.legs();
+        let counts = |leg: &Leg| {
+            matches!(
+                (leg.mode() == Mode::Walk, leg.tour().is_some()),
+                (false, _) | (_, true)
+            )
+        };
         let begun = legs
             .get(usize::from(sample.leg))
-            .filter(|leg| leg.mode() != Mode::Walk || leg.tour().is_some())
+            .filter(|leg| counts(leg))
             .filter(|leg| sample.time >= leg.time(End::Start))
             .map_or(sample.leg, |_| sample.leg.incremented());
         (usize::from(begun)..legs.len())
             .map(LegIndex::new)
-            .find(|index| {
-                self.day
-                    .leg(*index)
-                    .is_some_and(|leg| leg.mode() != Mode::Walk || leg.tour().is_some())
-            })
+            .find(|index| self.day.leg(*index).is_some_and(counts))
     }
 
     pub fn closing_spare(&self, closer: Option<LegIndex>, time: ClockTime) -> Option<Minutes> {
-        let Some(index) = closer else {
-            let last = self.day.legs().last()?.time(End::Finish);
-            return Some(self.day.night()?.check_in_by().since_midnight() - last.since_midnight());
-        };
+        closer.map_or_else(
+            || self.night_spare(),
+            |index| self.closing_spare_at(index, time),
+        )
+    }
+
+    fn night_spare(&self) -> Option<Minutes> {
+        let last = self.day.legs().last()?.time(End::Finish);
+        Some(self.day.night()?.check_in_by().since_midnight() - last.since_midnight())
+    }
+
+    fn closing_spare_at(&self, index: LegIndex, time: ClockTime) -> Option<Minutes> {
         let leg = self.day.leg(index)?;
         let before = index.previous().and_then(|before| self.day.leg(before));
         let visit = before
@@ -428,11 +452,13 @@ impl<'day> Audit<'day> {
             .boarding_margin()
             .map(|margin| margin.target(leg.time(End::Start)))
             .or_else(|| leg.tour().map(|tour| ClockTime::from(tour.check_in())))?;
-        Some(if time >= arrival {
-            leg.time(End::Start).since_midnight() - time.since_midnight()
-        } else {
-            target.since_midnight() - arrival.since_midnight()
-        })
+        Some(
+            Some(time)
+                .filter(|time| *time >= arrival)
+                .map_or(target.since_midnight() - arrival.since_midnight(), |time| {
+                    leg.time(End::Start).since_midnight() - time.since_midnight()
+                }),
+        )
     }
 
     pub fn planned_spare(&self, sample: &Sample) -> Option<Minutes> {
@@ -483,7 +509,11 @@ impl<'day> Audit<'day> {
             .filter_map(|sample| {
                 let planned = self.planned_spare(sample)?;
                 let live = self.live_buffer(sample).map(|buffer| buffer.spare())?;
-                ((planned - live).abs() > ON_PLAN || live < Minutes::ZERO).then(|| {
+                matches!(
+                    ((planned - live).abs() > ON_PLAN, live < Minutes::ZERO),
+                    (true, _) | (_, true)
+                )
+                .then(|| {
                     format!(
                         "day {} leg {} at {}: planned {planned}, shown {live}",
                         self.day.number(),
@@ -528,7 +558,10 @@ fn the_day_before_the_trip_shows_no_buffer_and_no_lateness() {
         .map(|hour| TripTime::on_date_at(first.zone(), eve, ClockTime::at_hour(hour)))
         .filter(|now| {
             let guidance = Guidance::new(first, LegProgress::default(), *now, here);
-            guidance.buffer().is_some() || guidance.time_check().is_some()
+            matches!(
+                (guidance.buffer(), guidance.time_check()),
+                (Some(_), _) | (_, Some(_))
+            )
         })
         .collect();
     assert_eq!(shown, Vec::<TripTime>::new());

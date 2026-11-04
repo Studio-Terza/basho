@@ -1,5 +1,6 @@
 mod backup;
 mod course;
+mod departure;
 mod halt;
 mod here;
 mod planned_stop;

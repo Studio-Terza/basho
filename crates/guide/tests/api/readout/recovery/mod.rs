@@ -45,10 +45,8 @@ fn off_the_route_the_panel_points_to_the_route_and_two_features_nearest_first() 
         recovery.route().map(Pointer::distance),
         guidance.off_route()
     );
-    assert!(
-        distances.len() == 2 && distances[0] <= distances[1],
-        "{distances:?}"
-    );
+    assert_eq!(distances.len(), 2, "{distances:?}");
+    assert!(distances[0] <= distances[1], "{distances:?}");
 }
 
 #[test]
