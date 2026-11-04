@@ -2,6 +2,7 @@ mod situation;
 mod walk_scene;
 mod wanted;
 
+use basho::app::Position;
 use std::borrow::Cow;
 use std::time::Duration;
 
@@ -178,7 +179,7 @@ impl Stage {
     const BEFORE_RIDE: Minutes = Minutes::new(-5);
     const AFTER_START: Minutes = Minutes::new(1);
     const SEEN_BEFORE: Minutes = Minutes::new(1);
-    const SECOND_GOAL: GoalNumber = GoalNumber::new(1);
+    const SECOND_GOAL: GoalNumber = GoalNumber::from_position(Position::new(1));
     const TRIP: [&str; 4] = [
         ".trip-view header h1",
         ".trip-picker .trip-open",
@@ -553,12 +554,12 @@ impl Stage {
 
     pub fn middle_of(day: &Day) -> Landing {
         let steps = Step::of_day(day).len();
-        Landing::Step(StepNumber::new(
+        Landing::Step(StepNumber::from_position(Position::new(
             (0..steps)
                 .zip((0..steps).rev())
                 .filter(|(front, back)| front < back)
                 .count(),
-        ))
+        )))
     }
 
     pub fn titled(self, what: &str) -> Stage {

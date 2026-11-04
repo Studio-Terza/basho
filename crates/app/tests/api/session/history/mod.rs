@@ -1,3 +1,4 @@
+use basho::app::Position;
 use std::cell::RefCell;
 
 use dioxus::prelude::*;
@@ -14,7 +15,7 @@ use guide::day_number::DayNumber;
 
 use crate::ui_check::{Drawing, Stage};
 
-const STEP: StepNumber = StepNumber::new(1);
+const STEP: StepNumber = StepNumber::from_position(Position::new(1));
 const DAY: DayNumber = DayNumber::new(1);
 const LEFT_AT: f64 = 412.5;
 const READ_TO: f64 = 90.0;

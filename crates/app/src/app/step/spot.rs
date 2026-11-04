@@ -1,3 +1,4 @@
+use crate::app::Position;
 use guide::day_number::DayNumber;
 use guide::itinerary::{Day, Itinerary};
 use map_plan::MapLevel;
@@ -25,10 +26,12 @@ impl Spot {
             || {
                 Spot::new(
                     day.number(),
-                    StepNumber::new(Step::of_day(day).len().saturating_sub(1)),
+                    StepNumber::from_position(Position::new(
+                        Step::of_day(day).len().saturating_sub(1),
+                    )),
                 )
             },
-            || Spot::new(day.number(), StepNumber::new(0)),
+            || Spot::new(day.number(), StepNumber::from_position(Position::new(0))),
         )
     }
 
@@ -62,7 +65,7 @@ impl Spot {
                 || position.checked_sub(1),
                 || Some(position + 1).filter(|next| *next < count),
             )
-            .map(|inside| Spot::new(self.day, StepNumber::new(inside)))
+            .map(|inside| Spot::new(self.day, StepNumber::from_position(Position::new(inside))))
             .or_else(|| self.across(itinerary.days(), toward))
     }
 
@@ -97,7 +100,8 @@ impl Spot {
                 || position.checked_sub(1),
                 || Some(position + 1).filter(|next| *next < day.goals().len()),
             )
-            .map(GoalNumber::new)
+            .map(Position::new)
+            .map(GoalNumber::from_position)
     }
 
     fn across(self, days: &[Day], toward: Toward) -> Option<Spot> {

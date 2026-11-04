@@ -2,6 +2,7 @@ mod day_head;
 mod day_nav;
 mod linked_here;
 mod step_view;
+use crate::app::Position;
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::classed::Classed;
@@ -52,7 +53,7 @@ impl TodayView<'_> {
                 {DayHead::new(self.session, &guidance)}
                 {LinkedHere::new(self.session, EntryKey::Day(day.number()))}
                 {day.goals().iter().enumerate().map(|(position, goal)| {
-                    let number = GoalNumber::new(position);
+                    let number = GoalNumber::from_position(Position::new(position));
                     let first = goal.leg(End::Start);
                     let last = goal.leg(End::Finish);
                     rsx! {

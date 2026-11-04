@@ -7,6 +7,7 @@ mod step_part;
 mod step_state;
 mod toward;
 
+use crate::app::Position;
 use guide::clock::Minutes;
 use guide::guidance::tracking::{Placing, Stage};
 use guide::times::ListedTime;
@@ -50,7 +51,7 @@ impl<'day> Step<'day> {
             })
             .enumerate()
             .map(|(position, step)| Step {
-                number: StepNumber::new(position),
+                number: StepNumber::from_position(Position::new(position)),
                 ..step
             })
             .collect()

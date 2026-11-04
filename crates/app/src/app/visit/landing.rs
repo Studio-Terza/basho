@@ -1,3 +1,4 @@
+use crate::app::Position;
 use guide::end::End;
 use guide::itinerary::{Day, Itinerary};
 use wiki::Home;
@@ -26,7 +27,7 @@ impl Landing {
                     .flat_map(Day::goals)
                     .position(|goal| goal.leg(End::Start) == first)
                     .map_or(Landing::Top, |position| {
-                        Landing::Goal(GoalNumber::new(position))
+                        Landing::Goal(GoalNumber::from_position(Position::new(position)))
                     })
             },
             |leg| {

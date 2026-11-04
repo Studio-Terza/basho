@@ -1,3 +1,4 @@
+use basho::app::Position;
 use guide::day_number::DayNumber;
 use guide::itinerary::Day;
 
@@ -11,8 +12,8 @@ use basho::app::step::Toward;
 
 const LAST_DAY: DayNumber = DayNumber::new(4);
 const GOAL_DAY: DayNumber = DayNumber::new(3);
-const INSIDE: Spot = Spot::new(LAST_DAY, StepNumber::new(1));
-const AFTER: Spot = Spot::new(LAST_DAY, StepNumber::new(2));
+const INSIDE: Spot = Spot::new(LAST_DAY, StepNumber::from_position(Position::new(1)));
+const AFTER: Spot = Spot::new(LAST_DAY, StepNumber::from_position(Position::new(2)));
 
 struct Ends;
 
@@ -62,7 +63,7 @@ fn a_wider_map_level_steps_by_goal_and_by_day() {
     let trip = Drawing::BuiltIn.itinerary();
     let day = trip.day_number(GOAL_DAY).expect("the day is in the trip");
     let first = Ends::first(day);
-    let next_goal = Spot::start_of_goal(day, GoalNumber::new(1));
+    let next_goal = Spot::start_of_goal(day, GoalNumber::from_position(Position::new(1)));
     let next_day = trip.days().iter().find(|later| later.number() > GOAL_DAY);
     assert_eq!(
         first.stepped_across(MapLevel::Goal, Toward::Next, &trip),

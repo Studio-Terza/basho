@@ -1,3 +1,4 @@
+use crate::app::Position;
 use crate::app::step::PageAnchor;
 
 #[derive(newtype::Display, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -5,8 +6,8 @@ pub struct StepNumber(usize);
 
 impl StepNumber {
     #[must_use]
-    pub const fn new(position: usize) -> StepNumber {
-        StepNumber(position + 1)
+    pub const fn from_position(position: Position) -> StepNumber {
+        StepNumber(position.into_inner() + 1)
     }
 
     #[must_use]

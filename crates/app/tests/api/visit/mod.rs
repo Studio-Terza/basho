@@ -1,3 +1,4 @@
+use basho::app::Position;
 use guide::day_number::DayNumber;
 
 use basho::app::step::Spot;
@@ -7,7 +8,7 @@ use basho::app::visit::Landing;
 use basho::app::visit::Scroll;
 use basho::app::visit::Visit;
 
-const STEP: StepNumber = StepNumber::new(2);
+const STEP: StepNumber = StepNumber::from_position(Position::new(2));
 const BROWSED: Focus = Focus::Browsing(Spot::new(DayNumber::new(4), STEP));
 
 #[test]
