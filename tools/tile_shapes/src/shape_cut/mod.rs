@@ -1,3 +1,3 @@
-mod bits;
+mod boundary;
 
-pub use bits::{PathKind, ShapeCut};
+pub use boundary::{PathKind, ShapeCut};

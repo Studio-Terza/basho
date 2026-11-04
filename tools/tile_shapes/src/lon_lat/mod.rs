@@ -1,3 +1,3 @@
-mod bits;
+mod boundary;
 
-pub use bits::LonLat;
+pub use boundary::LonLat;

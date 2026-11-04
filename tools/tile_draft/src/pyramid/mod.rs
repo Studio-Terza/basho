@@ -1,4 +1,4 @@
-mod bits;
+mod boundary;
 
 use std::collections::BTreeMap;
 use std::io;
@@ -10,7 +10,7 @@ use map_class::Zoom;
 use tiles::{TileId, WrittenArchive};
 
 use crate::tile_item::TileItem;
-use bits::{LayerBytes, TilePiece};
+use boundary::{LayerBytes, TilePiece};
 
 pub struct Pyramid {
     corridor: Corridor,

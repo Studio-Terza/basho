@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::bits::RawBytes;
+use crate::boundary::RawBytes;
 use apple_text::Fingerprint;
 
 #[derive(Deserialize)]

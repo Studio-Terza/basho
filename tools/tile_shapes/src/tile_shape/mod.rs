@@ -1,3 +1,3 @@
-mod bits;
+mod boundary;
 
-pub use bits::TileShape;
+pub use boundary::TileShape;
