@@ -4,10 +4,12 @@ pub struct NameLength(usize);
 impl From<&str> for NameLength {
     fn from(text: &str) -> NameLength {
         NameLength(
-            text.find(|character: char| {
-                !(character.is_ascii_alphanumeric() || character == '-' || character == '_')
-            })
-            .unwrap_or(text.len()),
+            text.len()
+                - text
+                    .trim_start_matches(|character: char| {
+                        matches!(character, 'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_')
+                    })
+                    .len(),
         )
     }
 }
