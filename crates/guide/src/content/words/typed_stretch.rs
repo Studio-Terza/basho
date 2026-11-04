@@ -42,7 +42,7 @@ impl TypedStretch {
 
     fn clock_length(text: &str, figure: &Figure) -> Option<usize> {
         let clock_end = AsRef::<Spelling>::as_ref(figure).len() + Self::CLOCK_TAIL_LENGTH;
-        SaidClock::read(text.get(..clock_end)?)?;
+        text.get(..clock_end)?.parse::<SaidClock>().ok()?;
         (!text
             .get(clock_end..)?
             .starts_with(|letter: char| letter.is_ascii_digit() || letter == ':'))
@@ -60,7 +60,7 @@ impl TypedStretch {
     }
 
     fn at_start(text: &str, start_index: usize) -> Option<TypedStretch> {
-        let figure = Figure::leading(text)?;
+        let figure = text.parse::<Figure>().ok()?;
         let stretch = |kind: StretchKind, length: usize| TypedStretch {
             kind,
             index_range: start_index..start_index + length,

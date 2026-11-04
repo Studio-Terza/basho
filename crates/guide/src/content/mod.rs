@@ -1,10 +1,10 @@
 mod content_error;
 mod distance_unit;
-mod figure;
+pub mod figure;
 mod name_kind;
 mod part;
 mod said_clock;
-mod typed_part;
+pub mod typed_part;
 mod words;
 pub use distance_unit::DistanceUnit;
 
@@ -19,7 +19,7 @@ use content_error::ContentError;
 use figure::Figure;
 pub use name_kind::NameKind;
 pub use part::Part;
-use said_clock::SaidClock;
+pub use said_clock::SaidClock;
 pub use typed_part::TypedPart;
 use words::Words;
 pub use words::{StretchKind, TypedStretch};

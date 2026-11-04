@@ -116,9 +116,17 @@ impl TripFile {
         let known: Vec<DayNumber> = self.days.iter().map(Day::number).collect();
         let in_arcs = self.arcs.iter().flat_map(|arc| arc.day_numbers().iter());
         let strays: Vec<Finding> = [
-            Self::strays("arcs", in_arcs.copied(), &known),
-            Self::strays("routes", self.routes.iter().map(DayNumber::from), &known),
-            Self::strays("catches", self.catches.iter().map(DayNumber::from), &known),
+            Self::strays(Label::new("arcs"), in_arcs.copied(), &known),
+            Self::strays(
+                Label::new("routes"),
+                self.routes.iter().map(DayNumber::from),
+                &known,
+            ),
+            Self::strays(
+                Label::new("catches"),
+                self.catches.iter().map(DayNumber::from),
+                &known,
+            ),
         ]
         .concat();
         let stray_lines: Vec<Finding> = self
@@ -182,20 +190,13 @@ impl TripFile {
     }
 
     fn strays(
-        section: &'static str,
+        section: Label,
         days: impl Iterator<Item = DayNumber>,
         known: &[DayNumber],
     ) -> Vec<Finding> {
         let mut seen = BTreeSet::new();
         days.filter(|day| !known.contains(day) || !seen.insert(*day))
-            .map(|day| {
-                Finding::on_day(
-                    day,
-                    Problem::StraySection {
-                        section: Label::new(section),
-                    },
-                )
-            })
+            .map(|day| Finding::on_day(day, Problem::StraySection { section }))
             .collect()
     }
 }

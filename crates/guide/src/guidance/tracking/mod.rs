@@ -64,7 +64,7 @@ impl FromStr for Tracking {
                 .iter()
                 .position(|word| *word == label)
                 .and_then(|at| words.get(at + 1..))
-                .and_then(Placing::from_words)
+                .and_then(|rest| rest.join(" ").parse::<Placing>().ok())
         };
         Ok(after(Tracking::SET)
             .zip(after(Tracking::BASE))

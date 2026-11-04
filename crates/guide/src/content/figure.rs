@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 use crate::content::ContentError;
 use crate::words::{Spelling, Written};
@@ -8,8 +9,12 @@ pub struct Figure(Spelling);
 
 impl Figure {
     const MARKS: [char; 2] = [',', '.'];
+}
 
-    pub(super) fn leading(text: &str) -> Option<Figure> {
+impl FromStr for Figure {
+    type Err = ContentError;
+
+    fn from_str(text: &str) -> Result<Figure, ContentError> {
         let length = text
             .find(|letter: char| !letter.is_ascii_digit() && !Self::MARKS.contains(&letter))
             .unwrap_or(text.len());
@@ -17,6 +22,7 @@ impl Figure {
             .map(|digits| digits.trim_end_matches(Self::MARKS))
             .filter(|digits| digits.starts_with(|letter: char| letter.is_ascii_digit()))
             .map(|digits| Figure(Spelling::new(digits.to_owned())))
+            .ok_or_else(|| ContentError::BadMeasure(Written::new(text.to_owned())))
     }
 }
 
@@ -24,7 +30,8 @@ impl TryFrom<&str> for Figure {
     type Error = ContentError;
 
     fn try_from(text: &str) -> Result<Figure, ContentError> {
-        Self::leading(text)
+        text.parse::<Figure>()
+            .ok()
             .filter(|figure| figure.0.len() == text.len())
             .ok_or_else(|| ContentError::BadMeasure(Written::new(text.to_owned())))
     }
