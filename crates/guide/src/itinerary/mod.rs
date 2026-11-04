@@ -2,6 +2,7 @@ mod arc;
 mod arc_number;
 pub mod day;
 mod finding;
+mod goal_count;
 mod problem;
 
 use crate::clock::CalendarDate;
@@ -11,6 +12,7 @@ use crate::trip_head::TripHead;
 pub use arc::Arc;
 pub use day::{Caption, Day, LegLines};
 pub use finding::Finding;
+pub use goal_count::GoalCount;
 pub use problem::Problem;
 
 #[derive(Debug)]

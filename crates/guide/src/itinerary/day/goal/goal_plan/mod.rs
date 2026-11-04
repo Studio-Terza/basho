@@ -6,9 +6,10 @@ use crate::geo::Coordinate;
 use crate::geo::Distance;
 use crate::itinerary::day::goal::{Aim, Goal, LoopCheck, Purpose};
 use crate::itinerary::day::{Caption, Night};
-use crate::itinerary::{Finding, Problem};
+use crate::itinerary::{Finding, GoalCount, Problem};
 use crate::leg::{Leg, LegIndex, Mode};
 use crate::leg_line::LegLine;
+use crate::ruby_text::LetterCount;
 use crate::words::Label;
 pub use ending::Ending;
 use newtype::Counter;
@@ -22,9 +23,9 @@ pub struct GoalPlan<'day> {
 
 impl<'day> GoalPlan<'day> {
     const INN_DOOR: Distance = Distance::new(60.0);
-    const HANDFUL_LENGTH: usize = 10;
-    const GOAL_WHY_LENGTH: usize = 400;
-    const INN_WHY_LENGTH: usize = 200;
+    const HANDFUL_LENGTH: GoalCount = GoalCount::new(10);
+    const GOAL_WHY_LENGTH: LetterCount = LetterCount::new(400);
+    const INN_WHY_LENGTH: LetterCount = LetterCount::new(200);
     const NEIGHBOUR_PAIR_LENGTH: usize = 2;
 
     #[must_use]
@@ -59,7 +60,7 @@ impl<'day> GoalPlan<'day> {
 
     fn overlong(&self) -> impl Iterator<Item = Finding> {
         let aims = self.aims.iter().filter_map(|aim| {
-            let length = AsRef::<Content>::as_ref(aim).char_length();
+            let length = LetterCount::from(&**AsRef::<Content>::as_ref(aim));
             (length > Self::GOAL_WHY_LENGTH).then(|| {
                 Finding::on_leg(
                     self.day,
@@ -73,7 +74,7 @@ impl<'day> GoalPlan<'day> {
             })
         });
         let inn = self.night.and_then(|night| {
-            let length = AsRef::<Content>::as_ref(night).char_length();
+            let length = LetterCount::from(&**AsRef::<Content>::as_ref(night));
             (length > Self::INN_WHY_LENGTH).then(|| {
                 Finding::on_day(
                     self.day,
@@ -167,7 +168,7 @@ impl From<&GoalPlan<'_>> for Vec<Finding> {
             let first = reached.map_or(LegIndex::default(), newtype::Counter::incremented);
             Finding::on_leg(plan.day, first, Problem::NoGoal { last })
         });
-        let length = plan.goals().len();
+        let length = GoalCount::new(plan.goals().len());
         let crowded = (length > GoalPlan::HANDFUL_LENGTH).then(|| {
             Finding::on_day(
                 plan.day,

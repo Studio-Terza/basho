@@ -6,6 +6,7 @@ mod night;
 
 use crate::content::Content;
 use crate::geo::Coordinate;
+use crate::ruby_text::LetterCount;
 use crate::trip::ContentList;
 use crate::words::{Label, StarName};
 use newtype::Counter;
@@ -67,7 +68,7 @@ pub struct Day {
 impl Day {
     const JOIN_GAP: Distance = Distance::new(120.0);
     const SLACK_MINUTES: Minutes = Minutes::new(3);
-    const WHY_LENGTH: usize = 300;
+    const WHY_LENGTH: LetterCount = LetterCount::new(300);
     const LEG_PAIR_LENGTH: usize = 2;
 
     #[must_use]
@@ -402,12 +403,12 @@ impl From<&Day> for Vec<Finding> {
             &day.aims,
             day.night.as_ref(),
         ));
-        let why = (day.why.char_length() > Day::WHY_LENGTH).then(|| {
+        let why = (LetterCount::from(&*day.why) > Day::WHY_LENGTH).then(|| {
             Finding::on_day(
                 day.number,
                 Problem::TooLong {
                     label: Label::new("the day's why"),
-                    length: day.why.char_length(),
+                    length: LetterCount::from(&*day.why),
                     length_limit: Day::WHY_LENGTH,
                 },
             )

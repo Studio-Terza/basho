@@ -1,12 +1,13 @@
 use guide::content::Content;
-use guide::ruby_text::RubyText;
+use guide::ruby_text::{Letter, LetterIndex, RubyText};
+use newtype::Counter;
+use std::ops::Range;
 
 use crate::EntryId;
 use crate::name_table::{NameTable, Run};
 
 struct Mentioned {
-    start_index: usize,
-    end_index: usize,
+    span: Range<LetterIndex>,
     entry: Option<EntryId>,
 }
 
@@ -14,7 +15,7 @@ pub struct Scan<'scan> {
     table: &'scan NameTable,
     content: &'scan Content,
     shown: &'scan RubyText,
-    written: Vec<char>,
+    written: Vec<Letter>,
     reader: Option<EntryId>,
 }
 
@@ -44,26 +45,28 @@ impl<'scan> Scan<'scan> {
             .into_iter()
             .filter(|mention| mention.entry.is_some())
             .collect();
-        let last_index = found.last().map_or(0, |mention| mention.end_index);
-        let gaps = found.iter().scan(0, |end_index, mention| {
-            let start_index = std::mem::replace(end_index, mention.end_index);
-            Some(Run::new(
-                self.shown.slice(start_index, mention.start_index),
-                None,
-            ))
-        });
+        let last_index = found
+            .last()
+            .map_or(LetterIndex::default(), |mention| mention.span.end);
+        let gaps = found
+            .iter()
+            .scan(LetterIndex::default(), |end_index, mention| {
+                let start_index = std::mem::replace(end_index, mention.span.end);
+                Some(Run::new(
+                    self.shown.slice(&(start_index..mention.span.start)),
+                    None,
+                ))
+            });
         gaps.zip(found.iter())
             .flat_map(|(gap, mention)| {
                 [
                     gap,
-                    Run::new(
-                        self.shown.slice(mention.start_index, mention.end_index),
-                        mention.entry,
-                    ),
+                    Run::new(self.shown.slice(&mention.span), mention.entry),
                 ]
             })
             .chain([Run::new(
-                self.shown.slice(last_index, self.written.len()),
+                self.shown
+                    .slice(&(last_index..LetterIndex::new(self.written.len()))),
                 None,
             )])
             .filter(|run| !run.text().segments().is_empty())
@@ -73,28 +76,28 @@ impl<'scan> Scan<'scan> {
     fn mention_at(
         &self,
         name: &RubyText,
-        letters: &[char],
-        start_index: usize,
+        letters: &[Letter],
+        at: LetterIndex,
     ) -> Option<Mentioned> {
-        let end_index = start_index + letters.len();
-        (self.written.get(start_index..end_index) == Some(letters)
-            && self.shown.parts_at(start_index)
-            && self.shown.parts_at(end_index))
-        .then(|| Mentioned {
-            start_index,
-            end_index,
-            entry: self
-                .table
-                .entry_named(name)
-                .filter(|entry| Some(*entry) != self.reader),
-        })
+        self.shown
+            .spelled_at(&self.written, letters, at)
+            .map(|span| Mentioned {
+                span,
+                entry: self
+                    .table
+                    .entry_named(name)
+                    .filter(|entry| Some(*entry) != self.reader),
+            })
     }
 
     fn with_mention(&self, mut found: Vec<Mentioned>, name: &RubyText) -> Vec<Mentioned> {
         let letters = name.letters();
-        let from_index = found.last().map_or(0, |mention| mention.end_index);
+        let from_index = found
+            .last()
+            .map_or(LetterIndex::default(), |mention| mention.span.end);
         found.extend(
-            (from_index..self.written.len())
+            (from_index.count()..self.written.len())
+                .map(LetterIndex::new)
                 .find_map(|start_index| self.mention_at(name, &letters, start_index)),
         );
         found

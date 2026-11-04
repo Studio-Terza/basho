@@ -1,9 +1,11 @@
+use crate::ruby_text::LetterCount;
 use crate::words::{Label, Slug, Spelling, StarName};
 use std::fmt;
 
 use crate::NodeId;
 use crate::clock::Minutes;
 use crate::geo::{Distance, Speed};
+use crate::itinerary::GoalCount;
 use crate::itinerary::arc_number::ArcNumber;
 use crate::leg::LegIndex;
 use crate::times::{ListedTime, PlanTime};
@@ -28,8 +30,8 @@ pub enum Problem {
     },
     TooLong {
         label: Label,
-        length: usize,
-        length_limit: usize,
+        length: LetterCount,
+        length_limit: LetterCount,
     },
     NoBoarding,
     NoRoad,
@@ -109,8 +111,8 @@ pub enum Problem {
         last: LegIndex,
     },
     TooManyGoals {
-        length: usize,
-        length_limit: usize,
+        length: GoalCount,
+        length_limit: GoalCount,
     },
     UnknownStarPoint {
         name: StarName,

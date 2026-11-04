@@ -3,8 +3,7 @@ use std::fmt;
 use serde::Serialize;
 
 use crate::content::{NameKind, StretchKind, TypedStretch};
-use crate::reading::Reading;
-use crate::ruby_text::RubyText;
+use crate::ruby_text::{LetterCount, LetterIndex, RubyText};
 use crate::words::Spelling;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -32,34 +31,38 @@ impl DraftPart {
     }
 
     #[must_use]
-    pub fn letter_length(&self) -> usize {
+    pub fn letter_count(&self) -> LetterCount {
         RubyText::try_from(self.to_string())
-            .map_or(0, |text| text.text(Reading::Written).chars().count())
+            .map_or(LetterCount::default(), |text| LetterCount::from(&text))
     }
 
-    fn words(text: &str) -> Option<DraftPart> {
-        Some(text)
+    fn words(markup: &Spelling, from: LetterIndex, to: LetterIndex) -> Option<DraftPart> {
+        Some(from.between(to, markup))
             .filter(|text| !text.is_empty())
-            .map(|text| DraftPart::Words(Spelling::new(text.to_owned())))
+            .map(DraftPart::Words)
     }
 
-    fn around(markup: &str, stretch: &TypedStretch) -> Vec<DraftPart> {
+    fn around(markup: &Spelling, stretch: &TypedStretch) -> Vec<DraftPart> {
         let indexes = stretch.index_range();
-        let said = Spelling::new(markup.get(indexes.clone()).unwrap_or_default().to_owned());
+        let said = indexes.start.between(indexes.end, markup);
         let typed = match stretch.kind() {
             StretchKind::Clock => DraftPart::Unsure(said),
             StretchKind::Distance => DraftPart::Length(said),
         };
-        Self::words(markup.get(..indexes.start).unwrap_or_default())
+        Self::words(markup, LetterIndex::default(), indexes.start)
             .into_iter()
             .chain([typed])
-            .chain(Self::split(markup.get(indexes.end..).unwrap_or_default()))
+            .chain(Self::split(&indexes.end.between(LetterIndex::END, markup)))
             .collect()
     }
 
-    pub(super) fn split(markup: &str) -> Vec<DraftPart> {
+    pub(super) fn split(markup: &Spelling) -> Vec<DraftPart> {
         markup.parse::<TypedStretch>().map_or_else(
-            |_| Self::words(markup).into_iter().collect(),
+            |_| {
+                Self::words(markup, LetterIndex::default(), LetterIndex::END)
+                    .into_iter()
+                    .collect()
+            },
             |stretch| Self::around(markup, &stretch),
         )
     }

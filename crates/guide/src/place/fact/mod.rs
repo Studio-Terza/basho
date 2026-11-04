@@ -20,12 +20,9 @@ pub struct Fact {
 
 impl Fact {
     fn stated<'de, Input: Deserializer<'de>>(input: Input) -> Result<Content, Input::Error> {
-        let text = Content::deserialize(input)?;
-        if text.letters().iter().all(|letter| letter.is_whitespace()) {
-            Err(Input::Error::custom("a fact needs its text"))
-        } else {
-            Ok(text)
-        }
+        Content::deserialize(input)?
+            .filled()
+            .ok_or_else(|| Input::Error::custom("a fact needs its text"))
     }
 
     #[must_use]

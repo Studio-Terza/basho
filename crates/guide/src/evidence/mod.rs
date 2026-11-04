@@ -25,12 +25,9 @@ pub enum Evidence {
 
 impl Evidence {
     fn said<'de, Input: Deserializer<'de>>(input: Input) -> Result<Content, Input::Error> {
-        let reason = Content::deserialize(input)?;
-        if reason.letters().iter().all(|letter| letter.is_whitespace()) {
-            Err(Input::Error::custom("an unverified fact needs its reason"))
-        } else {
-            Ok(reason)
-        }
+        Content::deserialize(input)?
+            .filled()
+            .ok_or_else(|| Input::Error::custom("an unverified fact needs its reason"))
     }
 
     fn checked<'de, Input: Deserializer<'de>>(input: Input) -> Result<Source, Input::Error> {

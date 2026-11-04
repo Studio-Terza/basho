@@ -34,6 +34,12 @@ pub struct Content {
 
 impl Content {
     #[must_use]
+    pub fn filled(self) -> Option<Content> {
+        let first = self.shown.text(Reading::Written).trim().chars().next();
+        first.map(|_| self)
+    }
+
+    #[must_use]
     pub fn parts(&self) -> &[Part] {
         &self.parts
     }

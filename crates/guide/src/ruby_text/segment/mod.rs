@@ -2,9 +2,12 @@ mod annotated_pair;
 mod script;
 
 use crate::ruby_text::ruby_error::RubyError;
+use crate::ruby_text::{LetterCount, LetterIndex};
 use crate::words::{Spelling, Written};
 pub use annotated_pair::AnnotatedPair;
+use newtype::Counter;
 use script::Script;
+use std::ops::Range;
 
 #[derive(Clone, Debug)]
 pub enum Segment {
@@ -47,24 +50,29 @@ impl Segment {
     }
 
     #[must_use]
-    pub fn within(
-        &self,
-        first_index: usize,
-        from_index: usize,
-        to_index: usize,
-    ) -> Option<Segment> {
+    pub fn letter_count(&self) -> LetterCount {
+        LetterCount::new(self.text().chars().count())
+    }
+
+    #[must_use]
+    pub fn within(&self, first: LetterIndex, kept: &Range<LetterIndex>) -> Option<Segment> {
         let kept: String = self
             .text()
             .chars()
-            .skip(from_index.saturating_sub(first_index))
-            .take(to_index.saturating_sub(first_index.max(from_index)))
+            .skip(kept.start.count().saturating_sub(first.count()))
+            .take(
+                kept.end
+                    .count()
+                    .saturating_sub(first.max(kept.start).count()),
+            )
             .collect();
+        kept.chars().next().map(|_| self.kept(Spelling::new(kept)))
+    }
+
+    fn kept(&self, text: Spelling) -> Segment {
         match self {
-            _ if kept.is_empty() => None,
-            Segment::Plain { .. } => Some(Segment::Plain {
-                text: Spelling::new(kept),
-            }),
-            Segment::Ruby { .. } => Some(self.clone()),
+            Segment::Plain { .. } => Segment::Plain { text },
+            Segment::Ruby { .. } => self.clone(),
         }
     }
 

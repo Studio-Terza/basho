@@ -12,10 +12,11 @@ use crate::naming::Naming;
 use crate::place::Place;
 use crate::reading::Reading;
 use crate::readout::DayCatch;
-use crate::ruby_text::RubyText;
+use crate::ruby_text::{LetterCount, LetterIndex, RubyText};
 use crate::words::Spelling;
 use draft_name::DraftName;
 use name_set::NameSet;
+use newtype::Counter;
 
 pub use draft_part::DraftPart;
 pub use name_forms::NameForms;
@@ -112,9 +113,9 @@ impl KnownNames {
             })
     }
 
-    fn named_at(&self, note: &RubyText, at_index: usize) -> Option<DraftPart> {
-        let named = |kind: NameKind, length: usize| {
-            DraftPart::named(kind, &note.slice(at_index, at_index + length))
+    fn named_at(&self, note: &RubyText, at_index: LetterIndex) -> Option<DraftPart> {
+        let named = |kind: NameKind, length: LetterCount| {
+            DraftPart::named(kind, &note.slice(&(at_index..at_index + length)))
         };
         self.entries
             .length_at(note, at_index)
@@ -128,12 +129,12 @@ impl KnownNames {
 
     #[must_use]
     pub fn drafted(&self, note: &RubyText) -> Vec<DraftPart> {
-        let written = note.letters();
-        (0..written.len())
+        (0..LetterCount::from(note).count())
+            .map(LetterIndex::new)
             .fold(DraftName::default(), |cut, at_index| {
                 cut.past(note, at_index, self.named_at(note, at_index))
             })
-            .finished(note, written.len())
+            .finished(note, LetterIndex::default() + LetterCount::from(note))
     }
 
     #[must_use]
