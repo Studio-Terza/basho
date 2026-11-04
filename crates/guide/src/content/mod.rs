@@ -5,7 +5,7 @@ mod name_kind;
 mod part;
 mod said_clock;
 mod typed_part;
-mod words;
+mod typed_stretch;
 pub use distance_unit::DistanceUnit;
 
 use std::fmt;
@@ -21,8 +21,7 @@ pub use name_kind::NameKind;
 pub use part::Part;
 use said_clock::SaidClock;
 pub use typed_part::TypedPart;
-use words::Words;
-pub use words::{StretchKind, TypedStretch};
+pub use typed_stretch::{StretchKind, TypedStretch};
 
 #[derive(Clone, Debug, Deserialize, derive_more::Deref)]
 #[serde(from = "Vec<Part>")]

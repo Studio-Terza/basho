@@ -1,13 +1,9 @@
-mod typed_stretch;
-
 use serde::Deserialize;
 
-use crate::content::ContentError;
+use crate::content::{ContentError, StretchKind, TypedStretch};
 use crate::reading::Reading;
 use crate::ruby_text::RubyText;
 use crate::words::Written;
-
-pub use typed_stretch::{StretchKind, TypedStretch};
 
 #[derive(Clone, Debug, Deserialize, derive_more::AsRef)]
 #[serde(try_from = "String")]

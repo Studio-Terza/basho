@@ -1,6 +1,5 @@
 mod draft_name;
 mod draft_part;
-mod name_forms;
 mod name_set;
 
 use crate::content::{Content, NameKind, Part};
@@ -8,6 +7,7 @@ use crate::english_name::EnglishName;
 use crate::itinerary::{Caption, Day, Finding, Itinerary, Problem};
 use crate::landmark::Landmarks;
 use crate::leg::{Leg, StopKind};
+use crate::name_forms::NameForms;
 use crate::naming::Naming;
 use crate::place::Place;
 use crate::reading::Reading;
@@ -18,7 +18,6 @@ use draft_name::DraftName;
 use name_set::NameSet;
 
 pub use draft_part::DraftPart;
-pub use name_forms::NameForms;
 
 #[derive(Debug)]
 pub struct KnownNames {
