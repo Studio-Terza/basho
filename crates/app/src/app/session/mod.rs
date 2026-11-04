@@ -11,6 +11,7 @@ mod measure;
 mod page_shift;
 mod page_turn;
 mod place;
+mod ports;
 pub mod progress_file;
 mod session_event;
 pub mod staged;
@@ -56,6 +57,7 @@ use menu::{Menu, PoseStyle, Pull};
 pub use page_shift::PageShift;
 use page_turn::PageTurn;
 use place::Place;
+use ports::LaunchArgs;
 use progress_file::ProgressFile;
 pub use session_event::SessionEvent;
 use staged::Staged;
@@ -213,7 +215,7 @@ impl Session {
 
     #[must_use]
     pub fn launch_shelf(page: TripPage) -> TripShelf {
-        let shelf = TripShelf::open(std::env::args_os().nth(1), HomeFolder::of_user(), page);
+        let shelf = TripShelf::open(LaunchArgs::trip_path(), HomeFolder::of_user(), page);
         use_hook(|| shelf.listen(document::eval(TripShelf::LISTENER)));
         shelf
     }
@@ -245,7 +247,7 @@ impl Session {
     )]
     pub fn catch_up_clock(&self) -> Option<TripTime> {
         let mut shown = self.now;
-        let current = *shown.read();
+        let current = self.now();
         self.clock
             .moved_on(current)
             .inspect(|real| shown.set(*real))

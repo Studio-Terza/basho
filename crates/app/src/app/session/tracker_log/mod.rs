@@ -17,7 +17,7 @@ impl DecisionLog {
     pub fn noted(&self, at: TripTime, decision: TrackerDecision) -> Option<DecisionLog> {
         self.decisions
             .last()
-            .is_none_or(|last| !last.decided(decision))
+            .is_none_or(|last| last.decision() != decision)
             .then(|| DecisionLog {
                 decisions: self
                     .within_window_of(at)
@@ -34,9 +34,8 @@ impl DecisionLog {
     }
 
     fn within_window_of(&self, now: TripTime) -> impl Iterator<Item = LoggedDecision> {
-        self.decisions
-            .iter()
-            .copied()
-            .filter(move |logged| logged.since(now.earlier_by(Cadence::DecisionMemory.every())))
+        self.decisions.iter().copied().filter(move |logged| {
+            logged.logged_at() >= now.earlier_by(Cadence::DecisionMemory.every())
+        })
     }
 }

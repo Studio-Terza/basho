@@ -14,10 +14,12 @@ impl Angle {
     const HEADING_STEP: Degrees = Degrees::new(10.0);
 
     pub fn bearing(self) -> Bearing {
-        Bearing::new(match self {
-            Angle::CompassSector => Self::COMPASS_SECTOR.degrees(),
-            Angle::HeadingDoubt => Angle::CompassSector.bearing().degrees() / Self::SIDES.factor(),
-            Angle::HeadingStep => Self::HEADING_STEP.degrees(),
-        })
+        match self {
+            Angle::CompassSector => Bearing::new(Self::COMPASS_SECTOR.degrees()),
+            Angle::HeadingDoubt => {
+                Bearing::new(Angle::CompassSector.bearing().degrees() / Self::SIDES.factor())
+            }
+            Angle::HeadingStep => Bearing::new(Self::HEADING_STEP.degrees()),
+        }
     }
 }
