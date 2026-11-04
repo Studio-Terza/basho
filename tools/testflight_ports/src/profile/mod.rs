@@ -1,3 +1,4 @@
+use tool_text::ToolOutput;
 mod profile_content;
 
 use std::fs;
@@ -29,10 +30,11 @@ impl Profile {
         staging: &Staging,
     ) -> Result<Profile, Failure> {
         let bundles: Document<Vec<Resource<Value>>> = connect.fetch(&Endpoint::BashoBundle)?;
-        let bundle =
-            bundles.into_content().into_iter().next().ok_or_else(|| {
-                Failure::Signing("com.cinglein.basho is not registered".to_owned())
-            })?;
+        let bundle = bundles.into_content().into_iter().next().ok_or_else(|| {
+            Failure::Signing(ToolOutput::new(
+                "com.cinglein.basho is not registered".to_owned(),
+            ))
+        })?;
         Self::retire(connect)?;
         let body = json!({"data": {
             "type": "profiles",

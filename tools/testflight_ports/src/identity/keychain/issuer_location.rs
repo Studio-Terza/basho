@@ -1,5 +1,6 @@
 use std::ffi::OsStr;
 use std::str::FromStr;
+use tool_text::ToolOutput;
 
 use crate::failure::Failure;
 
@@ -17,7 +18,11 @@ impl FromStr for IssuerLocation {
             .lines()
             .find_map(|line| line.trim().strip_prefix(Self::ISSUER_MARKER))
             .map(|location| IssuerLocation(location.to_owned()))
-            .ok_or_else(|| Failure::Signing("the certificate names no issuer".to_owned()))
+            .ok_or_else(|| {
+                Failure::Signing(ToolOutput::new(
+                    "the certificate names no issuer".to_owned(),
+                ))
+            })
     }
 }
 

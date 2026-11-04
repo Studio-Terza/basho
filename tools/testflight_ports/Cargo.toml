@@ -8,6 +8,7 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+tool_text = { path = "../tool_text" }
 apple_text = { path = "../apple_text" }
 newtype = { git = "https://github.com/Studio-Terza/meta-dev", tag = "v0.2.0" }
 base64 = "0.22"

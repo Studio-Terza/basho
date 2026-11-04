@@ -9,6 +9,7 @@ use std::process::{Child, Command, Stdio};
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender};
 use std::thread;
 use std::time::{Duration, Instant};
+use tool_text::{ToolName, ToolOutput};
 
 use crate::failure::Failure;
 
@@ -109,7 +110,7 @@ impl Bounded {
         let transcript = Self::transcript(&lines, deadline, hearing).map_err(|_| {
             Self::stop(&mut child);
             Failure::TimedOut {
-                tool: self.tool.clone(),
+                tool: ToolName::new(self.tool.clone()),
                 limit: self.limit,
             }
         })?;
@@ -125,8 +126,8 @@ impl Bounded {
             .success()
             .then_some(transcript.clone())
             .ok_or_else(|| Failure::Tool {
-                tool: self.tool.clone(),
-                detail: Self::tail(&transcript),
+                tool: ToolName::new(self.tool.clone()),
+                detail: ToolOutput::new(Self::tail(&transcript)),
             })
     }
 
@@ -172,8 +173,8 @@ impl Bounded {
 
     fn failed(&self, error: &std::io::Error) -> Failure {
         Failure::Tool {
-            tool: self.tool.clone(),
-            detail: error.to_string(),
+            tool: ToolName::new(self.tool.clone()),
+            detail: ToolOutput::new(error.to_string()),
         }
     }
 }

@@ -3,6 +3,7 @@ use std::fmt;
 use std::path::Path;
 use std::process::{Command, Output};
 use std::str::FromStr;
+use tool_text::{ToolName, ToolOutput};
 
 use crate::bits::RawBytes;
 use crate::failure::Failure;
@@ -80,22 +81,22 @@ impl Tool {
             .filter(std::process::ExitStatus::success)
             .map(|_| ())
             .ok_or(Failure::Tool {
-                tool: self.to_string(),
-                detail: "exited with an error; see the output above".to_owned(),
+                tool: ToolName::new(self.to_string()),
+                detail: ToolOutput::new("exited with an error; see the output above".to_owned()),
             })
     }
 
     fn ran(mut self) -> Result<Output, Failure> {
         let output = self.command.output().map_err(|error| Failure::Tool {
-            tool: self.to_string(),
-            detail: error.to_string(),
+            tool: ToolName::new(self.to_string()),
+            detail: ToolOutput::new(error.to_string()),
         })?;
         if output.status.success() {
             Ok(output)
         } else {
             Err(Failure::Tool {
-                tool: self.to_string(),
-                detail: Self::detail(&Self::combined(&output)),
+                tool: ToolName::new(self.to_string()),
+                detail: ToolOutput::new(Self::detail(&Self::combined(&output))),
             })
         }
     }

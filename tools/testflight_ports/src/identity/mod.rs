@@ -1,3 +1,4 @@
+use tool_text::ToolOutput;
 mod certificate;
 mod keychain;
 mod signing_request;
@@ -26,10 +27,7 @@ impl Identity {
             None => Self::enroll(connect, staging)
                 .and_then(|()| Self::existing(connect))?
                 .ok_or_else(|| {
-                    Failure::Signing(
-                        "the new distribution certificate is not a valid signing identity in the keychain"
-                            .to_owned(),
-                    )
+                    Failure::Signing(ToolOutput::new("the new distribution certificate is not a valid signing identity in the keychain".to_owned()))
                 }),
         }
     }
