@@ -25,3 +25,13 @@ impl TryFrom<String> for EnglishName {
         PlainText::try_from(text).map(|plain| EnglishName(String::from(plain)))
     }
 }
+
+impl EnglishName {
+    const MOUNT: &str = "Mount ";
+
+    #[must_use]
+    pub fn without_mount(&self) -> EnglishName {
+        let name: &str = self.as_ref();
+        EnglishName(name.strip_prefix(Self::MOUNT).unwrap_or(name).to_owned())
+    }
+}

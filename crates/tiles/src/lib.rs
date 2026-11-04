@@ -1,3 +1,4 @@
-mod bits;
+mod boundary;
+mod ports;
 
-pub use bits::{GridAxis, TileArchive, TileId, WrittenArchive};
+pub use boundary::{GridAxis, TileArchive, TileId, WrittenArchive};

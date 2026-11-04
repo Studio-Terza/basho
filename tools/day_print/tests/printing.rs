@@ -65,7 +65,7 @@ fn markup_characters_are_escaped() {
         .expect("the trip loads");
     let printed = DaysHtml::new(trip.itinerary()).to_string();
     assert!(printed.contains(ESCAPED));
-    assert!(!printed.contains(MARKUP));
+    assert_eq!(printed.matches(MARKUP).count(), 0);
 }
 
 #[test]

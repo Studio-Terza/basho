@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
 pub enum MapLevel {
     #[default]
     Leg,
@@ -16,14 +16,20 @@ pub enum PinchWay {
 }
 
 impl MapLevel {
+    const LEVELS: [MapLevel; 3] = [MapLevel::Leg, MapLevel::Goal, MapLevel::Day];
+
     #[must_use]
     pub fn pinched(self, way: PinchWay) -> MapLevel {
-        match (self, way) {
-            (MapLevel::Leg | MapLevel::Goal, PinchWay::Apart) => MapLevel::Leg,
-            (MapLevel::Day, PinchWay::Apart) | (MapLevel::Leg, PinchWay::Together) => {
-                MapLevel::Goal
-            }
-            (MapLevel::Goal | MapLevel::Day, PinchWay::Together) => MapLevel::Day,
+        match way {
+            PinchWay::Apart => Self::LEVELS
+                .into_iter()
+                .rev()
+                .find(|level| *level < self)
+                .unwrap_or(self),
+            PinchWay::Together => Self::LEVELS
+                .into_iter()
+                .find(|level| *level > self)
+                .unwrap_or(self),
         }
     }
 }

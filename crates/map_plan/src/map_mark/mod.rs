@@ -104,25 +104,25 @@ impl MapMark {
 
     #[must_use]
     pub fn meaning(self) -> Label {
-        Label::new(match self {
-            MapMark::Food => "Food",
-            MapMark::Shop => "Shop",
-            MapMark::Sight => "Sight",
-            MapMark::Service => "Toilet, water",
-            MapMark::Landmark => "Landmark",
-            MapMark::Catch => "Something to walk toward",
-            MapMark::Star => "A starred point of the trip",
-            MapMark::Peak => "Mountain, with its height in metres",
-            MapMark::DayStart => "Where the day starts",
-            MapMark::LegEnd => "Where one leg ends and the next begins",
-            MapMark::Goal => "The place at the end of this step",
-            MapMark::LoopStop => "A sight of the loop, numbered in the order to see it",
-            MapMark::Night => "Tonight's lodging",
-            MapMark::You => "You, from GPS",
-            MapMark::YouEstimate => "You, estimated from the timetable",
-            MapMark::YouLastFix => "You at the last GPS fix, now old",
-            MapMark::NoPath => "No mapped path here",
-        })
+        match self {
+            MapMark::Food => Label::new("Food"),
+            MapMark::Shop => Label::new("Shop"),
+            MapMark::Sight => Label::new("Sight"),
+            MapMark::Service => Label::new("Toilet, water"),
+            MapMark::Landmark => Label::new("Landmark"),
+            MapMark::Catch => Label::new("Something to walk toward"),
+            MapMark::Star => Label::new("A starred point of the trip"),
+            MapMark::Peak => Label::new("Mountain, with its height in metres"),
+            MapMark::DayStart => Label::new("Where the day starts"),
+            MapMark::LegEnd => Label::new("Where one leg ends and the next begins"),
+            MapMark::Goal => Label::new("The place at the end of this step"),
+            MapMark::LoopStop => Label::new("A sight of the loop, numbered in the order to see it"),
+            MapMark::Night => Label::new("Tonight's lodging"),
+            MapMark::You => Label::new("You, from GPS"),
+            MapMark::YouEstimate => Label::new("You, estimated from the timetable"),
+            MapMark::YouLastFix => Label::new("You at the last GPS fix, now old"),
+            MapMark::NoPath => Label::new("No mapped path here"),
+        }
     }
 
     #[must_use]

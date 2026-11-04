@@ -6,6 +6,6 @@ mod written_archive;
 
 use directory::{Directory, Slot};
 pub use grid_axis::GridAxis;
-pub use tile_archive::TileArchive;
+pub use tile_archive::{ArchiveSource, TileArchive};
 pub use tile_id::TileId;
 pub use written_archive::WrittenArchive;

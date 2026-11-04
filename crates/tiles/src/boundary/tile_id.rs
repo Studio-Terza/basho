@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use thiserror::Error;
 
-use crate::bits::GridAxis;
+use crate::boundary::GridAxis;
 use map_class::Zoom;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -54,14 +54,17 @@ impl FromStr for TileId {
     type Err = TileIdError;
 
     fn from_str(text: &str) -> Result<TileId, TileIdError> {
-        let parts: Vec<&str> = text.split('/').collect();
-        match parts.as_slice() {
-            [zoom, column, row] => Ok(TileId {
+        match <[&str; TileId::PARTS]>::try_from(text.split('/').collect::<Vec<&str>>()) {
+            Ok([zoom, column, row]) => Ok(TileId {
                 zoom: Zoom::of_level(zoom.parse()?),
                 column: column.parse()?,
                 row: row.parse()?,
             }),
-            _ => Err(TileIdError::Shape),
+            Err(_) => Err(TileIdError::Shape),
         }
     }
+}
+
+impl TileId {
+    const PARTS: usize = 3;
 }

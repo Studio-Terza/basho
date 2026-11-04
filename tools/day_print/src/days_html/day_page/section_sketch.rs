@@ -27,10 +27,11 @@ impl<'day> SectionSketch<'day> {
     }
 
     #[must_use]
-    pub fn walks(&self) -> bool {
-        self.legs
-            .first()
-            .is_some_and(|leg| leg.mode() == Mode::Walk)
+    pub fn walking(self) -> Option<SectionSketch<'day>> {
+        match self.legs.first().map(Leg::mode) {
+            Some(Mode::Walk) => Some(self),
+            Some(Mode::Train | Mode::Bus | Mode::Boat | Mode::Car) | None => None,
+        }
     }
 
     fn drawn(&self, frame: &MapFrame, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {

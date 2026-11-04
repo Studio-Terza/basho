@@ -6,6 +6,7 @@ use guide::evidence::Evidence;
 use guide::geo::{Coordinate, RouteLine, Share};
 use guide::guidance::Guidance;
 use guide::itinerary::Caption;
+use guide::itinerary::day::goal::Goal;
 use guide::leg::{Leg, LegIndex, StopKind};
 use guide::reading::Reading;
 use guide::ruby_text::RubyText;
@@ -18,7 +19,7 @@ use crate::map_text::MapText;
 use crate::own_layer::{MarkLook, OwnFeature};
 use crate::{MapLevel, MapPlan};
 
-type MarkFeature = OwnFeature<MarkLook>;
+pub(crate) type MarkFeature = OwnFeature<MarkLook>;
 
 pub trait MarkSource {
     fn features(plan: &MapPlan<'_>, place: &Spelling) -> Vec<MarkFeature>;
@@ -75,6 +76,21 @@ impl MarkSource for DayEnds {
 pub struct GoalMarks;
 
 impl GoalMarks {
+    fn named_goals<'goals>(
+        plan: &MapPlan<'_>,
+        goals: impl Iterator<Item = &'goals Goal>,
+    ) -> Vec<MarkFeature> {
+        goals
+            .filter_map(|goal| {
+                let name = MapText::marked(
+                    goal[Caption::Name].text(Reading::Spoken),
+                    plan.day.goal_evidence(goal).and_then(Evidence::mark),
+                );
+                Self::named_at(plan, goal.leg(End::Finish), name)
+            })
+            .collect()
+    }
+
     fn named_at(plan: &MapPlan<'_>, index: LegIndex, name: MapText) -> Option<MarkFeature> {
         plan.day.leg(index).map(|leg| {
             OwnFeature::spot(MarkLook::named(MapMark::Goal, name), leg.point(End::Finish))
@@ -84,23 +100,18 @@ impl GoalMarks {
 
 impl MarkSource for GoalMarks {
     fn features(plan: &MapPlan<'_>, place: &Spelling) -> Vec<MarkFeature> {
-        if plan.level == MapLevel::Leg {
-            Self::named_at(plan, plan.shown, MapText::plain(place))
+        match plan.level {
+            MapLevel::Leg => Self::named_at(plan, plan.shown, MapText::plain(place))
                 .into_iter()
-                .collect()
-        } else {
-            plan.day
-                .goals()
-                .iter()
-                .filter(|goal| plan.level != MapLevel::Goal || goal.purpose().stops().is_empty())
-                .filter_map(|goal| {
-                    let name = MapText::marked(
-                        goal[Caption::Name].text(Reading::Spoken),
-                        plan.day.goal_evidence(goal).and_then(Evidence::mark),
-                    );
-                    Self::named_at(plan, goal.leg(End::Finish), name)
-                })
-                .collect()
+                .collect(),
+            MapLevel::Goal => Self::named_goals(
+                plan,
+                plan.day
+                    .goals()
+                    .iter()
+                    .filter(|goal| goal.purpose().stops().is_empty()),
+            ),
+            MapLevel::Day => Self::named_goals(plan, plan.day.goals().iter()),
         }
     }
 }

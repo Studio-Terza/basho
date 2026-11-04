@@ -23,8 +23,8 @@ pub use map_level::{MapLevel, MapMode, PinchWay};
 pub use map_sent::{MapSent, MapUpdate};
 pub use map_sight::MapSight;
 use mark_source::{
-    Catches, DayEnds, GoalMarks, LandmarkMarks, LegEnds, LoopMarks, MarkSource, NoPathMarks, Stops,
-    TripMarks,
+    Catches, DayEnds, GoalMarks, LandmarkMarks, LegEnds, LoopMarks, MarkFeature, MarkSource,
+    NoPathMarks, Stops, TripMarks,
 };
 use own_layer::{LegState, MarkLook, OwnFeature, OwnLayer, RouteLook, Travel, WalkerPart};
 pub use picked_mark::PickedMark;
@@ -85,20 +85,20 @@ impl<'view> MapPlan<'view> {
 
     #[must_use]
     pub fn marks(&self, place: &Spelling) -> OwnLayer<MarkLook> {
-        [
-            LegEnds::features(self, place),
-            Stops::features(self, place),
-            DayEnds::features(self, place),
-            GoalMarks::features(self, place),
-            LoopMarks::features(self, place),
-            LandmarkMarks::features(self, place),
-            Catches::features(self, place),
-            TripMarks::features(self, place),
-            NoPathMarks::features(self, place),
-        ]
-        .into_iter()
-        .flatten()
-        .collect()
+        self.features_of::<LegEnds>(place)
+            .chain(self.features_of::<Stops>(place))
+            .chain(self.features_of::<DayEnds>(place))
+            .chain(self.features_of::<GoalMarks>(place))
+            .chain(self.features_of::<LoopMarks>(place))
+            .chain(self.features_of::<LandmarkMarks>(place))
+            .chain(self.features_of::<Catches>(place))
+            .chain(self.features_of::<TripMarks>(place))
+            .chain(self.features_of::<NoPathMarks>(place))
+            .collect()
+    }
+
+    fn features_of<Source: MarkSource>(&self, place: &Spelling) -> std::vec::IntoIter<MarkFeature> {
+        Source::features(self, place).into_iter()
     }
 
     #[must_use]
@@ -116,15 +116,15 @@ impl<'view> MapPlan<'view> {
     }
 
     fn framed_legs(&self) -> Vec<&'view Leg> {
-        let day = self.day;
         match self.level {
-            MapLevel::Leg => day.leg(self.shown).into_iter().collect(),
-            MapLevel::Goal => day
+            MapLevel::Leg => self.day.leg(self.shown).into_iter().collect(),
+            MapLevel::Goal => self
+                .day
                 .goal_holding(self.shown)
-                .map_or(&[][..], |goal| day.legs_toward(goal))
+                .map_or(&[][..], |goal| self.day.legs_toward(goal))
                 .iter()
                 .collect(),
-            MapLevel::Day => day.legs().iter().collect(),
+            MapLevel::Day => self.day.legs().iter().collect(),
         }
     }
 
@@ -144,10 +144,9 @@ impl<'view> MapPlan<'view> {
     }
 
     fn leg_points(leg: &Leg) -> Vec<Coordinate> {
-        if leg.line().points().len() > 1 {
-            leg.line().points().to_vec()
-        } else {
-            vec![leg.point(End::Start), leg.point(End::Finish)]
+        match leg.line().points().get(1) {
+            Some(_) => leg.line().points().to_vec(),
+            None => vec![leg.point(End::Start), leg.point(End::Finish)],
         }
     }
 }

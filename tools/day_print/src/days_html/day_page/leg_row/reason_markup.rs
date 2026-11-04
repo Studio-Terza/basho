@@ -15,8 +15,14 @@ pub struct ReasonMarkup<'reason> {
 impl fmt::Display for ReasonMarkup<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("<br><b>Why this way:</b> ")?;
-        match (self.reason.kind(), self.reason.referent()) {
-            (Some(kind), Some(referent)) => write!(
+        self.recorded(formatter)
+    }
+}
+
+impl ReasonMarkup<'_> {
+    fn recorded(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.reason.kind().zip(self.reason.referent()) {
+            Some((kind, referent)) => write!(
                 formatter,
                 "{} · {}{}",
                 Label::from(&kind),
@@ -26,7 +32,7 @@ impl fmt::Display for ReasonMarkup<'_> {
                     .map_or(String::new(), |evidence| UnverifiedMarkup::new(evidence)
                         .to_string())
             ),
-            _ => formatter.write_str("No reason recorded"),
+            None => formatter.write_str("No reason recorded"),
         }
     }
 }

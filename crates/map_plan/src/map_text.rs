@@ -10,18 +10,16 @@ use std::fmt;
 pub struct MapText {
     number: Option<LoopNumber>,
     lead: Option<ListedTime>,
-    text: String,
+    text: Spelling,
 }
 
 impl MapText {
-    const MOUNT: &str = "Mount ";
-
     #[must_use]
     pub fn plain(text: impl fmt::Display) -> MapText {
         MapText {
             number: None,
             lead: None,
-            text: text.to_string(),
+            text: Spelling::new(text.to_string()),
         }
     }
 
@@ -36,11 +34,6 @@ impl MapText {
     }
 
     #[must_use]
-    pub fn rest(&self) -> Spelling {
-        Spelling::new(self.text.clone())
-    }
-
-    #[must_use]
     pub fn landmark(
         tick: impl fmt::Display,
         time: Option<ListedTime>,
@@ -49,7 +42,7 @@ impl MapText {
         MapText {
             number: None,
             lead: time,
-            text: format!("{tick}{name}"),
+            text: Spelling::new(format!("{tick}{name}")),
         }
     }
 
@@ -58,7 +51,7 @@ impl MapText {
         MapText {
             number: Some(number),
             lead: Some(ListedTime::from(time)),
-            text: name.to_string(),
+            text: Spelling::new(name.to_string()),
         }
     }
 
@@ -66,13 +59,9 @@ impl MapText {
     pub fn peak(english: &EnglishName, elevation: Elevation) -> MapText {
         MapText::plain(format!(
             "{} {}",
-            Self::without_mount(english.as_ref()),
+            english.without_mount(),
             elevation.meters()
         ))
-    }
-
-    fn without_mount(english: &str) -> &str {
-        english.strip_prefix(Self::MOUNT).unwrap_or(english)
     }
 }
 
@@ -88,6 +77,6 @@ impl fmt::Display for MapText {
             .map_or(Ok(()), |number| write!(formatter, "{number} · "))?;
         self.lead
             .map_or(Ok(()), |lead| write!(formatter, "{lead} "))?;
-        formatter.write_str(&self.text)
+        formatter.write_str(self.text.as_ref())
     }
 }
