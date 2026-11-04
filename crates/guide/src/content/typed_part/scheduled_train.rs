@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 use serde::Deserialize;
 use strum::{Display, EnumString};
@@ -22,13 +23,18 @@ pub struct ScheduledTrain {
     number: Figure,
 }
 
-impl ScheduledTrain {
-    fn read(text: &str) -> Option<ScheduledTrain> {
-        let (brand, number) = text.split_once(' ')?;
-        Some(ScheduledTrain {
-            brand: brand.parse().ok()?,
-            number: Figure::try_from(number).ok()?,
-        })
+impl FromStr for ScheduledTrain {
+    type Err = ContentError;
+
+    fn from_str(text: &str) -> Result<ScheduledTrain, ContentError> {
+        text.split_once(' ')
+            .and_then(|(brand, number)| {
+                Some(ScheduledTrain {
+                    brand: brand.parse().ok()?,
+                    number: Figure::try_from(number).ok()?,
+                })
+            })
+            .ok_or_else(|| ContentError::BadTrain(Written::new(text.to_owned())))
     }
 }
 
@@ -36,7 +42,7 @@ impl TryFrom<String> for ScheduledTrain {
     type Error = ContentError;
 
     fn try_from(text: String) -> Result<ScheduledTrain, ContentError> {
-        Self::read(&text).ok_or(ContentError::BadTrain(Written::new(text)))
+        text.parse()
     }
 }
 

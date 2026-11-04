@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 use serde::Deserialize;
 
@@ -11,10 +12,16 @@ pub struct Price(Figure);
 
 impl Price {
     const YEN: char = '¥';
+}
 
-    fn read(text: &str) -> Option<Price> {
-        let rest = text.strip_prefix(Self::YEN)?;
-        Figure::try_from(rest).ok().map(Price)
+impl FromStr for Price {
+    type Err = ContentError;
+
+    fn from_str(text: &str) -> Result<Price, ContentError> {
+        text.strip_prefix(Self::YEN)
+            .and_then(|rest| Figure::try_from(rest).ok())
+            .map(Price)
+            .ok_or_else(|| ContentError::BadPrice(Written::new(text.to_owned())))
     }
 }
 
@@ -22,7 +29,7 @@ impl TryFrom<String> for Price {
     type Error = ContentError;
 
     fn try_from(text: String) -> Result<Price, ContentError> {
-        Self::read(&text).ok_or(ContentError::BadPrice(Written::new(text)))
+        text.parse()
     }
 }
 

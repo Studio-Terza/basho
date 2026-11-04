@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 use serde::Deserialize;
 
@@ -24,20 +25,36 @@ impl SaidClock {
     const HOUR: Minutes = Minutes::new(60);
     const LONGEST_HOUR_LENGTH: usize = 2;
     const MINUTE_LENGTH: usize = 2;
+}
 
-    fn digits(text: &str) -> Option<Minutes> {
-        text.parse()
-            .ok()
-            .filter(|_| text.chars().all(|letter| letter.is_ascii_digit()))
-            .map(Minutes::new)
+struct SaidDigits(Minutes);
+
+impl FromStr for SaidDigits {
+    type Err = ContentError;
+
+    fn from_str(text: &str) -> Result<SaidDigits, ContentError> {
+        text.chars()
+            .all(|letter| letter.is_ascii_digit())
+            .then(|| text.parse().ok())
+            .flatten()
+            .map(|count| SaidDigits(Minutes::new(count)))
+            .ok_or_else(|| ContentError::BadClock(Written::new(text.to_owned())))
     }
+}
 
-    pub(super) fn read(text: &str) -> Option<SaidClock> {
-        let (hours, minutes) = text.split_once(':')?;
-        let hour_count = Self::digits(hours)
-            .filter(|_| (1..=Self::LONGEST_HOUR_LENGTH).contains(&hours.len()))?;
-        let minute_count = Self::digits(minutes)
-            .filter(|count| *count < Self::HOUR && minutes.len() == Self::MINUTE_LENGTH)?;
+impl FromStr for SaidClock {
+    type Err = ContentError;
+
+    fn from_str(text: &str) -> Result<SaidClock, ContentError> {
+        let digits = |text: &str| text.parse::<SaidDigits>().ok().map(|digits| digits.0);
+        let bad = || ContentError::BadClock(Written::new(text.to_owned()));
+        let (hours, minutes) = text.split_once(':').ok_or_else(bad)?;
+        let hour_count = digits(hours)
+            .filter(|_| (1..=Self::LONGEST_HOUR_LENGTH).contains(&hours.len()))
+            .ok_or_else(bad)?;
+        let minute_count = digits(minutes)
+            .filter(|count| *count < Self::HOUR && minutes.len() == Self::MINUTE_LENGTH)
+            .ok_or_else(bad)?;
         let padded = match (hours.len(), hours.starts_with('0')) {
             (Self::LONGEST_HOUR_LENGTH, true) => HourPadding::Zero,
             _ => HourPadding::Bare,
@@ -47,6 +64,7 @@ impl SaidClock {
             padded,
         })
         .filter(|said| said.since_midnight <= Self::END_OF_DAY)
+        .ok_or_else(bad)
     }
 }
 
@@ -54,7 +72,7 @@ impl TryFrom<String> for SaidClock {
     type Error = ContentError;
 
     fn try_from(text: String) -> Result<SaidClock, ContentError> {
-        Self::read(&text).ok_or(ContentError::BadClock(Written::new(text)))
+        text.parse()
     }
 }
 

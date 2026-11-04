@@ -1,5 +1,5 @@
 mod progress_error;
-use crate::words::Written;
+use crate::words::{Label, Written};
 use newtype::Counter;
 use std::fmt;
 use std::ops::RangeInclusive;
@@ -166,40 +166,6 @@ impl LegProgress {
 
 impl Eq for LegProgress {}
 
-impl LegProgress {
-    fn offset_word<'text>(rest: &[&'text str]) -> Option<&'text str> {
-        match rest {
-            ["offset" | "behind", offset] | ["behind", _, "started", offset] => Some(*offset),
-            _ => Self::word_after(rest, "offset"),
-        }
-    }
-
-    fn word_after<'text>(rest: &[&'text str], label: &str) -> Option<&'text str> {
-        rest.iter()
-            .zip(rest.iter().skip(1))
-            .find(|(word, _)| **word == label)
-            .map(|(_, next)| *next)
-    }
-
-    fn along_word(rest: &[&str], label: &str) -> Distance {
-        Self::word_after(rest, label)
-            .and_then(|along| along.parse().ok())
-            .map_or(Distance::default(), Distance::new)
-    }
-
-    fn seen_word(rest: &[&str]) -> Option<Coordinate> {
-        rest.iter()
-            .position(|word| *word == "from")
-            .and_then(|from| match rest.get(from..)? {
-                [_, lat, lon, ..] => Some(Coordinate::new(
-                    Degrees::new(lat.parse().ok()?),
-                    Degrees::new(lon.parse().ok()?),
-                )),
-                _ => None,
-            })
-    }
-}
-
 impl fmt::Display for LegProgress {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let day = self
@@ -228,31 +194,75 @@ impl fmt::Display for LegProgress {
     }
 }
 
+struct ProgressWords<'text>(Vec<&'text str>);
+
+impl ProgressWords<'_> {
+    const HEAD: usize = 4;
+
+    fn after<Value: FromStr>(&self, label: Label) -> Option<Value> {
+        self.0
+            .iter()
+            .zip(self.0.iter().skip(1))
+            .find(|(word, _)| **word == AsRef::<str>::as_ref(&label))
+            .and_then(|(_, next)| next.parse().ok())
+    }
+
+    fn offset(&self) -> Option<Minutes> {
+        match self.0.as_slice() {
+            ["day", _, "leg", _, "offset" | "behind", offset]
+            | ["day", _, "leg", _, "behind", _, "started", offset] => {
+                offset.parse().ok().map(Minutes::new)
+            }
+            _ => self.after(Label::new("offset")).map(Minutes::new),
+        }
+    }
+
+    fn seen(&self) -> Option<Coordinate> {
+        self.0
+            .iter()
+            .position(|word| *word == "from")
+            .and_then(|from| match self.0.get(from..)? {
+                [_, lat, lon, ..] => Some(Coordinate::new(
+                    Degrees::new(lat.parse().ok()?),
+                    Degrees::new(lon.parse().ok()?),
+                )),
+                _ => None,
+            })
+    }
+
+    fn progress(&self) -> Option<LegProgress> {
+        <[&str; ProgressWords::HEAD]>::try_from(self.0.get(..ProgressWords::HEAD)?)
+            .ok()
+            .filter(|[day_label, _, leg_label, _]| (*day_label, *leg_label) == ("day", "leg"))
+            .and_then(|[_, day, _, leg]| {
+                let along =
+                    |label: Label| self.after(label).map_or(Distance::default(), Distance::new);
+                Some(LegProgress {
+                    day: Some(DayNumber::new(day.parse().ok()?)),
+                    leg: LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
+                    along: along(Label::new("along")),
+                    furthest: along(Label::new("furthest")).max(along(Label::new("along"))),
+                    offset: self.offset()?,
+                    at: self
+                        .after(Label::new("at"))
+                        .map(Minutes::new)
+                        .map(ClockTime::at_minutes),
+                    seen: self.seen(),
+                    tracking: self.0[ProgressWords::HEAD..]
+                        .join(" ")
+                        .parse()
+                        .unwrap_or_default(),
+                })
+            })
+    }
+}
+
 impl FromStr for LegProgress {
     type Err = ProgressError;
 
     fn from_str(text: &str) -> Result<LegProgress, ProgressError> {
-        let words: Vec<&str> = text.split_whitespace().collect();
-        match words.as_slice() {
-            ["day", day, "leg", leg, rest @ ..] => Self::offset_word(rest).and_then(|offset| {
-                Some(LegProgress {
-                    day: Some(DayNumber::new(day.parse().ok()?)),
-                    leg: LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
-                    along: Self::along_word(rest, "along"),
-                    furthest: Self::along_word(rest, "furthest")
-                        .max(Self::along_word(rest, "along")),
-                    offset: Minutes::new(offset.parse().ok()?),
-                    at: Self::word_after(rest, "at")
-                        .map(str::parse)
-                        .and_then(Result::ok)
-                        .map(Minutes::new)
-                        .map(ClockTime::at_minutes),
-                    seen: Self::seen_word(rest),
-                    tracking: rest.join(" ").parse().unwrap_or_default(),
-                })
-            }),
-            _ => None,
-        }
-        .ok_or_else(|| ProgressError::Unreadable(Written::new(text.to_owned())))
+        ProgressWords(text.split_whitespace().collect())
+            .progress()
+            .ok_or_else(|| ProgressError::Unreadable(Written::new(text.to_owned())))
     }
 }

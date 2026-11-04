@@ -1,13 +1,14 @@
 use crate::day_number::DayNumber;
 
 use crate::leg::LegIndex;
+use crate::words::Spelling;
 use std::fmt;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Finding {
     day: Option<DayNumber>,
     leg: Option<LegIndex>,
-    message: String,
+    message: Spelling,
 }
 
 impl Finding {
@@ -16,7 +17,7 @@ impl Finding {
         Finding {
             day: None,
             leg: None,
-            message: message.to_string(),
+            message: Spelling::new(message.to_string()),
         }
     }
 
@@ -25,7 +26,7 @@ impl Finding {
         Finding {
             day: Some(day),
             leg: None,
-            message: message.to_string(),
+            message: Spelling::new(message.to_string()),
         }
     }
 
@@ -34,7 +35,7 @@ impl Finding {
         Finding {
             day: Some(day),
             leg: Some(leg),
-            message: message.to_string(),
+            message: Spelling::new(message.to_string()),
         }
     }
 }

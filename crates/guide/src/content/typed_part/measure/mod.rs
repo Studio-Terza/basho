@@ -20,13 +20,21 @@ pub struct Measure<Unit> {
     unit: Unit,
 }
 
-impl<Unit: FromStr> Measure<Unit> {
-    fn read(text: &str) -> Option<Measure<Unit>> {
-        let figure = Figure::leading(text)?;
-        let rest = text.get(AsRef::<Spelling>::as_ref(&figure).len()..)?;
+impl<Unit: FromStr> FromStr for Measure<Unit> {
+    type Err = ContentError;
+
+    fn from_str(text: &str) -> Result<Measure<Unit>, ContentError> {
+        let bad = || ContentError::BadMeasure(Written::new(text.to_owned()));
+        let figure: Figure = text.parse()?;
+        let rest = text
+            .get(AsRef::<Spelling>::as_ref(&figure).len()..)
+            .ok_or_else(bad)?;
         let joint: Joint = rest.into();
-        let unit = rest.strip_prefix(<&str>::from(joint))?.parse().ok()?;
-        Some(Measure {
+        let unit = rest
+            .strip_prefix(<&str>::from(joint))
+            .and_then(|unit| unit.parse().ok())
+            .ok_or_else(bad)?;
+        Ok(Measure {
             figure,
             joint,
             unit,
@@ -38,7 +46,7 @@ impl<Unit: FromStr> TryFrom<String> for Measure<Unit> {
     type Error = ContentError;
 
     fn try_from(text: String) -> Result<Measure<Unit>, ContentError> {
-        Self::read(&text).ok_or(ContentError::BadMeasure(Written::new(text)))
+        text.parse()
     }
 }
 
