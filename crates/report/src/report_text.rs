@@ -6,7 +6,16 @@ use plain_text::{NotPlain, PlainText};
 use serde::{Deserialize, Serialize};
 
 #[derive(
-    newtype::Newtype, newtype::Display, Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize,
+    newtype::Newtype,
+    newtype::Arbitrary,
+    newtype::Display,
+    Clone,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    Deserialize,
+    Serialize,
 )]
 #[serde(try_from = "String")]
 pub struct ReportText(String);

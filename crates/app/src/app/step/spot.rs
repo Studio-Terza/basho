@@ -2,6 +2,9 @@ use guide::day_number::DayNumber;
 use guide::itinerary::{Day, Itinerary};
 use map_plan::MapLevel;
 
+use newtype::proptest::arbitrary::{Arbitrary, any};
+use newtype::proptest::strategy::{BoxedStrategy, Strategy};
+
 use super::Step;
 use super::goal_number::GoalNumber;
 use super::step_number::StepNumber;
@@ -14,6 +17,8 @@ pub struct Spot {
 }
 
 impl Spot {
+    const MOST_DRAWN_STEPS: usize = 64;
+
     #[must_use]
     pub const fn new(day: DayNumber, step: StepNumber) -> Spot {
         Spot { day, step }
@@ -103,5 +108,16 @@ impl Spot {
             Toward::Previous => index.checked_sub(1).and_then(|before| days.get(before)),
         }
         .map(|day| Spot::entering(day, toward))
+    }
+}
+
+impl Arbitrary for Spot {
+    type Parameters = ();
+    type Strategy = BoxedStrategy<Spot>;
+
+    fn arbitrary_with((): ()) -> BoxedStrategy<Spot> {
+        (any::<DayNumber>(), 0..Spot::MOST_DRAWN_STEPS)
+            .prop_map(|(day, position)| Spot::new(day, StepNumber::from_position(position)))
+            .boxed()
     }
 }

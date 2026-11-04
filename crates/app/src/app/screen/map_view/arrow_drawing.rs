@@ -2,10 +2,20 @@ use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::geo::Bearing;
 use newtype::Newtype;
+use newtype::proptest::strategy::Strategy;
 
-#[derive(Newtype)]
+#[derive(Newtype, newtype::Arbitrary, Debug)]
+#[newtype(strategy = ArrowDrawing::drawn())]
 pub struct ArrowDrawing {
     turned: Bearing,
+}
+
+impl ArrowDrawing {
+    const FULL_TURN: f64 = 360.0;
+
+    fn drawn() -> impl Strategy<Value = Bearing> {
+        (-Self::FULL_TURN..Self::FULL_TURN).prop_map(Bearing::new)
+    }
 }
 
 impl IntoDynNode for ArrowDrawing {

@@ -4,7 +4,7 @@ use std::fmt;
 use crate::app::screen::day_name::DayName;
 use crate::app::step::Spot;
 
-#[derive(Newtype)]
+#[derive(Newtype, newtype::Arbitrary, Debug)]
 pub struct BrowseLine {
     spot: Spot,
 }

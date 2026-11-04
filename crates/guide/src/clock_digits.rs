@@ -2,9 +2,13 @@ use std::fmt;
 
 use chrono::{NaiveTime, TimeDelta, Timelike};
 
-use crate::clock::ClockTime;
+use newtype::proptest::arbitrary::any;
+use newtype::proptest::strategy::Strategy;
 
-#[derive(newtype::Newtype, Clone, Copy, Debug)]
+use crate::clock::{ClockTime, Minutes};
+
+#[derive(newtype::Newtype, newtype::Arbitrary, Clone, Copy, Debug)]
+#[newtype(strategy = any::<Minutes>().prop_map(ClockTime::at_minutes))]
 pub struct ClockDigits(ClockTime);
 
 impl fmt::Display for ClockDigits {

@@ -3,7 +3,18 @@ use std::cmp::Ordering;
 
 use crate::geo::distance::Distance;
 
-#[derive(derive_more::Into, Newtype, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(
+    derive_more::Into,
+    Newtype,
+    newtype::Arbitrary,
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+)]
 pub struct OffRoute(Distance);
 
 impl PartialEq<Distance> for OffRoute {

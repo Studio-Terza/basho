@@ -1,10 +1,15 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use newtype::Newtype;
+use newtype::proptest::arbitrary::any;
+use newtype::proptest::option::of;
+use newtype::proptest::strategy::Strategy;
 
-use crate::app::visit::Visit;
+use crate::app::step::Spot;
+use crate::app::visit::{Focus, Visit};
 
-#[derive(Newtype)]
+#[derive(Newtype, newtype::Arbitrary, Debug)]
+#[newtype(strategy = of(any::<Spot>()).prop_map(|spot| Visit::restored(spot.map_or(Focus::Now, Focus::Browsing))))]
 pub struct ScrollAnchor {
     visit: Visit,
 }

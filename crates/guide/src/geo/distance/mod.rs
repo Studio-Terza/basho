@@ -15,8 +15,9 @@ use crate::geo::share::Share;
 
 pub use ground::Ground;
 
-#[derive(Newtype, Clone, Copy, Debug, PartialEq, Default, Deserialize)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, Default, Deserialize)]
 #[serde(try_from = "f64")]
+#[newtype(strategy = -Self::LARGEST_DRAWN..Self::LARGEST_DRAWN)]
 pub struct Distance(f64);
 
 subtracted!(Distance);
@@ -31,6 +32,8 @@ impl TryFrom<f64> for Distance {
 }
 
 impl Distance {
+    const LARGEST_DRAWN: f64 = 1.0e7;
+
     const METERS_PER_KILOMETER: f64 = 1000.0;
     const ROUNDING_METERS: f64 = 10.0;
 

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(
     newtype::Newtype,
+    newtype::Arbitrary,
     newtype::Display,
     derive_more::AsRef,
     Clone,
@@ -16,6 +17,7 @@ use serde::{Deserialize, Serialize};
 )]
 #[as_ref(str)]
 #[serde(try_from = "String")]
+#[newtype(strategy = "\\PC{0,24}")]
 pub struct EnglishName(String);
 
 impl TryFrom<String> for EnglishName {

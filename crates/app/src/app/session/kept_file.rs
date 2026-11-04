@@ -4,7 +4,7 @@ use std::str::FromStr;
 use guide::words::Label;
 use storage_ports::HomeFolder;
 
-#[derive(newtype::Newtype, derive_more::AsRef, Clone, Debug, PartialEq, Eq)]
+#[derive(newtype::Newtype, newtype::Arbitrary, derive_more::AsRef, Clone, Debug, PartialEq, Eq)]
 #[as_ref(Path)]
 pub struct KeptFile(PathBuf);
 

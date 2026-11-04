@@ -2,10 +2,25 @@ use std::fmt;
 
 use serde::Deserialize;
 
-use crate::clock::ClockTime;
+use newtype::proptest::arbitrary::any;
+use newtype::proptest::strategy::Strategy;
+
+use crate::clock::{ClockTime, Minutes};
 use crate::clock_digits::ClockDigits;
 
-#[derive(newtype::Newtype, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+#[derive(
+    newtype::Newtype,
+    newtype::Arbitrary,
+    Clone,
+    Copy,
+    Debug,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Deserialize,
+)]
+#[newtype(strategy = any::<Minutes>().prop_map(ClockTime::at_minutes))]
 #[serde(deny_unknown_fields)]
 pub struct PlanTime {
     plan: ClockTime,

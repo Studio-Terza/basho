@@ -1,5 +1,5 @@
 use newtype::Newtype;
-#[derive(Newtype, Clone, Copy, Debug, PartialEq, PartialOrd)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq, PartialOrd)]
 pub struct Scale(f64);
 
 impl Scale {

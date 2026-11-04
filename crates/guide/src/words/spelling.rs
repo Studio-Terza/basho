@@ -3,6 +3,7 @@ use serde::Deserialize;
 
 #[derive(
     newtype::Newtype,
+    newtype::Arbitrary,
     newtype::Display,
     derive_more::AsRef,
     derive_more::Debug,
@@ -21,6 +22,7 @@ use serde::Deserialize;
 #[debug("{_0:?}")]
 #[deref(forward)]
 #[serde(try_from = "String")]
+#[newtype(strategy = "\\PC{0,24}")]
 pub struct Spelling(String);
 
 impl TryFrom<String> for Spelling {

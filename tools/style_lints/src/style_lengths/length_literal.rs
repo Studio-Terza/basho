@@ -2,6 +2,9 @@ use std::convert::Infallible;
 use std::fmt;
 use std::str::FromStr;
 
+use newtype::proptest::strategy::Strategy;
+
+#[derive(Debug)]
 pub struct LengthLiteral {
     number: String,
     unit: String,
@@ -49,8 +52,20 @@ impl fmt::Display for LengthLiteral {
     }
 }
 
-#[derive(newtype::Newtype)]
+#[derive(newtype::Newtype, newtype::Arbitrary, Debug)]
+#[newtype(strategy = LengthLiterals::drawn())]
 pub struct LengthLiterals(Vec<LengthLiteral>);
+
+impl LengthLiterals {
+    const DRAWN_LINE: &str = "([0-9.]{1,4}(px|ms|s|em)?[ :;]){0,6}";
+
+    fn drawn() -> impl Strategy<Value = Vec<LengthLiteral>> {
+        Self::DRAWN_LINE.prop_map(|line| {
+            let characters: Vec<char> = line.chars().collect();
+            LengthLiteral::all_in(&characters)
+        })
+    }
+}
 
 impl FromStr for LengthLiterals {
     type Err = Infallible;

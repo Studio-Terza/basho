@@ -6,8 +6,20 @@ use std::ops::Add;
 use serde::Deserialize;
 
 #[derive(
-    Newtype, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize,
+    Newtype,
+    newtype::Arbitrary,
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Deserialize,
 )]
+#[newtype(strategy = -Self::LONGEST_DRAWN..=Self::LONGEST_DRAWN)]
 pub struct Minutes(i64);
 
 added!(Minutes);
@@ -15,6 +27,8 @@ subtracted!(Minutes);
 signed!(Minutes);
 
 impl Minutes {
+    const LONGEST_DRAWN: i64 = 60 * 24 * 366;
+
     pub const ZERO: Minutes = Minutes(0);
     const PER_HOUR: i64 = 60;
 

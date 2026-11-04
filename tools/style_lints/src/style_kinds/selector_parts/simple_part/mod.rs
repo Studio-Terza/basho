@@ -6,7 +6,16 @@ use super::SelectorParts;
 use super::name_length::NameLength;
 use valued::Valued;
 
-#[derive(newtype::Newtype, newtype::Display, derive_more::Deref, Clone, Debug, PartialEq, Eq)]
+#[derive(
+    newtype::Newtype,
+    newtype::Arbitrary,
+    newtype::Display,
+    derive_more::Deref,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+)]
 #[deref(forward)]
 pub struct PartName(String);
 

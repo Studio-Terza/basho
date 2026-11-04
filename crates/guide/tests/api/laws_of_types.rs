@@ -108,3 +108,17 @@ laws::roundtrip!(
     |text: &String| serde_json::from_str::<Spelling>(text).ok(),
     Some,
 );
+
+laws::law!(
+    a_drawn_catalog_holds_only_places_that_parse,
+    any::<guide::PlaceCatalog>(),
+    catalog,
+    {
+        prop_assert!(
+            catalog
+                .places()
+                .iter()
+                .all(|place| place.slug().as_ref() == "eastfield")
+        );
+    }
+);

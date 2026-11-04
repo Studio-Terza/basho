@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-#[derive(newtype::Newtype, newtype::Display, Debug)]
+#[derive(newtype::Newtype, newtype::Arbitrary, newtype::Display, Debug)]
 pub struct Written(String);
 
 #[derive(Debug, Error)]

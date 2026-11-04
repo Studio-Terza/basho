@@ -6,7 +6,18 @@ use serde::de::Error;
 use serde::{Deserialize, Deserializer};
 
 #[derive(
-    derive_more::Into, Newtype, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash,
+    derive_more::Into,
+    Newtype,
+    newtype::Arbitrary,
+    Clone,
+    Copy,
+    Debug,
+    Default,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
 )]
 pub struct LegIndex(usize);
 

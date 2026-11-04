@@ -8,7 +8,10 @@ pub use line::Line;
 pub use target::Target;
 pub use text::Text;
 
+use guide::plane::{Pixels, Scale};
 use newtype::Newtype;
+use newtype::proptest::arbitrary::any;
+use newtype::proptest::strategy::Strategy;
 use std::fmt;
 
 use crate::measure::Extent;
@@ -19,13 +22,19 @@ use corner::Corner;
 use screen_share::ScreenShare;
 use span::Span;
 
-#[derive(Newtype, Clone, Copy, Debug, PartialEq)]
+#[derive(Newtype, newtype::Arbitrary, Clone, Copy, Debug, PartialEq)]
+#[newtype(strategy = RootStyle::drawn())]
 pub struct RootStyle {
     viewport: Viewport,
 }
 
 impl RootStyle {
     const EASE: &str = "cubic-bezier(0.32, 0.72, 0, 1)";
+
+    fn drawn() -> impl Strategy<Value = Viewport> {
+        (any::<Pixels>(), any::<Scale>())
+            .prop_map(|(width, reading)| Viewport::default().at_width(width).read_at(reading))
+    }
 
     fn lengths<T: Token>(self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         T::ALL.iter().try_for_each(|token| {

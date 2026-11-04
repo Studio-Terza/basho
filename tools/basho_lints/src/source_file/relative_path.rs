@@ -2,6 +2,7 @@ use std::path::Path;
 
 #[derive(
     newtype::Newtype,
+    newtype::Arbitrary,
     newtype::Display,
     derive_more::Deref,
     Clone,
