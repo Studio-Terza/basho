@@ -8,7 +8,7 @@ use tile_draft::TileItem;
 use tile_shapes::{LonLat, TileShape, WorldPoint};
 
 use osm_tags::OsmTags;
-use readers::{OtherLine, PlaceSpot, PoiSpot, RoadLine, SolidArea, TagReader, WaterLine};
+use readers::{LineReader, SolidArea, SpotReader, TagReader};
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(tag = "type", content = "coordinates")]
@@ -52,17 +52,12 @@ impl OsmLine {
 
     fn line_item(&self, line: Vec<WorldPoint>) -> Option<TileItem> {
         let tags = &self.properties;
-        RoadLine::drawn_as(tags)
-            .or_else(|| WaterLine::drawn_as(tags))
-            .or_else(|| OtherLine::drawn_as(tags))
-            .map(|drawn| TileItem::new(drawn, TileShape::Line(line)))
+        LineReader::drawn_as(tags).map(|drawn| TileItem::new(drawn, TileShape::Line(line)))
     }
 
     fn spot_item(&self, point: WorldPoint) -> Option<TileItem> {
         let tags = &self.properties;
-        PlaceSpot::drawn_as(tags)
-            .or_else(|| PoiSpot::drawn_as(tags))
-            .map(|drawn| TileItem::new(drawn, TileShape::Spot(point)))
+        SpotReader::drawn_as(tags).map(|drawn| TileItem::new(drawn, TileShape::Spot(point)))
     }
 
     fn area_item(&self, polygons: Vec<Vec<Vec<WorldPoint>>>) -> Option<TileItem> {
@@ -70,9 +65,9 @@ impl OsmLine {
             .first()
             .and_then(|rings| rings.first())
             .and_then(|ring| WorldPoint::middle_of(ring));
-        match SolidArea::drawn_as(&self.properties) {
-            Some(drawn) => Some(TileItem::new(drawn, TileShape::Area(polygons))),
-            None => middle.and_then(|point| self.spot_item(point)),
-        }
+        SolidArea::drawn_as(&self.properties).map_or_else(
+            || middle.and_then(|point| self.spot_item(point)),
+            |drawn| Some(TileItem::new(drawn, TileShape::Area(polygons))),
+        )
     }
 }
