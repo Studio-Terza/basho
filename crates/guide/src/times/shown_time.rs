@@ -23,14 +23,14 @@ impl Classed for ShownTime {}
 impl ShownTime {
     #[must_use]
     pub fn off_by(listed: ListedTime, by: Minutes) -> ShownTime {
-        if by == Minutes::ZERO {
-            ShownTime::from(listed)
-        } else {
-            ShownTime::Live(LiveTime::new(
-                ClockTime::from(listed).later_by(by),
-                Basis::OffPlan { listed, by },
-            ))
-        }
+        Some(by)
+            .filter(|by| *by != Minutes::ZERO)
+            .map_or(ShownTime::from(listed), |by| {
+                ShownTime::Live(LiveTime::new(
+                    ClockTime::from(listed).later_by(by),
+                    Basis::OffPlan { listed, by },
+                ))
+            })
     }
 }
 

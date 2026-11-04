@@ -23,13 +23,10 @@ impl TryFrom<Content> for NoteText {
 
     fn try_from(content: Content) -> Result<NoteText, NoteError> {
         let written = content.text(Reading::Written);
-        if written
+        written
             .split(Self::SENTENCE_END)
             .any(|sentence| sentence.starts_with(Self::WALKER_ORDER))
-        {
-            Err(NoteError::FromTheLine(Written::new(written.to_string())))
-        } else {
-            Ok(NoteText(content))
-        }
+            .then(|| NoteError::FromTheLine(Written::new(written.to_string())))
+            .map_or(Ok(NoteText(content)), Err)
     }
 }

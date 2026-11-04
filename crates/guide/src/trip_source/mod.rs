@@ -16,12 +16,11 @@ impl<'text> TripSource<'text> {
         "\n[[catches]]\n",
     ];
 
-    fn opens_stretch(self, index: usize) -> bool {
-        self.0.get(index..).is_some_and(|rest| {
-            Self::STRETCH_OPENS
-                .iter()
-                .any(|open| rest.starts_with(open))
-        })
+    fn opens_stretch(self) -> Option<TripSource<'text>> {
+        Self::STRETCH_OPENS
+            .iter()
+            .find(|open| self.0.starts_with(*open))
+            .map(|_| self)
     }
 
     #[must_use]
@@ -29,15 +28,20 @@ impl<'text> TripSource<'text> {
         let mut cuts: Vec<usize> = self
             .0
             .match_indices(Self::TABLE_OPEN)
-            .filter(|(at, _)| self.opens_stretch(*at))
-            .map(|(at, _)| at + 1)
+            .filter_map(|(at, _)| {
+                self.0
+                    .get(at..)
+                    .map(TripSource)
+                    .and_then(TripSource::opens_stretch)
+                    .map(|_| at + 1)
+            })
             .collect();
         cuts.extend([0, self.0.len()]);
         cuts.sort_unstable();
         cuts.iter()
             .zip(cuts.iter().skip(1))
+            .filter(|(from, to)| from < to)
             .filter_map(|(from, to)| self.0.get(*from..*to))
-            .filter(|stretch| !stretch.is_empty())
             .map(TripSource)
             .collect()
     }

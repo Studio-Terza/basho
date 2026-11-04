@@ -20,10 +20,15 @@ impl MappedSegment {
     }
 
     #[must_use]
-    pub fn meets(&self, next: &MappedSegment) -> bool {
-        self.line.points().last() == next.line.points().first()
-            && (self.nodes.last() == next.nodes.first()
-                || self.edge(End::Finish) == next.edge(End::Start))
+    pub fn meets<'next>(&self, next: &'next MappedSegment) -> Option<&'next MappedSegment> {
+        Some(next)
+            .filter(|next| self.line.points().last() == next.line.points().first())
+            .filter(|next| {
+                Some(*next)
+                    .filter(|next| self.nodes.last() == next.nodes.first())
+                    .or(Some(*next).filter(|next| self.edge(End::Finish) == next.edge(End::Start)))
+                    .is_some()
+            })
     }
 
     fn edge(&self, end: End) -> Option<BTreeSet<NodeId>> {

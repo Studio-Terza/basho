@@ -83,8 +83,8 @@ impl Landmarks {
             .enumerate()
             .filter(|(index, point)| {
                 self.stars[..*index].iter().any(|earlier| {
-                    DayNumber::from(earlier) == DayNumber::from(*point)
-                        && earlier.short() == point.short()
+                    (DayNumber::from(earlier), earlier.short())
+                        == (DayNumber::from(*point), point.short())
                 })
             })
             .map(|(_, point)| {
@@ -102,7 +102,7 @@ impl Landmarks {
             goal.purpose()
                 .claims()
                 .iter()
-                .filter(move |name| !self.knows(day, name))
+                .filter(move |name| self.star_named(day, name).is_none())
                 .map(move |name| {
                     Finding::on_leg(
                         day.number(),
@@ -113,10 +113,10 @@ impl Landmarks {
         })
     }
 
-    fn knows(&self, day: &Day, name: &StarName) -> bool {
+    fn star_named(&self, day: &Day, name: &StarName) -> Option<&StarPoint> {
         self.stars
             .iter()
-            .any(|point| DayNumber::from(point) == day.number() && point.short() == name)
+            .find(|point| (DayNumber::from(*point), point.short()) == (day.number(), name))
     }
 
     fn unclaimed(point: &StarPoint, day: &Day) -> Option<Finding> {

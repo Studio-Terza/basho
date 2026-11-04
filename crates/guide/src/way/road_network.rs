@@ -33,9 +33,10 @@ impl RoadNetwork {
     }
 
     #[must_use]
-    pub fn joins(&self, from: NodeId, to: NodeId) -> bool {
+    pub fn joins(&self, from: NodeId, to: NodeId) -> Option<NodeId> {
         self.links
             .get(&from)
-            .is_some_and(|linked| linked.contains(&to))
+            .and_then(|linked| linked.get(&to))
+            .copied()
     }
 }

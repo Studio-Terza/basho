@@ -19,10 +19,8 @@ impl LegCatch {
 
     #[must_use]
     pub fn notes_for(&self, leg: LegIndex) -> &[CatchNote] {
-        if usize::from(leg) == self.index {
-            &self.catch
-        } else {
-            &[]
-        }
+        Some(self.index)
+            .filter(|index| *index == usize::from(leg))
+            .map_or(&[], |_| self.catch.as_slice())
     }
 }

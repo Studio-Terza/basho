@@ -45,7 +45,7 @@ impl PlaceCatalog {
             .iter()
             .enumerate()
             .filter_map(|(index, leg)| leg.place().map(|slug| (index, slug)))
-            .filter(|(_, slug)| !self.places.iter().any(|place| place.slug() == *slug))
+            .filter(|(_, slug)| self.places.iter().all(|place| place.slug() != *slug))
             .map(|(index, slug)| {
                 Finding::on_leg(
                     day.number(),

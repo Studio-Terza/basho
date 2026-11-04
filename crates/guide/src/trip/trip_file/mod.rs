@@ -2,6 +2,7 @@ mod kana_file;
 use crate::words::Label;
 pub use kana_file::KanaFile;
 use std::collections::{BTreeMap, BTreeSet};
+use std::str::FromStr;
 use std::thread::{Scope, ScopedJoinHandle};
 
 use serde::Deserialize;
@@ -64,34 +65,53 @@ impl TripPart {
     }
 
     fn joined(self, next: TripPart) -> Option<TripPart> {
-        let twice = [
-            self.trip.is_some() && next.trip.is_some(),
-            self.landmarks.is_some() && next.landmarks.is_some(),
-            self.kana.is_some() && next.kana.is_some(),
-        ];
-        (!twice.contains(&true)).then(|| TripPart {
-            trip: self.trip.or(next.trip),
-            arcs: self.arcs.into_iter().chain(next.arcs).collect(),
-            days: self.days.into_iter().chain(next.days).collect(),
-            places: self.places.into_iter().chain(next.places).collect(),
-            landmarks: self.landmarks.or(next.landmarks),
-            routes: self.routes.into_iter().chain(next.routes).collect(),
-            kana: self.kana.or(next.kana),
-            catches: self.catches.into_iter().chain(next.catches).collect(),
-        })
+        Some(self)
+            .filter(|part| part.trip.as_ref().zip(next.trip.as_ref()).is_none())
+            .filter(|part| {
+                part.landmarks
+                    .as_ref()
+                    .zip(next.landmarks.as_ref())
+                    .is_none()
+            })
+            .filter(|part| part.kana.as_ref().zip(next.kana.as_ref()).is_none())
+            .map(|part| TripPart {
+                trip: part.trip.or(next.trip),
+                arcs: part.arcs.into_iter().chain(next.arcs).collect(),
+                days: part.days.into_iter().chain(next.days).collect(),
+                places: part.places.into_iter().chain(next.places).collect(),
+                landmarks: part.landmarks.or(next.landmarks),
+                routes: part.routes.into_iter().chain(next.routes).collect(),
+                kana: part.kana.or(next.kana),
+                catches: part.catches.into_iter().chain(next.catches).collect(),
+            })
     }
 
     fn whole(self) -> Option<TripFile> {
-        (!self.arcs.is_empty() && !self.days.is_empty()).then_some(TripFile {
-            trip: self.trip?,
-            arcs: self.arcs,
-            days: self.days,
-            places: self.places,
-            landmarks: self.landmarks.unwrap_or_default(),
-            routes: self.routes,
-            kana: self.kana.unwrap_or_default(),
-            catches: self.catches,
-        })
+        Some(self)
+            .filter(|part| part.arcs.first().zip(part.days.first()).is_some())
+            .and_then(|part| {
+                part.trip.map(|trip| TripFile {
+                    trip,
+                    arcs: part.arcs,
+                    days: part.days,
+                    places: part.places,
+                    landmarks: part.landmarks.unwrap_or_default(),
+                    routes: part.routes,
+                    kana: part.kana.unwrap_or_default(),
+                    catches: part.catches,
+                })
+            })
+    }
+}
+
+impl FromStr for TripFile {
+    type Err = TripError;
+
+    fn from_str(text: &str) -> Result<TripFile, TripError> {
+        match TripFile::in_stretches(TripSource::new(text)) {
+            Some(file) => Ok(file),
+            None => toml::from_str::<TripFile>(text).map_err(TripError::Toml),
+        }
     }
 }
 
@@ -174,11 +194,12 @@ impl TripFile {
             .chain(places.findings(&itinerary))
             .chain(named)
             .collect();
-        if findings.is_empty() {
-            Ok(Trip::new(itinerary, places, overview))
-        } else {
-            Err(TripError::Invalid(findings))
-        }
+        Some(findings)
+            .filter(|findings| findings.iter().next().is_some())
+            .map_or_else(
+                || Ok(Trip::new(itinerary, places, overview)),
+                |findings| Err(TripError::Invalid(findings)),
+            )
     }
 
     fn strays(
@@ -187,15 +208,19 @@ impl TripFile {
         known: &[DayNumber],
     ) -> Vec<Finding> {
         let mut seen = BTreeSet::new();
-        days.filter(|day| !known.contains(day) || !seen.insert(*day))
-            .map(|day| {
-                Finding::on_day(
-                    day,
-                    Problem::StraySection {
-                        section: Label::new(section),
-                    },
-                )
-            })
-            .collect()
+        days.filter(|day| {
+            Some(*day)
+                .filter(|day| known.contains(day))
+                .is_none_or(|day| seen.replace(day).is_some())
+        })
+        .map(|day| {
+            Finding::on_day(
+                day,
+                Problem::StraySection {
+                    section: Label::new(section),
+                },
+            )
+        })
+        .collect()
     }
 }

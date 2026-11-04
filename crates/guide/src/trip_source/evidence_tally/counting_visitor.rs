@@ -26,15 +26,27 @@ impl CountingVisitor {
         key: &Spelling,
         entries: &mut Entries,
     ) -> Result<EvidenceCounts, Entries::Error> {
-        if key.as_ref() == Self::KEY {
-            entries
+        match EntryKind::from(key) {
+            EntryKind::Evidence => entries
                 .next_value::<Evidence>()
-                .map(|evidence| EvidenceCounts::from(evidence.kind()))
-        } else {
-            entries
+                .map(|evidence| EvidenceCounts::from(evidence.kind())),
+            EntryKind::Section => entries
                 .next_value::<EvidenceTally>()
-                .map(EvidenceCounts::from)
+                .map(EvidenceCounts::from),
         }
+    }
+}
+
+enum EntryKind {
+    Evidence,
+    Section,
+}
+
+impl From<&Spelling> for EntryKind {
+    fn from(key: &Spelling) -> EntryKind {
+        Some(key)
+            .filter(|key| key.as_ref() == CountingVisitor::KEY)
+            .map_or(EntryKind::Section, |_| EntryKind::Evidence)
     }
 }
 

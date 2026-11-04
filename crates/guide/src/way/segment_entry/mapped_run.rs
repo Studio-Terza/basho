@@ -48,7 +48,7 @@ impl MappedRun {
     fn joined(&self, network: &RoadNetwork) -> Result<(), Problem> {
         self.nodes
             .windows(RouteLine::SEGMENT_ENDS_LENGTH)
-            .find(|pair| !network.joins(pair[0], pair[1]))
+            .find(|pair| network.joins(pair[0], pair[1]).is_none())
             .map_or(Ok(()), |pair| {
                 Err(Problem::NoConnection {
                     from: pair[0],

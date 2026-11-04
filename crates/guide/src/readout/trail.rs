@@ -11,9 +11,14 @@ impl Trail {
 
     #[must_use]
     pub fn recorded(self, fix: Coordinate) -> Trail {
-        match self.points.last().copied() {
-            Some(last) if last.distance_to(fix) < Self::SPACING => self,
-            _ => Trail {
+        match self
+            .points
+            .last()
+            .copied()
+            .filter(|last| last.distance_to(fix) < Self::SPACING)
+        {
+            Some(_) => self,
+            None => Trail {
                 points: self
                     .points
                     .iter()

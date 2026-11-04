@@ -11,9 +11,9 @@ pub enum Translator {
 impl Translator {
     #[must_use]
     pub fn label(self) -> Label {
-        Label::new(match self {
-            Translator::Ours => "Our translation",
-            Translator::WrittenInEnglish => "Written in English; no translation",
-        })
+        match self {
+            Translator::Ours => Label::new("Our translation"),
+            Translator::WrittenInEnglish => Label::new("Written in English; no translation"),
+        }
     }
 }

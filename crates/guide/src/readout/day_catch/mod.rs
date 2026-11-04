@@ -79,15 +79,15 @@ impl DayCatch {
             })
             .filter(leads)
             .collect();
-        let pool: Vec<CatchSight<'_>> = if picked.is_empty() {
-            self.features
-                .iter()
-                .filter_map(|feature| Self::sighted(feature, None, here))
-                .filter(leads)
-                .collect()
-        } else {
-            picked
-        };
+        let pool: Vec<CatchSight<'_>> = Some(picked)
+            .filter(|picked| picked.iter().next().is_some())
+            .unwrap_or_else(|| {
+                self.features
+                    .iter()
+                    .filter_map(|feature| Self::sighted(feature, None, here))
+                    .filter(leads)
+                    .collect()
+            });
         pool.into_iter()
             .fold(Vec::new(), |mut nearest: Vec<CatchSight<'_>>, sight| {
                 let place = nearest.partition_point(|kept| {

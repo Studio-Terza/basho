@@ -18,7 +18,7 @@ impl KanaReading {
     #[must_use]
     pub fn sourced_kana(self) -> Option<FeatureName> {
         self.source
-            .filter(|source| !source.is_empty())
+            .filter(|source| source.bytes().next().is_some())
             .map(|_| self.kana)
     }
 }
