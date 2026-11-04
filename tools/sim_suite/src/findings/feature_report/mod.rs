@@ -1,6 +1,8 @@
+mod cases;
 mod unsimulated;
 
 use crate::suite::{Feature, Standing, SuiteWord};
+use cases::Cases;
 use unsimulated::Unsimulated;
 
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
@@ -17,11 +19,7 @@ impl FeatureReport {
     pub fn new(feature: Feature, passed: Vec<SuiteWord>, failed: Vec<SuiteWord>) -> FeatureReport {
         FeatureReport {
             feature,
-            standing: if passed.is_empty() || !failed.is_empty() {
-                Standing::Failed
-            } else {
-                Standing::Passed
-            },
+            standing: Cases::heard(&passed, &failed).standing(),
             unsimulated: Unsimulated::listed_for(feature),
             passed,
             failed,

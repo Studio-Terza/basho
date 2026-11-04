@@ -1,6 +1,8 @@
 mod feature_report;
 pub mod map_phase;
+mod run;
 mod test_tally;
+mod wording;
 
 use std::fmt;
 
@@ -8,12 +10,14 @@ use crate::crash_reports::CrashReports;
 use crate::suite::{Standing, TestName};
 use feature_report::FeatureReport;
 use map_phase::PhaseFigures;
+use run::Run;
 use test_tally::TestTally;
+use wording::Wording;
 
 #[derive(Clone, Debug, Default, serde::Serialize)]
 pub struct SimFindings {
-    device: &'static str,
-    trouble: Option<String>,
+    device: Wording,
+    trouble: Option<Trouble>,
     crash_reports: CrashReports,
     features: Vec<FeatureReport>,
     map_figures: Vec<PhaseFigures>,
@@ -21,12 +25,25 @@ pub struct SimFindings {
     tally: TestTally,
 }
 
+#[derive(
+    newtype::Newtype,
+    newtype::Arbitrary,
+    newtype::Display,
+    Clone,
+    Debug,
+    PartialEq,
+    Eq,
+    serde::Serialize,
+)]
+#[serde(transparent)]
+pub struct Trouble(String);
+
 #[derive(Debug, thiserror::Error)]
 #[error("the simulator run failed:\n{0}")]
 pub struct Unproved(String);
 
 impl SimFindings {
-    const DEVICE: &str = "iPhone 16 Plus, 430 x 932";
+    const DEVICE: Wording = Wording::new("iPhone 16 Plus, 430 x 932");
 
     pub fn heard_test(&mut self, test: TestName, standing: Standing) {
         self.tally = std::mem::take(&mut self.tally).heard(test, standing);
@@ -44,7 +61,7 @@ impl SimFindings {
     ) -> SimFindings {
         SimFindings {
             device: Self::DEVICE,
-            trouble: trouble.map(ToString::to_string),
+            trouble: trouble.map(ToString::to_string).map(Trouble::new),
             crash_reports,
             features: self.tally.reports(),
             ..self
@@ -52,14 +69,21 @@ impl SimFindings {
     }
 
     pub fn verdict(&self) -> Result<(), Unproved> {
-        (self.trouble.is_none()
-            && self.crash_reports.found().is_empty()
-            && self
-                .features
-                .iter()
-                .all(|report| report.standing() != Standing::Failed))
-        .then_some(())
-        .ok_or_else(|| Unproved(self.to_string()))
+        match self.run() {
+            Run::Proved => Ok(()),
+            Run::Troubled | Run::Failing | Run::Crashed => Err(Unproved(self.to_string())),
+        }
+    }
+
+    fn run(&self) -> Run {
+        let troubled = self.trouble.is_some().then_some(Run::Troubled);
+        let failing = self
+            .features
+            .iter()
+            .any(|report| report.standing() == Standing::Failed)
+            .then_some(Run::Failing);
+        let crash_free = self.crash_reports.found().is_empty().then_some(Run::Proved);
+        troubled.or(failing).or(crash_free).unwrap_or(Run::Crashed)
     }
 }
 

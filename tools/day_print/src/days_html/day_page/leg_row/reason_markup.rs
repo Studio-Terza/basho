@@ -15,18 +15,21 @@ pub struct ReasonMarkup<'reason> {
 impl fmt::Display for ReasonMarkup<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("<br><b>Why this way:</b> ")?;
-        match (self.reason.kind(), self.reason.referent()) {
-            (Some(kind), Some(referent)) => write!(
-                formatter,
-                "{} · {}{}",
-                Label::from(&kind),
-                RubyMarkup::new(referent.as_ref()),
-                self.reason
-                    .evidence()
-                    .map_or(String::new(), |evidence| UnverifiedMarkup::new(evidence)
-                        .to_string())
-            ),
-            _ => formatter.write_str("No reason recorded"),
-        }
+        let stated = self
+            .reason
+            .kind()
+            .zip(self.reason.referent())
+            .map(|(kind, referent)| {
+                format!(
+                    "{} · {}{}",
+                    Label::from(&kind),
+                    RubyMarkup::new(referent.as_ref()),
+                    self.reason
+                        .evidence()
+                        .map_or(String::new(), |evidence| UnverifiedMarkup::new(evidence)
+                            .to_string())
+                )
+            });
+        formatter.write_str(stated.as_deref().unwrap_or("No reason recorded"))
     }
 }

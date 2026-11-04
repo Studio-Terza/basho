@@ -16,6 +16,10 @@ impl SuiteLine {
     const END: &str = "PHASE END ";
     const PASSED: &str = " passed (";
     const FAILED: &str = " failed (";
+    const STANDINGS: [(&str, Standing); 2] = [
+        (Self::PASSED, Standing::Passed),
+        (Self::FAILED, Standing::Failed),
+    ];
 
     pub fn told_to(self, ear: &mut impl SuiteEar) {
         match self {
@@ -25,28 +29,26 @@ impl SuiteLine {
             SuiteLine::Other => (),
         }
     }
-
-    fn finished(line: &str) -> Option<SuiteLine> {
-        let (name, rest) = line.strip_prefix(Self::CASE)?.split_once("]'")?;
-        let standing = [
-            (Self::PASSED, Standing::Passed),
-            (Self::FAILED, Standing::Failed),
-        ]
-        .into_iter()
-        .find(|(word, _)| rest.starts_with(word))
-        .map(|(_, standing)| standing)?;
-        Some(SuiteLine::Finished {
-            test: name.parse().ok()?,
-            standing,
-        })
-    }
 }
 
 impl FromStr for SuiteLine {
     type Err = std::convert::Infallible;
 
     fn from_str(line: &str) -> Result<SuiteLine, Self::Err> {
-        Ok(Self::finished(line)
+        let finished = line
+            .strip_prefix(Self::CASE)
+            .and_then(|case| case.split_once("]'"))
+            .and_then(|(name, rest)| {
+                let standing = Self::STANDINGS
+                    .into_iter()
+                    .find(|(word, _)| rest.starts_with(word))
+                    .map(|(_, standing)| standing)?;
+                Some(SuiteLine::Finished {
+                    test: name.parse().ok()?,
+                    standing,
+                })
+            });
+        Ok(finished
             .or_else(|| {
                 line.strip_prefix(Self::START)
                     .and_then(|name| name.parse().ok())

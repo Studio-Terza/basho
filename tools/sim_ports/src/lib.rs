@@ -1,4 +1,5 @@
 mod bounded;
+mod crash_folder;
 mod device;
 mod failure;
 mod phase_length;
@@ -9,6 +10,7 @@ use std::path::Path;
 use std::time::{Duration, SystemTime};
 
 use bounded::Bounded;
+use crash_folder::CrashFolder;
 use device::{Device, Udid};
 use sim_project::SimProject;
 use sim_suite::{CrashReports, SimFindings};
@@ -30,7 +32,10 @@ impl Sim {
         let started = SystemTime::now();
         let mut run = SuiteRun::default();
         let result = Self::driven(root, folder, &mut run);
-        run.closed(CrashReports::written_since(started), &result)
+        run.closed(
+            CrashReports::written_since(&CrashFolder::home().files(), started),
+            &result,
+        )
     }
 
     fn driven(root: &Path, folder: &Path, run: &mut SuiteRun) -> Result<(), Failure> {

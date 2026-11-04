@@ -18,18 +18,17 @@ impl fmt::Display for FactMarkup<'_> {
         write!(formatter, "{} ", RubyMarkup::new(self.0.text()))?;
         let evidence = self.0.evidence();
         let word = evidence.kind().word().lowered();
-        if let Some(source) = evidence.backing() {
-            write!(
-                formatter,
-                "<span class=\"checked\">{word} {}</span>",
-                source.checked()
-            )
-        } else {
-            write!(formatter, "<span class=\"unverified\">{word}: ")?;
-            evidence.reason().map_or(Ok(()), |reason| {
-                write!(formatter, "{}", RubyMarkup::new(reason))
-            })?;
-            formatter.write_str("</span>")
-        }
+        let marked = evidence.backing().map_or_else(
+            || {
+                format!(
+                    "<span class=\"unverified\">{word}: {}</span>",
+                    evidence
+                        .reason()
+                        .map_or(String::new(), |reason| RubyMarkup::new(reason).to_string())
+                )
+            },
+            |source| format!("<span class=\"checked\">{word} {}</span>", source.checked()),
+        );
+        formatter.write_str(&marked)
     }
 }
