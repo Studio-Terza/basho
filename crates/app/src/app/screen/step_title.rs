@@ -28,33 +28,38 @@ impl<'step> StepTitle<'step> {
     }
 }
 
+impl StepTitle<'_> {
+    fn shown(&self) -> Element {
+        match self.step.part() {
+            StepPart::Walk => rsx! { "Get to " {RubyView::new(self.place())} },
+            StepPart::Board => rsx! {
+                "Get on the " {TimeView::worded(self.step.leg().listed(End::Start), self.step.leg().mode().label().lowered())} " to " {RubyView::new(self.place())}
+            },
+            StepPart::Alight => rsx! { "Get off at " {RubyView::new(self.place())} },
+        }
+    }
+}
+
 impl IntoDynNode for StepTitle<'_> {
     fn into_dyn_node(self) -> DynamicNode {
-        let leg = self.step.leg();
-        let place = RubyView::new(self.place());
-        match self.step.part() {
-            StepPart::Walk => rsx! { "Get to " {place} },
-            StepPart::Board => rsx! {
-                "Get on the " {TimeView::worded(leg.listed(End::Start), leg.mode().label().lowered())} " to " {place}
-            },
-            StepPart::Alight => rsx! { "Get off at " {place} },
-        }
-        .into_dyn_node()
+        self.shown().into_dyn_node()
     }
 }
 
 impl fmt::Display for StepTitle<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let leg = self.step.leg();
-        let place = self.place_words();
         match self.step.part() {
-            StepPart::Walk => write!(formatter, "Get to {place}"),
+            StepPart::Walk => write!(formatter, "Get to {}", self.place_words()),
             StepPart::Board => write!(
                 formatter,
-                "Get on the {} to {place}",
-                leg.listed(End::Start).worded(leg.mode().label().lowered())
+                "Get on the {} to {}",
+                self.step
+                    .leg()
+                    .listed(End::Start)
+                    .worded(self.step.leg().mode().label().lowered()),
+                self.place_words()
             ),
-            StepPart::Alight => write!(formatter, "Get off at {place}"),
+            StepPart::Alight => write!(formatter, "Get off at {}", self.place_words()),
         }
     }
 }

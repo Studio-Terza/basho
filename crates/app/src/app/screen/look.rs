@@ -56,19 +56,15 @@ pub enum Look {
 
 impl Look {
     pub fn screen(screen: &Screen) -> Look {
-        if *screen == Screen::Map {
-            Look::ScreenFit
-        } else {
-            Look::ScreenPlain
-        }
+        Some(screen)
+            .filter(|screen| **screen == Screen::Map)
+            .map_or(Look::ScreenPlain, |_| Look::ScreenFit)
     }
 
     pub fn tab(chosen: &Screen, shown: &Screen) -> Look {
-        if chosen.tab() == shown.tab() {
-            Look::TabActive
-        } else {
-            Look::Tab
-        }
+        Some(chosen)
+            .filter(|chosen| chosen.tab() == shown.tab())
+            .map_or(Look::Tab, |_| Look::TabActive)
     }
 
     pub fn menu_day<Today>(current: Option<Today>) -> Look {

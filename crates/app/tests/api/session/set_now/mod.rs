@@ -59,7 +59,7 @@ impl Pressing {
                 SessionEvent::MarkDone(current).applied(&session);
             }
             let after_done = Self::current(&session);
-            if let Some(earlier) = spot(StepNumber::from_position(EARLIER)) {
+            if let Some(earlier) = spot(StepNumber::new(EARLIER)) {
                 SessionEvent::PlaceHere(earlier).applied(&session);
             }
             let after_here = Self::current(&session);
@@ -81,11 +81,11 @@ fn done_advances_the_current_step_and_i_am_here_moves_it_even_backward() {
     let trip = Drawing::BuiltIn.itinerary();
     let stage = Stage::on_schedule(&trip, WALKED).unwrap();
     let outcome = Pressing { stage }.outcome();
-    assert!(outcome.before > Some(StepNumber::from_position(EARLIER)));
+    assert!(outcome.before > Some(StepNumber::new(EARLIER)));
     let next = outcome
         .before
-        .map(|before| StepNumber::from_position(usize::from(before) + 1));
+        .map(|before| StepNumber::new(usize::from(before) + 1));
     assert_eq!(outcome.after_done, next);
-    assert_eq!(outcome.after_here, Some(StepNumber::from_position(EARLIER)));
+    assert_eq!(outcome.after_here, Some(StepNumber::new(EARLIER)));
     assert_eq!(outcome.after_tracking, outcome.after_here);
 }

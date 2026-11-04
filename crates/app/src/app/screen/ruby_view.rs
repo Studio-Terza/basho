@@ -11,12 +11,12 @@ pub struct RubyView<'text> {
 impl IntoDynNode for RubyView<'_> {
     fn into_dyn_node(self) -> DynamicNode {
         rsx! {
-            {self.text.segments().iter().map(|segment| match segment.reading() {
-                Some(reading) => rsx! {
+            {self.text.segments().iter().map(|segment| segment.reading().map_or_else(
+                || rsx! { "{segment.text()}" },
+                |reading| rsx! {
                     ruby { "{segment.text()}" rt { "{reading}" } }
                 },
-                None => rsx! { "{segment.text()}" },
-            })}
+            ))}
         }
         .into_dyn_node()
     }

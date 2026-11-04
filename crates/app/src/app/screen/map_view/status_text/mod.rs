@@ -29,11 +29,9 @@ impl IntoDynNode for StatusText<'_> {
     fn into_dyn_node(self) -> DynamicNode {
         let guidance = self.narration.guidance();
         let language = self.narration.language();
-        let quiet = if guidance.phase() == Phase::Preview {
-            "NOT STARTED"
-        } else {
-            "DAY DONE"
-        };
+        let quiet = Some(guidance.phase())
+            .filter(|phase| *phase == Phase::Preview)
+            .map_or("DAY DONE", |_| "NOT STARTED");
         guidance.stop().filter(|_| guidance.status().is_some()).map_or_else(
             || {
                 guidance.status().map_or_else(

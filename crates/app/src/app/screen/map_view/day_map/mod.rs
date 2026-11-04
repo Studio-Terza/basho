@@ -2,6 +2,7 @@ mod map_key_view;
 
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
+use guide::words::Label;
 use map_key_view::MapKeyView;
 use map_plan::{MapLevel, MapMode};
 use newtype::Newtype;
@@ -14,18 +15,18 @@ pub struct DayMapView<'view> {
 }
 
 impl DayMapView<'_> {
-    fn level_words(level: MapLevel) -> &'static str {
+    fn level_words(level: MapLevel) -> Label {
         match level {
-            MapLevel::Leg => "Leg",
-            MapLevel::Goal => "Goal",
-            MapLevel::Day => "Whole day",
+            MapLevel::Leg => Label::new("Leg"),
+            MapLevel::Goal => Label::new("Goal"),
+            MapLevel::Day => Label::new("Whole day"),
         }
     }
 
-    fn mode_words(mode: MapMode) -> &'static str {
+    fn mode_words(mode: MapMode) -> Label {
         match mode {
-            MapMode::Guide => "Explore",
-            MapMode::Explore => "Guide",
+            MapMode::Guide => Label::new("Explore"),
+            MapMode::Explore => Label::new("Guide"),
         }
     }
 }
@@ -42,10 +43,10 @@ impl IntoDynNode for DayMapView<'_> {
                     p { class: "map-failed", role: "alert", "The map could not start. The steps still work." }
                 })}
                 div { class: "map-controls", "data-overlay": "true",
-                    {(mode == MapMode::Guide).then(|| rsx! { span { class: "map-level", {Self::level_words(level)} } })}
+                    {(mode == MapMode::Guide).then(|| rsx! { span { class: "map-level", {Self::level_words(level).to_string()} } })}
                     button { class: "map-mode",
                         onclick: move |_| SessionEvent::SwitchMapMode.applied(&session),
-                        {Self::mode_words(mode)}
+                        {Self::mode_words(mode).to_string()}
                     }
                 }
                 {MapKeyView::new(self.session)}

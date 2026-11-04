@@ -7,7 +7,7 @@ use basho::app::visit::Landing;
 use basho::app::visit::Scroll;
 use basho::app::visit::Visit;
 
-const STEP: StepNumber = StepNumber::from_position(2);
+const STEP: StepNumber = StepNumber::new(2);
 const BROWSED: Focus = Focus::Browsing(Spot::new(DayNumber::new(4), STEP));
 
 #[test]

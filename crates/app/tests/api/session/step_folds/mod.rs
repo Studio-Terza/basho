@@ -7,7 +7,7 @@ use basho::app::step::StepState;
 
 const DAY: DayNumber = DayNumber::new(4);
 const OTHER_DAY: DayNumber = DayNumber::new(5);
-const STEP: StepNumber = StepNumber::from_position(1);
+const STEP: StepNumber = StepNumber::new(1);
 
 #[test]
 fn the_current_step_starts_open_and_a_tap_folds_it_in_place() {

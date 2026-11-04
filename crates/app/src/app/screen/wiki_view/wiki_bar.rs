@@ -7,6 +7,7 @@ use wiki::entry::Entry;
 use crate::app::history::ScrollTop;
 use crate::app::screen::origin_name::OriginName;
 use crate::app::screen::wiki_view::section_anchor::SectionAnchor;
+use crate::app::screen::wiki_view::section_index::SectionIndex;
 use crate::app::session::{Session, SessionEvent};
 use crate::app::step::Toward;
 use crate::app::visit::Screen;
@@ -61,7 +62,7 @@ impl IntoDynNode for WikiBar<'_> {
                             button { class: "section-jump",
                                 onclick: move |_| {
                                     let jumper = document::eval(Self::JUMP);
-                                    jumper.send(SectionAnchor::new(position).to_string()).unwrap_or_default();
+                                    jumper.send(SectionAnchor::new(SectionIndex::new(position)).to_string()).unwrap_or_default();
                                 },
                                 "{section.heading()}"
                             }

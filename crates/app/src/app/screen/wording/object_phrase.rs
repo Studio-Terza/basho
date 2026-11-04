@@ -1,9 +1,10 @@
+use super::markup::Markup;
 use newtype::Newtype;
 use std::fmt;
 
 #[derive(Newtype)]
 pub struct ObjectPhrase<'text> {
-    markup: &'text str,
+    markup: &'text Markup,
 }
 
 impl ObjectPhrase<'_> {

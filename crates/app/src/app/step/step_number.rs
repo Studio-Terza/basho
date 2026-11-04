@@ -5,7 +5,7 @@ pub struct StepNumber(usize);
 
 impl StepNumber {
     #[must_use]
-    pub const fn from_position(position: usize) -> StepNumber {
+    pub const fn new(position: usize) -> StepNumber {
         StepNumber(position + 1)
     }
 

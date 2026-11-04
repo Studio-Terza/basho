@@ -50,7 +50,7 @@ impl<'day> Step<'day> {
             })
             .enumerate()
             .map(|(position, step)| Step {
-                number: StepNumber::from_position(position),
+                number: StepNumber::new(position),
                 ..step
             })
             .collect()
@@ -78,13 +78,7 @@ impl<'day> Step<'day> {
 
     #[must_use]
     pub fn placing(&self) -> Placing {
-        Placing::new(
-            self.index,
-            match self.part {
-                StepPart::Board => Stage::Boarding,
-                StepPart::Walk | StepPart::Alight => Stage::Under,
-            },
-        )
+        Placing::new(self.index, self.part.stage())
     }
 
     #[must_use]

@@ -20,7 +20,7 @@ impl Stepper<'_> {
         let reach = Reach::of_target(target.as_ref());
         rsx! {
             button { class: "stepper {toward.class()}", "aria-label": "{toward}",
-                disabled: reach.flag(),
+                disabled: reach,
                 onclick: move |_| target.into_iter().for_each(|spot| session.browse(spot)),
                 "{toward.glyph()}"
             }

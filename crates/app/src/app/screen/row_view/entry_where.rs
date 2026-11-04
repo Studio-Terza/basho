@@ -40,11 +40,14 @@ impl EntryWhere {
 
 impl fmt::Display for EntryWhere {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let day = DayName::new(self.home.home_day());
         match self.place {
-            HomePlace::Day => write!(formatter, "{day}"),
-            HomePlace::Goal => write!(formatter, "{day} goal"),
-            HomePlace::Step(step) => write!(formatter, "{day} step {step}"),
+            HomePlace::Day => write!(formatter, "{}", DayName::new(self.home.home_day())),
+            HomePlace::Goal => write!(formatter, "{} goal", DayName::new(self.home.home_day())),
+            HomePlace::Step(step) => write!(
+                formatter,
+                "{} step {step}",
+                DayName::new(self.home.home_day())
+            ),
         }
     }
 }

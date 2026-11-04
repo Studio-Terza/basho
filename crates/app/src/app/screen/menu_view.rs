@@ -52,7 +52,7 @@ impl MenuView<'_> {
                 ol { class: "menu-goals",
                     {day.goals().iter().enumerate().map(|(position, goal)| {
                         let session = self.session.clone();
-                        let goal_number = GoalNumber::from_position(position);
+                        let goal_number = GoalNumber::new(position);
                         let last = goal.leg(End::Finish);
                         rsx! {
                             li {

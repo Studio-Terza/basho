@@ -28,20 +28,34 @@ impl<'view> PinButton<'view> {
     }
 }
 
-impl IntoDynNode for PinButton<'_> {
-    fn into_dyn_node(self) -> DynamicNode {
-        let spot = Spot::new(self.day.number(), self.step.number());
-        let session = self.session.clone();
-        let shown = (self.session.now().trip_date() == self.day.date()).then_some(self.state);
-        match shown {
+impl PinButton<'_> {
+    fn spot(&self) -> Spot {
+        Spot::new(self.day.number(), self.step.number())
+    }
+
+    fn shown(&self) -> Element {
+        match (self.session.now().trip_date() == self.day.date()).then_some(self.state) {
             None => rsx! {},
             Some(StepState::Current) => rsx! {
-                button { class: "step-set", onclick: move |_| SessionEvent::MarkDone(spot).applied(&session), "Done ›" }
+                button { class: "step-set", onclick: {
+                    let session = self.session.clone();
+                    let spot = self.spot();
+                    move |_| SessionEvent::MarkDone(spot).applied(&session)
+                }, "Done ›" }
             },
             Some(StepState::Done | StepState::Later) => rsx! {
-                button { class: "step-set", onclick: move |_| SessionEvent::PlaceHere(spot).applied(&session), "I'm here" }
+                button { class: "step-set", onclick: {
+                    let session = self.session.clone();
+                    let spot = self.spot();
+                    move |_| SessionEvent::PlaceHere(spot).applied(&session)
+                }, "I'm here" }
             },
         }
-        .into_dyn_node()
+    }
+}
+
+impl IntoDynNode for PinButton<'_> {
+    fn into_dyn_node(self) -> DynamicNode {
+        self.shown().into_dyn_node()
     }
 }

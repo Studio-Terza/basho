@@ -26,7 +26,7 @@ impl Landing {
                     .flat_map(Day::goals)
                     .position(|goal| goal.leg(End::Start) == first)
                     .map_or(Landing::Top, |position| {
-                        Landing::Goal(GoalNumber::from_position(position))
+                        Landing::Goal(GoalNumber::new(position))
                     })
             },
             |leg| {
@@ -49,13 +49,14 @@ impl Landing {
 
     #[must_use]
     pub fn scrolled(self, scroll: Scroll) -> Landing {
-        match (self, scroll) {
-            (Landing::Now, Scroll::Hold) => Landing::Held,
-            (Landing::Held, Scroll::Follow) => Landing::Now,
-            (
-                Landing::Now | Landing::Held | Landing::Top | Landing::Goal(_) | Landing::Step(_),
-                _,
-            ) => self,
+        match self {
+            Landing::Now => Some(scroll)
+                .filter(|scroll| *scroll == Scroll::Hold)
+                .map_or(self, |_| Landing::Held),
+            Landing::Held => Some(scroll)
+                .filter(|scroll| *scroll == Scroll::Follow)
+                .map_or(self, |_| Landing::Now),
+            Landing::Top | Landing::Goal(_) | Landing::Step(_) => self,
         }
     }
 

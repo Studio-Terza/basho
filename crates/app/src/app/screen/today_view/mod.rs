@@ -52,7 +52,7 @@ impl TodayView<'_> {
                 {DayHead::new(self.session, &guidance)}
                 {LinkedHere::new(self.session, EntryKey::Day(day.number()))}
                 {day.goals().iter().enumerate().map(|(position, goal)| {
-                    let number = GoalNumber::from_position(position);
+                    let number = GoalNumber::new(position);
                     let first = goal.leg(End::Start);
                     let last = goal.leg(End::Finish);
                     rsx! {

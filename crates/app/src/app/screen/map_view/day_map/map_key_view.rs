@@ -42,7 +42,7 @@ impl IntoDynNode for MapKeyView<'_> {
     fn into_dyn_node(self) -> DynamicNode {
         let shown = self.session.key_shown();
         rsx! {
-            {(!shown.is_empty()).then(|| rsx! {
+            {shown.first().map(|_| rsx! {
                 details { class: "map-key", "data-overlay": "true",
                     summary { "Key" }
                     ul {

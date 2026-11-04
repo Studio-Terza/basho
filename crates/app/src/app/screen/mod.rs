@@ -70,15 +70,16 @@ impl<'view> ScreenFrame<'view> {
                 .entry(id)
                 .map(|entry| WikiView::new(session, id, entry))
         });
-        entry.map_or_else(
-            || match self.screen.pane() {
-                Pane::Map => rsx! { {MapView::new(session)} },
-                Pane::Today => rsx! { {TodayView::new(session)} },
-                Pane::Trip => Self::trip_page(session),
-                Pane::Reports => rsx! { {ReportsView::new(session)} },
-            },
-            |view| rsx! { {view} },
-        )
+        entry.map_or_else(|| self.pane(self.screen.pane()), |view| rsx! { {view} })
+    }
+
+    fn pane(&self, pane: Pane) -> Element {
+        match pane {
+            Pane::Map => rsx! { {MapView::new(self.session)} },
+            Pane::Today => rsx! { {TodayView::new(self.session)} },
+            Pane::Trip => Self::trip_page(self.session),
+            Pane::Reports => rsx! { {ReportsView::new(self.session)} },
+        }
     }
 
     fn trip_page(session: &Session) -> Element {

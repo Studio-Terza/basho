@@ -22,8 +22,8 @@ use basho::app::visit::Screen;
 use crate::ui_check::{Drawing, Harness, Stage};
 
 const WALKED: Minutes = Minutes::new(1);
-const EARLIER: StepNumber = StepNumber::from_position(0);
-const LATER: StepNumber = StepNumber::from_position(1);
+const EARLIER: StepNumber = StepNumber::new(0);
+const LATER: StepNumber = StepNumber::new(1);
 
 thread_local! {
     static AFTER: RefCell<Option<After>> = const { RefCell::new(None) };

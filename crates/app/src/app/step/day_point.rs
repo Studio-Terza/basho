@@ -27,7 +27,7 @@ impl DayPoint {
         steps
             .iter()
             .filter(|_| guidance.phase() != Phase::Done)
-            .find(|step| step.index() == guidance.leg_index() && step.part() == part)
+            .find(|step| (step.index(), step.part()) == (guidance.leg_index(), part))
             .map_or(DayPoint::Finished, |step| DayPoint::At(step.number()))
     }
 
@@ -44,9 +44,8 @@ impl DayPoint {
     pub fn state_of(self, step: StepNumber) -> StepState {
         match self {
             DayPoint::Finished => StepState::Done,
-            DayPoint::At(current) if step < current => StepState::Done,
-            DayPoint::At(current) if step == current => StepState::Current,
-            DayPoint::At(_) | DayPoint::Ahead => StepState::Later,
+            DayPoint::At(current) => StepState::from(step.cmp(&current)),
+            DayPoint::Ahead => StepState::Later,
         }
     }
 
@@ -60,16 +59,17 @@ impl DayPoint {
 
     #[must_use]
     pub fn stepped(self, day: &Day, toward: Toward, itinerary: &Itinerary) -> Option<Spot> {
-        match (self, toward) {
-            (DayPoint::At(step), _) => Spot::new(day.number(), step).stepped(toward, itinerary),
-            (DayPoint::Ahead, Toward::Next) => Some(Spot::entering(day, Toward::Next)),
-            (DayPoint::Finished, Toward::Previous) => Some(Spot::entering(day, Toward::Previous)),
-            (DayPoint::Ahead, Toward::Previous) => {
-                Spot::entering(day, Toward::Next).stepped(toward, itinerary)
-            }
-            (DayPoint::Finished, Toward::Next) => {
-                Spot::entering(day, Toward::Previous).stepped(toward, itinerary)
-            }
+        match self {
+            DayPoint::At(step) => Spot::new(day.number(), step).stepped(toward, itinerary),
+            DayPoint::Ahead => Self::entered(day, Toward::Next, toward, itinerary),
+            DayPoint::Finished => Self::entered(day, Toward::Previous, toward, itinerary),
         }
+    }
+
+    fn entered(day: &Day, edge: Toward, toward: Toward, itinerary: &Itinerary) -> Option<Spot> {
+        let entry = Spot::entering(day, edge);
+        (toward == edge)
+            .then_some(entry)
+            .or_else(|| entry.stepped(toward, itinerary))
     }
 }

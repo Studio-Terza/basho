@@ -178,7 +178,7 @@ impl Stage {
     const BEFORE_RIDE: Minutes = Minutes::new(-5);
     const AFTER_START: Minutes = Minutes::new(1);
     const SEEN_BEFORE: Minutes = Minutes::new(1);
-    const SECOND_GOAL: GoalNumber = GoalNumber::from_position(1);
+    const SECOND_GOAL: GoalNumber = GoalNumber::new(1);
     const TRIP: [&str; 4] = [
         ".trip-view header h1",
         ".trip-picker .trip-open",
@@ -553,7 +553,7 @@ impl Stage {
 
     pub fn middle_of(day: &Day) -> Landing {
         let steps = Step::of_day(day).len();
-        Landing::Step(StepNumber::from_position(
+        Landing::Step(StepNumber::new(
             (0..steps)
                 .zip((0..steps).rev())
                 .filter(|(front, back)| front < back)

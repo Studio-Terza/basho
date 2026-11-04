@@ -1,5 +1,6 @@
 use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
+use guide::words::Label;
 use report::{Fact, Report, ReportText};
 
 pub struct ReportEntry<'view, Noted> {
@@ -12,7 +13,7 @@ impl<'view, Noted: Fn(&ReportText) + 'static> ReportEntry<'view, Noted> {
         ReportEntry { report, noted }
     }
 
-    fn fact(&self, name: &'static str, fact: Fact) -> Element {
+    fn fact(&self, name: Label, fact: Fact) -> Element {
         self.report
             .capture()
             .fact(fact)
@@ -23,10 +24,10 @@ impl<'view, Noted: Fn(&ReportText) + 'static> ReportEntry<'view, Noted> {
 impl<Noted: Fn(&ReportText) + 'static> IntoDynNode for ReportEntry<'_, Noted> {
     fn into_dyn_node(self) -> DynamicNode {
         let number = self.report.number();
-        let screen = self.fact("Screen", Fact::Screen);
-        let step = self.fact("Step", Fact::Step);
-        let position = self.fact("Position", Fact::Position);
-        let tracker = self.fact("Tracker", Fact::Tracker);
+        let screen = self.fact(Label::new("Screen"), Fact::Screen);
+        let step = self.fact(Label::new("Step"), Fact::Step);
+        let position = self.fact(Label::new("Position"), Fact::Position);
+        let tracker = self.fact(Label::new("Tracker"), Fact::Tracker);
         let noted = self.noted;
         let capture = self.report.capture();
         let decisions = capture.decisions().len();

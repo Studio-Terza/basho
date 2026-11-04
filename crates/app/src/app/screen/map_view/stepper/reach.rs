@@ -1,3 +1,5 @@
+use dioxus::dioxus_core::{AttributeValue, IntoAttributeValue};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Reach {
     Open,
@@ -8,11 +10,13 @@ impl Reach {
     pub fn of_target<Target>(target: Option<Target>) -> Reach {
         target.map_or(Reach::End, |_| Reach::Open)
     }
+}
 
-    pub fn flag(self) -> Option<bool> {
+impl IntoAttributeValue for Reach {
+    fn into_value(self) -> AttributeValue {
         match self {
-            Reach::Open => None,
-            Reach::End => Some(true),
+            Reach::Open => AttributeValue::None,
+            Reach::End => AttributeValue::Bool(true),
         }
     }
 }

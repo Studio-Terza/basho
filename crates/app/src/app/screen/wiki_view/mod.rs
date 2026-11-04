@@ -1,4 +1,5 @@
 mod section_anchor;
+mod section_index;
 mod wiki_bar;
 
 use dioxus::dioxus_core::DynamicNode;
@@ -13,6 +14,7 @@ use crate::app::screen::ruby_view::RubyView;
 use crate::app::screen::unverified_mark::UnverifiedMark;
 use crate::app::session::Session;
 use section_anchor::SectionAnchor;
+use section_index::SectionIndex;
 use wiki_bar::WikiBar;
 
 pub struct WikiView<'view> {
@@ -41,7 +43,7 @@ impl IntoDynNode for WikiView<'_> {
                     {entry.tagline().map(|tagline| rsx! { p { class: "tagline", {LinkedView::new(self.session, tagline)} } })}
                 }
                 {entry.sections().iter().enumerate().map(|(position, section)| rsx! {
-                    section { id: "{SectionAnchor::new(position)}",
+                    section { id: "{SectionAnchor::new(SectionIndex::new(position))}",
                         h2 { "{section.heading()}" }
                         {section.rows().iter().map(|row| rsx! { {RowView::new(self.session, row)} })}
                     }

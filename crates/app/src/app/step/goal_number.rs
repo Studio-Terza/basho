@@ -5,7 +5,7 @@ pub struct GoalNumber(usize);
 
 impl GoalNumber {
     #[must_use]
-    pub const fn from_position(position: usize) -> GoalNumber {
+    pub const fn new(position: usize) -> GoalNumber {
         GoalNumber(position + 1)
     }
 

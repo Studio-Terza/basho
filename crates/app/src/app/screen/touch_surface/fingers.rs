@@ -9,20 +9,19 @@ pub enum Fingers {
 
 impl Fingers {
     pub fn touching(event: &Event<TouchData>) -> Fingers {
-        match event.data().touches().as_slice() {
-            [_, _, ..] => Fingers::Pair,
-            [] | [_] => Fingers::Single,
-        }
+        event
+            .data()
+            .touches()
+            .get(1)
+            .map_or(Fingers::Single, |_| Fingers::Pair)
     }
 
     pub fn spread(event: &Event<TouchData>) -> Option<Pixels> {
-        match event.data().touches().as_slice() {
-            [first, second, ..] => {
-                let across = first.client_coordinates().x - second.client_coordinates().x;
-                let down = first.client_coordinates().y - second.client_coordinates().y;
-                Some(Pixels::new(across.hypot(down)))
-            }
-            [] | [_] => None,
-        }
+        let touches = event.data().touches();
+        touches.first().zip(touches.get(1)).map(|(first, second)| {
+            let across = first.client_coordinates().x - second.client_coordinates().x;
+            let down = first.client_coordinates().y - second.client_coordinates().y;
+            Pixels::new(across.hypot(down))
+        })
     }
 }
