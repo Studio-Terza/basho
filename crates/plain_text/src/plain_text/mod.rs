@@ -4,26 +4,24 @@ use std::str::FromStr;
 
 use serde::Deserialize;
 
+mod letter;
 mod not_plain;
 
+use letter::Letter;
 pub use not_plain::NotPlain;
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
 #[serde(try_from = "String")]
 pub struct PlainText(String);
 
-impl PlainText {
-    const KEPT: [char; 3] = ['\n', '\r', '\t'];
-}
-
 impl FromStr for PlainText {
     type Err = NotPlain;
 
     fn from_str(text: &str) -> Result<PlainText, NotPlain> {
         text.chars()
-            .filter(char::is_ascii_control)
-            .find(|letter| Self::KEPT.iter().all(|kept| kept != letter))
-            .map_or_else(|| Ok(PlainText(text.to_owned())), |_| Err(NotPlain))
+            .map(Letter::from)
+            .try_for_each(Letter::plain)
+            .map(|()| PlainText(text.to_owned()))
     }
 }
 

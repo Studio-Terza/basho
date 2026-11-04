@@ -19,6 +19,13 @@ fn text_with_newlines_and_japanese_is_plain() {
         shown.split(['\r', '\n', '\t']).collect::<Vec<&str>>(),
         ["{仙台|せんだい}", "", "", "line"]
     );
+    assert_eq!(
+        shown
+            .chars()
+            .filter(char::is_ascii_control)
+            .collect::<Vec<char>>(),
+        ['\r', '\n', '\t']
+    );
 }
 
 #[test]
