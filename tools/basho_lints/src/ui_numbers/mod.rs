@@ -19,11 +19,12 @@ impl UiNumbers {
         CrateName::new("layout"),
         CrateName::new("menu"),
     ];
-    const OWNERS: [&str; 7] = [
+    const OWNERS: [&str; 8] = [
         "crates/app/src/app/session/measure/",
         "crates/app/src/app/session/hand/",
         "crates/layout/src/measure/",
         "crates/layout/src/scale/",
+        "crates/layout/src/mark_size.rs",
         "crates/layout/src/motion.rs",
         "crates/layout/src/panel.rs",
         "crates/layout/src/touch.rs",

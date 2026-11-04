@@ -2,7 +2,7 @@ use dioxus::dioxus_core::DynamicNode;
 use dioxus::prelude::*;
 use guide::plane::PlanePoint;
 
-use super::MapMark;
+use crate::map_mark::MapMark;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct MarkAt {

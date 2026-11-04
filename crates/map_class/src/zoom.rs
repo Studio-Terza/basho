@@ -1,11 +1,3 @@
-mod land_kind;
-mod place_rank;
-mod poi_group;
-
-pub use land_kind::LandKind;
-pub use place_rank::PlaceRank;
-pub use poi_group::PoiGroup;
-
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Zoom(u8);
 

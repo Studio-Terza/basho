@@ -3,7 +3,7 @@ use std::fmt;
 
 use super::shape::Shape;
 use super::tone::Tone;
-use layout::measure::MarkSize;
+use layout::MarkSize;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Look {

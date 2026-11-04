@@ -2,8 +2,9 @@ use std::collections::BTreeMap;
 
 use dioxus::prelude::*;
 use guide::plane::{Pixels, PlanePoint};
-use layout::measure::MarkSize;
-use map_plan::map_mark::{MapMark, MarkAt};
+use layout::MarkSize;
+use map_plan::MapMark;
+use map_plan::MarkAt;
 
 #[test]
 fn every_mark_looks_different_in_greyscale() {

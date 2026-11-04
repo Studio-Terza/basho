@@ -1,10 +1,11 @@
 mod bits;
 mod key_entry;
 mod map_level;
-pub mod map_mark;
+mod map_mark;
 mod map_sent;
 mod map_sight;
 mod map_text;
+mod mark_at;
 mod mark_source;
 mod own_layer;
 mod picked_mark;
@@ -20,8 +21,10 @@ use guide::words::Spelling;
 use bits::MapBounds;
 pub use key_entry::KeyEntry;
 pub use map_level::{MapLevel, MapMode, PinchWay};
+pub use map_mark::MapMark;
 pub use map_sent::{MapSent, MapUpdate};
 pub use map_sight::MapSight;
+pub use mark_at::MarkAt;
 use mark_source::{
     Catches, DayEnds, GoalMarks, LandmarkMarks, LegEnds, LoopMarks, MarkSource, NoPathMarks, Stops,
     TripMarks,

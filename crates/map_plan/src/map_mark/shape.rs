@@ -6,7 +6,7 @@ use guide::plane::Pixels;
 use guide::plane::PlanePoint;
 
 use guide::plane::Halving;
-use layout::measure::MarkSize;
+use layout::MarkSize;
 
 use super::look::Look;
 
