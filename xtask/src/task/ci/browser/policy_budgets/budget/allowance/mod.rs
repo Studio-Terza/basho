@@ -25,8 +25,8 @@ impl Allowance {
 
     pub fn portion_of(&self, parent: &Spelling, whole: Duration) -> Option<Duration> {
         match self {
-            Allowance::PartOf { of, percent } if of == parent => Some(percent.portion_of(whole)),
-            Allowance::PartOf { .. } | Allowance::Whole { .. } => None,
+            Allowance::PartOf { of, percent } => (of == parent).then(|| percent.portion_of(whole)),
+            Allowance::Whole { .. } => None,
         }
     }
 }

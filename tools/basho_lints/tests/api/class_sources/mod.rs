@@ -61,6 +61,6 @@ fn closed_markup_passes_and_instance_data_is_refused() {
     };
     let closed = ClassSources::report(&[parsed(CLOSED)]);
     let open = ClassSources::report(&[parsed(OPEN)]).to_string();
-    assert!(closed.is_clean(), "{closed}");
+    assert_eq!(closed.unclean().map(|report| report.to_string()), None);
     assert_eq!(open.lines().skip(1).count(), OPEN_COUNT, "{open}");
 }

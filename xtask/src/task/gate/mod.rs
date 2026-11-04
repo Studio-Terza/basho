@@ -11,6 +11,10 @@ use std::env;
 use std::fmt::Display;
 use std::fs;
 use std::io::Write;
+
+use file_ports::Files;
+
+use crate::task::ports::Host;
 use std::path::{Path, PathBuf};
 use std::time::{Instant, SystemTime};
 
@@ -44,17 +48,21 @@ impl Gate {
     const CACHE: &str = "Library/Caches/ms-playwright";
     pub(crate) const ARTIFACTS: &str = "target/procedures";
 
-    pub fn run(workspace: &Workspace, flags: impl Iterator<Item = Flag>) -> Result<(), Failure> {
+    pub fn run(
+        workspace: &Workspace,
+        flags: impl Iterator<Item = Flag>,
+        host: &mut Host<'_, impl Files, impl Write>,
+    ) -> Result<(), Failure> {
         let chromium = Self::chromium()?;
         let commit = Git::head(workspace)?;
         let tree = Git::tree(workspace)?;
         let record = Record::started(commit.clone(), tree, &chromium, SystemTime::now());
         let started = Instant::now();
-        let result = Ci::run_with(workspace, flags, Some(&chromium))
+        let result = Ci::run_with(workspace, flags, Some(&chromium), host)
             .and_then(|()| Self::evidence_counts(workspace));
         let elapsed = started.elapsed();
         let outcome = Outcome::from(&result);
-        let status = Self::posted(workspace, &commit, Posting::decide(tree, &outcome));
+        let status = Self::posted(workspace, &commit, outcome.posting(tree));
         println!("gate: {status:?} for {commit}");
         let counts = result.as_ref().ok().copied();
         let finished = record.finished(elapsed, outcome, status, counts);

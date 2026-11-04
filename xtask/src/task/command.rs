@@ -1,12 +1,15 @@
 use std::collections::BTreeSet;
+use std::io::Write;
 use std::str::FromStr;
 
+use file_ports::Files;
 use meta_xtask::Task as Shared;
 use strum::VariantNames;
 
 use crate::task::Task;
 use crate::task::failure::Failure;
 use crate::task::flag::Flag;
+use crate::task::ports::Host;
 use guide::words::Spelling;
 use newtype::Newtype;
 
@@ -46,9 +49,13 @@ impl Command {
         )))
     }
 
-    pub fn run(self, flags: impl Iterator<Item = Flag>) -> Result<(), Failure> {
+    pub fn run(
+        self,
+        flags: impl Iterator<Item = Flag>,
+        host: &mut Host<'_, impl Files, impl Write>,
+    ) -> Result<(), Failure> {
         match self {
-            Command::Basho(task) => task.run(flags),
+            Command::Basho(task) => task.run(flags, host),
             Command::Shared(task) => task
                 .run(flags.map(Flag::into_inner))
                 .map_err(Failure::shared),

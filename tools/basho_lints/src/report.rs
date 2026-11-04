@@ -1,6 +1,8 @@
 use std::fmt;
 
+use crate::SourceRule;
 use crate::failure::Failure;
+use crate::source_file::SourceFile;
 use crate::violation::Violation;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -19,16 +21,18 @@ impl Report {
     }
 
     #[must_use]
-    pub fn is_clean(&self) -> bool {
-        self.violations.is_empty()
+    pub fn found<Rule: SourceRule>(files: &[SourceFile]) -> Option<Report> {
+        Rule::report(files).unclean()
+    }
+
+    #[must_use]
+    pub fn unclean(self) -> Option<Report> {
+        Some(self).filter(|report| matches!(report.violations.as_slice(), [_, ..]))
     }
 
     pub fn verdict(self) -> Result<(), Failure> {
-        if self.is_clean() {
-            Ok(())
-        } else {
-            Err(Failure::Lint(vec![self]))
-        }
+        self.unclean()
+            .map_or(Ok(()), |report| Err(Failure::Lint(vec![report])))
     }
 }
 

@@ -1,3 +1,4 @@
+mod boundary;
 pub mod catch_import;
 pub mod chromium;
 pub mod ci;
@@ -18,10 +19,15 @@ mod workspace;
 
 pub use command::Command;
 
+use std::io::Write;
+
 use basho_lints::class_sources::ClassSources;
 use basho_lints::ownership::Ownership;
 use basho_lints::ui_numbers::UiNumbers;
 use basho_lints::{SourceRule, SourceTree};
+use file_ports::Files;
+
+use crate::task::ports::Host;
 use strum::{EnumString, VariantNames};
 use style_lints::SheetRule;
 use style_lints::style_kinds::StyleKinds;
@@ -66,16 +72,20 @@ pub enum Task {
 }
 
 impl Task {
-    pub fn run(self, flags: impl Iterator<Item = Flag>) -> Result<(), Failure> {
+    pub fn run(
+        self,
+        flags: impl Iterator<Item = Flag>,
+        host: &mut Host<'_, impl Files, impl Write>,
+    ) -> Result<(), Failure> {
         let workspace = Workspace::locate();
         match self {
             Task::Browser => Ci::browser(&workspace, None),
             Task::CatchImport => CatchImport::import_catches(&workspace),
-            Task::Ci => Ci::run(&workspace, flags),
+            Task::Ci => Ci::run(&workspace, flags, host),
             Task::FuzzTrip => FuzzTrip::from_flags(flags).campaign(&workspace),
-            Task::Gate => Gate::run(&workspace, flags),
-            Task::Lint => Lint::all(&workspace),
-            Task::Mutants => Mutants::run(&workspace, flags.collect()),
+            Task::Gate => Gate::run(&workspace, flags, host),
+            Task::Lint => Lint::all(&workspace, host),
+            Task::Mutants => Mutants::run(&workspace, flags.collect(), host),
             Task::Ownership => {
                 Ok(Ownership::report(&SourceTree::files_under(workspace.root())?).verdict()?)
             }
@@ -94,7 +104,7 @@ impl Task {
             }
             Task::Testflight => Ok(Testflight::run(workspace.root())?),
             Task::TileBuild => TileBuild::write_archive(&workspace),
-            Task::TripCheck => TripCheck::print_problems(&workspace),
+            Task::TripCheck => TripCheck::print_problems(&workspace, flags, host),
             Task::UiNumbers => {
                 Ok(UiNumbers::report(&SourceTree::files_under(workspace.root())?).verdict()?)
             }

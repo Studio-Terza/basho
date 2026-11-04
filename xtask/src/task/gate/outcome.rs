@@ -1,12 +1,22 @@
 use std::error::Error;
 
-use crate::task::gate::Detail;
+use crate::task::gate::{Detail, Posting, Tree};
 
 #[derive(Clone, Debug, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Outcome {
     Passed,
     Failed(Detail),
+}
+
+impl Outcome {
+    #[must_use]
+    pub fn posting(&self, tree: Tree) -> Posting {
+        match self {
+            Outcome::Failed(_) => Posting::WithheldFailure,
+            Outcome::Passed => tree.posting(),
+        }
+    }
 }
 
 impl<Passed, Problem: Error> From<&Result<Passed, Problem>> for Outcome {
