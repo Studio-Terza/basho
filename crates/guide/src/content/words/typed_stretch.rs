@@ -31,30 +31,34 @@ impl TypedStretch {
         self.index_range.clone()
     }
 
-    fn opens(text: &str, at_index: usize) -> bool {
-        !text
+    fn opens(text: &str, at_index: usize) -> Option<&str> {
+        let before = text
             .get(..at_index)
-            .and_then(|before| before.chars().next_back())
-            .is_some_and(|letter| {
-                letter.is_ascii_alphanumeric() || Self::FIGURE_MARKS.contains(&letter)
-            })
+            .and_then(|before| before.chars().next_back());
+        before
+            .filter(char::is_ascii_alphanumeric)
+            .or(before.filter(|letter| Self::FIGURE_MARKS.contains(letter)))
+            .map_or_else(|| text.get(at_index..), |_| None)
     }
 
     fn clock_length(text: &str, figure: &Figure) -> Option<usize> {
         let clock_end = AsRef::<Spelling>::as_ref(figure).len() + Self::CLOCK_TAIL_LENGTH;
         SaidClock::read(text.get(..clock_end)?)?;
-        (!text
-            .get(clock_end..)?
-            .starts_with(|letter: char| letter.is_ascii_digit() || letter == ':'))
-        .then_some(clock_end)
+        let after = text.get(clock_end..)?.chars().next();
+        after
+            .filter(char::is_ascii_digit)
+            .or(after.filter(|letter| *letter == ':'))
+            .is_none()
+            .then_some(clock_end)
     }
 
     fn distance_length(text: &str, figure_length: usize) -> Option<usize> {
         let rest = text.get(figure_length..)?;
         let unit = rest.strip_prefix(' ').unwrap_or(rest);
-        let unit_end = unit
-            .find(|letter: char| !letter.is_ascii_alphanumeric())
-            .unwrap_or(unit.len());
+        let unit_end = unit.len()
+            - unit
+                .trim_start_matches(|letter: char| letter.is_ascii_alphanumeric())
+                .len();
         unit.get(..unit_end)?.parse::<DistanceUnit>().ok()?;
         Some(text.len() - unit.len() + unit_end)
     }
@@ -79,10 +83,9 @@ impl FromStr for TypedStretch {
 
     fn from_str(text: &str) -> Result<TypedStretch, ContentError> {
         text.char_indices()
-            .filter(|(at_index, letter)| letter.is_ascii_digit() && Self::opens(text, *at_index))
+            .filter(|(_, letter)| letter.is_ascii_digit())
             .find_map(|(at_index, _)| {
-                text.get(at_index..)
-                    .and_then(|rest| Self::at_start(rest, at_index))
+                Self::opens(text, at_index).and_then(|rest| Self::at_start(rest, at_index))
             })
             .ok_or_else(|| ContentError::BadMeasure(Written::new(text.to_owned())))
     }

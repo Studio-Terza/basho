@@ -28,32 +28,29 @@ impl CompassPoint {
 
     #[must_use]
     pub fn center(self) -> Bearing {
-        Bearing::new(
-            match self {
-                CompassPoint::N => Self::NORTH,
-                CompassPoint::NE => Self::NORTH_EAST,
-                CompassPoint::E => Self::EAST,
-                CompassPoint::SE => Self::SOUTH_EAST,
-                CompassPoint::S => Self::SOUTH,
-                CompassPoint::SW => Self::SOUTH_WEST,
-                CompassPoint::W => Self::WEST,
-                CompassPoint::NW => Self::NORTH_WEST,
-            }
-            .degrees(),
-        )
+        match self {
+            CompassPoint::N => Bearing::new(Self::NORTH.degrees()),
+            CompassPoint::NE => Bearing::new(Self::NORTH_EAST.degrees()),
+            CompassPoint::E => Bearing::new(Self::EAST.degrees()),
+            CompassPoint::SE => Bearing::new(Self::SOUTH_EAST.degrees()),
+            CompassPoint::S => Bearing::new(Self::SOUTH.degrees()),
+            CompassPoint::SW => Bearing::new(Self::SOUTH_WEST.degrees()),
+            CompassPoint::W => Bearing::new(Self::WEST.degrees()),
+            CompassPoint::NW => Bearing::new(Self::NORTH_WEST.degrees()),
+        }
     }
 
     #[must_use]
     pub fn words(self) -> Label {
-        Label::new(match self {
-            CompassPoint::N => "NORTH",
-            CompassPoint::NE => "NORTH-EAST",
-            CompassPoint::E => "EAST",
-            CompassPoint::SE => "SOUTH-EAST",
-            CompassPoint::S => "SOUTH",
-            CompassPoint::SW => "SOUTH-WEST",
-            CompassPoint::W => "WEST",
-            CompassPoint::NW => "NORTH-WEST",
-        })
+        match self {
+            CompassPoint::N => Label::new("NORTH"),
+            CompassPoint::NE => Label::new("NORTH-EAST"),
+            CompassPoint::E => Label::new("EAST"),
+            CompassPoint::SE => Label::new("SOUTH-EAST"),
+            CompassPoint::S => Label::new("SOUTH"),
+            CompassPoint::SW => Label::new("SOUTH-WEST"),
+            CompassPoint::W => Label::new("WEST"),
+            CompassPoint::NW => Label::new("NORTH-WEST"),
+        }
     }
 }

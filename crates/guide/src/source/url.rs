@@ -9,9 +9,14 @@ impl Url {
     const PLANS: &'static str = "planning/";
 
     #[must_use]
-    pub fn is_planning(&self) -> bool {
-        let file = self.0.split('#').next().unwrap_or(&self.0);
-        file.starts_with(Self::PLANS)
+    pub fn is_planning(&self) -> Option<&Url> {
+        Some(self).filter(|url| {
+            url.0
+                .split('#')
+                .next()
+                .unwrap_or(&url.0)
+                .starts_with(Self::PLANS)
+        })
     }
 
     #[must_use]
@@ -33,10 +38,10 @@ impl TryFrom<String> for Url {
     type Error = Label;
 
     fn try_from(text: String) -> Result<Url, Label> {
-        if text.trim().is_empty() {
-            Err(Label::new("a source needs an address"))
-        } else {
-            Ok(Url(text))
-        }
+        text.trim()
+            .chars()
+            .next()
+            .map(|_| Url(text))
+            .ok_or_else(|| Label::new("a source needs an address"))
     }
 }

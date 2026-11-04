@@ -65,7 +65,7 @@ impl RubyText {
     }
 
     #[must_use]
-    pub fn parts_at(&self, at_index: usize) -> bool {
+    pub fn parts_at(&self, at_index: usize) -> Option<usize> {
         self.segments
             .iter()
             .scan(0, |start_index, segment| {
@@ -73,12 +73,15 @@ impl RubyText {
                 let first_index = *start_index;
                 *start_index += length;
                 Some(
-                    segment.reading().is_some()
-                        && first_index < at_index
-                        && at_index < first_index + length,
+                    segment
+                        .reading()
+                        .filter(|_| (first_index + 1..first_index + length).contains(&at_index)),
                 )
             })
-            .all(|inside| !inside)
+            .flatten()
+            .next()
+            .is_none()
+            .then_some(at_index)
     }
 
     #[must_use]
@@ -98,10 +101,12 @@ impl RubyText {
     }
 
     #[must_use]
-    pub fn ends_like(&self, other: &RubyText) -> bool {
-        self.text(Reading::Written)
-            .to_lowercase()
-            .ends_with(&other.text(Reading::Written).to_lowercase())
+    pub fn ends_like(&self, other: &RubyText) -> Option<&RubyText> {
+        Some(self).filter(|text| {
+            text.text(Reading::Written)
+                .to_lowercase()
+                .ends_with(&other.text(Reading::Written).to_lowercase())
+        })
     }
 
     #[must_use]
@@ -109,10 +114,7 @@ impl RubyText {
         Spelling::new(
             self.segments
                 .iter()
-                .map(|segment| match reading {
-                    Reading::Written => segment.text().as_ref(),
-                    Reading::Spoken => segment.reading().unwrap_or(segment.text()).as_ref(),
-                })
+                .map(|segment| segment.shown(reading).as_ref())
                 .collect::<String>(),
         )
     }
@@ -146,7 +148,7 @@ impl TryFrom<String> for RubyText {
                 segments: groups
                     .into_iter()
                     .flatten()
-                    .filter(|segment| !segment.text().is_empty())
+                    .filter(|segment| segment.text().chars().next().is_some())
                     .collect(),
             })
     }

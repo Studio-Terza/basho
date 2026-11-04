@@ -17,16 +17,22 @@ impl TryFrom<String> for Words {
     type Error = ContentError;
 
     fn try_from(text: String) -> Result<Words, ContentError> {
-        let ruby = RubyText::try_from(text.clone())
-            .map_err(|error| ContentError::Unread(Written::new(error.to_string())))?;
+        RubyText::try_from(text.clone())
+            .map_err(|error| ContentError::Unread(Written::new(error.to_string())))
+            .and_then(|ruby| Words::kinded(ruby, Written::new(text)))
+    }
+}
+
+impl Words {
+    fn kinded(ruby: RubyText, text: Written) -> Result<Words, ContentError> {
         match ruby
             .text(Reading::Written)
             .parse::<TypedStretch>()
             .as_ref()
             .map(TypedStretch::kind)
         {
-            Ok(StretchKind::Clock) => Err(ContentError::ClockInWords(Written::new(text))),
-            Ok(StretchKind::Distance) => Err(ContentError::DistanceInWords(Written::new(text))),
+            Ok(StretchKind::Clock) => Err(ContentError::ClockInWords(text)),
+            Ok(StretchKind::Distance) => Err(ContentError::DistanceInWords(text)),
             Err(_) => Ok(Words(ruby)),
         }
     }

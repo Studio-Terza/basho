@@ -113,11 +113,17 @@ impl Sum for Distance {
 
 impl fmt::Display for Distance {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if self.0 < Self::METERS_PER_KILOMETER {
-            let rounded = (self.0 / Self::ROUNDING_METERS).round() * Self::ROUNDING_METERS;
-            write!(formatter, "{rounded:.0} m")
-        } else {
-            write!(formatter, "{:.1} km", self.kilometers().amount())
-        }
+        formatter.write_str(
+            &Some(self.0)
+                .filter(|meters| *meters < Self::METERS_PER_KILOMETER)
+                .map_or_else(
+                    || format!("{:.1} km", self.kilometers().amount()),
+                    |meters| {
+                        let rounded =
+                            (meters / Self::ROUNDING_METERS).round() * Self::ROUNDING_METERS;
+                        format!("{rounded:.0} m")
+                    },
+                ),
+        )
     }
 }

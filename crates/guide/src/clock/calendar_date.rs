@@ -15,8 +15,12 @@ impl CalendarDate {
     const SHORT: &str = "%a %b %-d";
 
     #[must_use]
-    pub fn is_day_after(self, previous: CalendarDate) -> bool {
-        previous.0.succ_opt() == Some(self.0)
+    pub fn is_day_after(self, previous: CalendarDate) -> Option<CalendarDate> {
+        previous
+            .0
+            .succ_opt()
+            .filter(|next| *next == self.0)
+            .map(|_| self)
     }
 
     #[must_use]

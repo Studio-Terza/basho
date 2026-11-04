@@ -8,12 +8,10 @@ pub struct Figure(Spelling);
 
 impl Figure {
     const MARKS: [char; 2] = [',', '.'];
+    const RUN: [char; 12] = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ',', '.'];
 
     pub(super) fn leading(text: &str) -> Option<Figure> {
-        let length = text
-            .find(|letter: char| !letter.is_ascii_digit() && !Self::MARKS.contains(&letter))
-            .unwrap_or(text.len());
-        text.get(..length)
+        text.strip_suffix(text.trim_start_matches(Self::RUN))
             .map(|digits| digits.trim_end_matches(Self::MARKS))
             .filter(|digits| digits.starts_with(|letter: char| letter.is_ascii_digit()))
             .map(|digits| Figure(Spelling::new(digits.to_owned())))

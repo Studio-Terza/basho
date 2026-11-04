@@ -31,7 +31,7 @@ impl<'trip> WalkScene<'trip> {
                     .iter()
                     .enumerate()
                     .filter(|(_, leg)| {
-                        leg.mode() == guide::leg::Mode::Walk && !leg.line().is_sketch()
+                        leg.mode() == guide::leg::Mode::Walk && leg.line().is_sketch().is_none()
                     })
                     .map(move |(position, leg)| WalkScene {
                         day,

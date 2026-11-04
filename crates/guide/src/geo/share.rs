@@ -12,11 +12,11 @@ impl Share {
         part: Amount,
         whole: Amount,
     ) -> Share {
-        Share(if whole > Amount::default() {
-            (part / whole).clamp(0.0, 1.0)
-        } else {
-            0.0
-        })
+        Share(
+            Some(whole)
+                .filter(|whole| *whole > Amount::default())
+                .map_or(0.0, |whole| (part / whole).clamp(0.0, 1.0)),
+        )
     }
 
     #[must_use]

@@ -1,6 +1,7 @@
 mod annotated_pair;
 mod script;
 
+use crate::reading::Reading;
 use crate::ruby_text::ruby_error::RubyError;
 use crate::words::{Spelling, Written};
 pub use annotated_pair::AnnotatedPair;
@@ -15,35 +16,46 @@ pub enum Segment {
 impl Segment {
     #[must_use]
     pub fn joined_onto(kept: Vec<Segment>, next: Segment) -> Vec<Segment> {
-        let open = matches!(kept.last(), Some(Segment::Plain { .. }));
-        match (open, &next) {
-            (_, Segment::Plain { text }) if text.is_empty() => kept,
-            (true, Segment::Plain { text }) => kept
-                .iter()
-                .take(kept.len() - 1)
-                .cloned()
-                .chain(kept.last().map(|before| Segment::Plain {
-                    text: Spelling::new(format!("{}{text}", before.text())),
-                }))
-                .collect(),
-            _ => kept.into_iter().chain([next]).collect(),
+        match &next {
+            Segment::Plain { text } => Self::plain_onto(&kept, text),
+            Segment::Ruby { .. } => kept.into_iter().chain([next]).collect(),
         }
     }
 
+    fn plain_onto(kept: &[Segment], text: &Spelling) -> Vec<Segment> {
+        let open = kept
+            .last()
+            .filter(|last| matches!(last, Segment::Plain { .. }));
+        let base = kept.len() - open.map_or(0, |_| 1);
+        let tail = Segment::Plain {
+            text: Spelling::new(format!(
+                "{}{text}",
+                open.map_or(String::new(), |before| before.text().to_string())
+            )),
+        };
+        text.chars().next().map_or_else(
+            || kept.to_vec(),
+            |_| kept.iter().take(base).cloned().chain([tail]).collect(),
+        )
+    }
+
     fn plain(text: &str) -> Result<Segment, RubyError> {
-        if text
-            .chars()
+        text.chars()
             .map(Script::from)
-            .any(|script| script == Script::Kanji)
-        {
-            Err(RubyError::UnreadKanji(Written::new(text.to_owned())))
-        } else if text.contains(['}', '|']) {
-            Err(RubyError::StrayMarkup(Written::new(text.to_owned())))
-        } else {
-            Ok(Segment::Plain {
-                text: Spelling::new(text.to_owned()),
+            .find(|script| *script == Script::Kanji)
+            .map(|_| RubyError::UnreadKanji(Written::new(text.to_owned())))
+            .or_else(|| {
+                text.contains(['}', '|'])
+                    .then(|| RubyError::StrayMarkup(Written::new(text.to_owned())))
             })
-        }
+            .map_or_else(
+                || {
+                    Ok(Segment::Plain {
+                        text: Spelling::new(text.to_owned()),
+                    })
+                },
+                Err,
+            )
     }
 
     #[must_use]
@@ -59,13 +71,10 @@ impl Segment {
             .skip(from_index.saturating_sub(first_index))
             .take(to_index.saturating_sub(first_index.max(from_index)))
             .collect();
-        match self {
-            _ if kept.is_empty() => None,
-            Segment::Plain { .. } => Some(Segment::Plain {
-                text: Spelling::new(kept),
-            }),
-            Segment::Ruby { .. } => Some(self.clone()),
-        }
+        kept.chars().next().map(|_| {
+            self.reading()
+                .map_or_else(|| Segment::from(Spelling::new(kept)), |_| self.clone())
+        })
     }
 
     #[must_use]
@@ -73,6 +82,14 @@ impl Segment {
         match self {
             Segment::Plain { text } => text,
             Segment::Ruby { base, .. } => base,
+        }
+    }
+
+    #[must_use]
+    pub fn shown(&self, reading: Reading) -> &Spelling {
+        match reading {
+            Reading::Written => self.text(),
+            Reading::Spoken => self.reading().unwrap_or(self.text()),
         }
     }
 
@@ -90,5 +107,11 @@ impl TryFrom<&str> for Segment {
 
     fn try_from(text: &str) -> Result<Segment, RubyError> {
         Segment::plain(text)
+    }
+}
+
+impl From<Spelling> for Segment {
+    fn from(text: Spelling) -> Segment {
+        Segment::Plain { text }
     }
 }

@@ -19,9 +19,8 @@ impl NameForms {
 
     #[must_use]
     pub fn of_name(name: &RubyText) -> NameForms {
-        name.text(Reading::Written)
-            .parse()
-            .unwrap_or_else(|never| match never {})
+        let Ok(forms) = name.text(Reading::Written).parse();
+        forms
     }
 
     #[must_use]
@@ -90,17 +89,19 @@ impl NameForms {
         )
     }
 
-    fn japanese(letter: char) -> bool {
-        ('\u{3040}'..='\u{9FFF}').contains(&letter)
+    fn japanese(letter: char) -> Option<char> {
+        Some(letter).filter(|letter| ('\u{3040}'..='\u{9FFF}').contains(letter))
     }
 
     fn latin(text: &str) -> Option<&str> {
-        Some(text).filter(|text| !text.chars().any(Self::japanese))
+        Some(text).filter(|text| text.chars().find_map(Self::japanese).is_none())
     }
 
-    fn long_enough(form: &Spelling) -> bool {
-        form.chars().count()
-            >= Self::latin(form).map_or(Self::LEAST_JAPANESE_LEN, |_| Self::LEAST_LATIN_LEN)
+    fn long_enough(form: Spelling) -> Option<Spelling> {
+        Some(form).filter(|form| {
+            form.chars().count()
+                >= Self::latin(form).map_or(Self::LEAST_JAPANESE_LEN, |_| Self::LEAST_LATIN_LEN)
+        })
     }
 }
 
@@ -116,7 +117,7 @@ impl FromStr for NameForms {
             forms: std::iter::once(whole)
                 .chain(head)
                 .map(|form| Spelling::new(form.to_owned()))
-                .filter(Self::long_enough)
+                .filter_map(Self::long_enough)
                 .collect(),
         })
     }

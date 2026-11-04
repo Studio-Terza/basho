@@ -21,21 +21,19 @@ impl FromStr for AnnotatedPair {
         let (base, reading) = annotation
             .split_once('|')
             .ok_or_else(|| RubyError::MissingReading(Written::new(annotation.to_owned())))?;
-        if reading
+        let kana = reading
             .chars()
             .map(Script::from)
             .all(|script| script == Script::Kana)
-        {
-            Ok(AnnotatedPair([
-                Segment::Ruby {
-                    base: Spelling::new(base.to_owned()),
-                    reading: Spelling::new(reading.to_owned()),
-                },
-                Segment::try_from(rest)?,
-            ]))
-        } else {
-            Err(RubyError::ReadingNotKana(Written::new(reading.to_owned())))
-        }
+            .then_some(reading)
+            .ok_or_else(|| RubyError::ReadingNotKana(Written::new(reading.to_owned())))?;
+        Ok(AnnotatedPair([
+            Segment::Ruby {
+                base: Spelling::new(base.to_owned()),
+                reading: Spelling::new(kana.to_owned()),
+            },
+            Segment::try_from(rest)?,
+        ]))
     }
 }
 

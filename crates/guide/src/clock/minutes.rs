@@ -5,6 +5,8 @@ use std::ops::Add;
 
 use serde::Deserialize;
 
+use crate::words::Label;
+
 #[derive(
     Newtype, Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize,
 )]
@@ -17,6 +19,12 @@ signed!(Minutes);
 impl Minutes {
     pub const ZERO: Minutes = Minutes(0);
     const PER_HOUR: i64 = 60;
+
+    fn sign(self) -> Label {
+        Some(self.0)
+            .filter(|count| *count < 0)
+            .map_or(Label::new(""), |_| Label::new("-"))
+    }
 
     #[must_use]
     pub const fn count(self) -> i64 {
@@ -50,15 +58,55 @@ impl Sum for Minutes {
     }
 }
 
+#[derive(Clone, Copy)]
+enum Span {
+    Minutes,
+    Hours,
+    Both,
+}
+
+impl From<Minutes> for Span {
+    fn from(minutes: Minutes) -> Span {
+        Some(minutes.0.abs() / Minutes::PER_HOUR)
+            .filter(|hours| *hours == 0)
+            .map(|_| Span::Minutes)
+            .or_else(|| {
+                Some(minutes.0.abs() % Minutes::PER_HOUR)
+                    .filter(|rest| *rest == 0)
+                    .map(|_| Span::Hours)
+            })
+            .unwrap_or(Span::Both)
+    }
+}
+
+impl Span {
+    fn written(self, formatter: &mut fmt::Formatter<'_>, minutes: Minutes) -> fmt::Result {
+        match self {
+            Span::Minutes => write!(
+                formatter,
+                "{}{} min",
+                minutes.sign(),
+                minutes.0.abs() % Minutes::PER_HOUR
+            ),
+            Span::Hours => write!(
+                formatter,
+                "{}{} h",
+                minutes.sign(),
+                minutes.0.abs() / Minutes::PER_HOUR
+            ),
+            Span::Both => write!(
+                formatter,
+                "{}{} h {} min",
+                minutes.sign(),
+                minutes.0.abs() / Minutes::PER_HOUR,
+                minutes.0.abs() % Minutes::PER_HOUR
+            ),
+        }
+    }
+}
+
 impl fmt::Display for Minutes {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let sign = if self.0 < 0 { "-" } else { "" };
-        let hours = self.0.abs() / Self::PER_HOUR;
-        let rest = self.0.abs() % Self::PER_HOUR;
-        match (hours, rest) {
-            (0, _) => write!(formatter, "{sign}{rest} min"),
-            (_, 0) => write!(formatter, "{sign}{hours} h"),
-            _ => write!(formatter, "{sign}{hours} h {rest} min"),
-        }
+        Span::from(*self).written(formatter, *self)
     }
 }

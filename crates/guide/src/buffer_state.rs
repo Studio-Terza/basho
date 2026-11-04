@@ -10,15 +10,16 @@ pub enum BufferState {
 
 impl BufferState {
     pub const TIGHT_BELOW: Minutes = Minutes::new(10);
+    const BELOW: [(Minutes, BufferState); 2] = [
+        (Minutes::ZERO, BufferState::Short),
+        (Self::TIGHT_BELOW, BufferState::Tight),
+    ];
 
     #[must_use]
     pub fn for_spare(spare: Minutes) -> BufferState {
-        if spare < Minutes::ZERO {
-            BufferState::Short
-        } else if spare < Self::TIGHT_BELOW {
-            BufferState::Tight
-        } else {
-            BufferState::Comfortable
-        }
+        Self::BELOW
+            .into_iter()
+            .find(|(limit, _)| spare < *limit)
+            .map_or(BufferState::Comfortable, |(_, state)| state)
     }
 }

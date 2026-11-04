@@ -77,17 +77,18 @@ impl<'scan> Scan<'scan> {
         start_index: usize,
     ) -> Option<Mentioned> {
         let end_index = start_index + letters.len();
-        (self.written.get(start_index..end_index) == Some(letters)
-            && self.shown.parts_at(start_index)
-            && self.shown.parts_at(end_index))
-        .then(|| Mentioned {
-            start_index,
-            end_index,
-            entry: self
-                .table
-                .entry_named(name)
-                .filter(|entry| Some(*entry) != self.reader),
-        })
+        Some(letters)
+            .filter(|letters| self.written.get(start_index..end_index) == Some(*letters))
+            .and_then(|_| self.shown.parts_at(start_index))
+            .and_then(|_| self.shown.parts_at(end_index))
+            .map(|_| Mentioned {
+                start_index,
+                end_index,
+                entry: self
+                    .table
+                    .entry_named(name)
+                    .filter(|entry| Some(*entry) != self.reader),
+            })
     }
 
     fn with_mention(&self, mut found: Vec<Mentioned>, name: &RubyText) -> Vec<Mentioned> {

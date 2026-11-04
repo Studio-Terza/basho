@@ -51,10 +51,17 @@ impl TypedPart {
 
     #[must_use]
     pub fn named(&self, kind: NameKind) -> Option<&RubyText> {
-        match (self, kind) {
-            (TypedPart::Mention(name), NameKind::Entry)
-            | (TypedPart::Spot(name), NameKind::Spot) => Some(name),
+        match self {
+            TypedPart::Mention(name) => kind.kept(NameKind::Entry, name),
+            TypedPart::Spot(name) => kind.kept(NameKind::Spot, name),
             _ => None,
+        }
+    }
+
+    fn unsure(clock: SaidClock, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match EvidenceKind::Unverified.mark() {
+            Some(mark) => write!(formatter, "{clock}{mark}"),
+            None => fmt::Display::fmt(&clock, formatter),
         }
     }
 }
@@ -64,10 +71,7 @@ impl fmt::Display for TypedPart {
         match self {
             TypedPart::Intended(clock) => clock.fmt(formatter),
             TypedPart::Stated(fact) => fact.clock().fmt(formatter),
-            TypedPart::Unsure(clock) => match EvidenceKind::Unverified.mark() {
-                Some(mark) => write!(formatter, "{clock}{mark}"),
-                None => clock.fmt(formatter),
-            },
+            TypedPart::Unsure(clock) => TypedPart::unsure(*clock, formatter),
             TypedPart::Mention(name) | TypedPart::Spot(name) => {
                 formatter.write_str(&name.text(Reading::Written))
             }
