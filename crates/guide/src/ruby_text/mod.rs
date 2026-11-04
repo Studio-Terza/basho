@@ -1,12 +1,22 @@
+mod boundary;
+mod letters;
 mod ruby_error;
 mod segment;
 
+use newtype::Counter;
 use serde::Deserialize;
+use std::ops::Range;
 
 use crate::reading::Reading;
 use crate::words::{Label, Spelling};
+pub use letters::{Letter, LetterCount, LetterIndex, Writing};
 use ruby_error::RubyError;
 use segment::{AnnotatedPair, Segment};
+
+struct Placed<'text> {
+    span: Range<LetterIndex>,
+    segment: &'text Segment,
+}
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(try_from = "String")]
@@ -52,49 +62,58 @@ impl RubyText {
     }
 
     #[must_use]
-    pub fn char_length(&self) -> usize {
-        self.segments
-            .iter()
-            .map(|segment| segment.text().chars().count())
-            .sum()
+    pub fn letters(&self) -> Vec<Letter> {
+        self.text(Reading::Written)
+            .chars()
+            .map(Letter::from)
+            .collect()
     }
 
     #[must_use]
-    pub fn letters(&self) -> Vec<char> {
-        self.text(Reading::Written).chars().collect()
+    pub fn parts_at(&self, at: LetterIndex) -> Option<LetterIndex> {
+        self.spans()
+            .filter(|placed| placed.segment.reading().is_some())
+            .find_map(|placed| at.inside(&placed.span))
+            .map_or(Some(at), |_| None)
     }
 
     #[must_use]
-    pub fn parts_at(&self, at_index: usize) -> bool {
-        self.segments
-            .iter()
-            .scan(0, |start_index, segment| {
-                let length = segment.text().chars().count();
-                let first_index = *start_index;
-                *start_index += length;
-                Some(
-                    segment.reading().is_some()
-                        && first_index < at_index
-                        && at_index < first_index + length,
-                )
-            })
-            .all(|inside| !inside)
+    pub fn spelled_at(
+        &self,
+        letters: &[Letter],
+        name: &[Letter],
+        at: LetterIndex,
+    ) -> Option<Range<LetterIndex>> {
+        let end = at + LetterCount::new(name.len());
+        letters
+            .get(at.count()..end.count())
+            .filter(|found| *found == name)
+            .and_then(|_| self.parts_at(at))
+            .and_then(|_| self.parts_at(end))
+            .map(|_| at..end)
     }
 
     #[must_use]
-    pub fn slice(&self, from_index: usize, to_index: usize) -> RubyText {
+    pub fn slice(&self, kept: &Range<LetterIndex>) -> RubyText {
         RubyText {
             segments: self
-                .segments
-                .iter()
-                .scan(0, |start_index, segment| {
-                    let first_index = *start_index;
-                    *start_index += segment.text().chars().count();
-                    Some(segment.within(first_index, from_index, to_index))
-                })
-                .flatten()
+                .spans()
+                .filter_map(|placed| placed.segment.within(placed.span.start, kept))
                 .collect(),
         }
+    }
+
+    fn spans(&self) -> impl Iterator<Item = Placed<'_>> {
+        self.segments
+            .iter()
+            .scan(LetterIndex::default(), |start, segment| {
+                let first = *start;
+                *start = first + segment.letter_count();
+                Some(Placed {
+                    span: first..*start,
+                    segment,
+                })
+            })
     }
 
     #[must_use]
@@ -149,5 +168,14 @@ impl TryFrom<String> for RubyText {
                     .filter(|segment| !segment.text().is_empty())
                     .collect(),
             })
+    }
+}
+
+impl From<&RubyText> for LetterCount {
+    fn from(text: &RubyText) -> LetterCount {
+        text.segments
+            .iter()
+            .map(Segment::letter_count)
+            .fold(LetterCount::default(), LetterCount::plus)
     }
 }

@@ -5,7 +5,7 @@ use crate::day_number::DayNumber;
 use crate::english_name::EnglishName;
 use crate::landmark::Landmarks;
 use crate::reading::Reading;
-use crate::ruby_text::RubyText;
+use crate::ruby_text::{Letter, LetterCount, RubyText, Writing};
 use crate::words::Spelling;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -14,8 +14,8 @@ pub struct NameForms {
 }
 
 impl NameForms {
-    const LEAST_JAPANESE_LEN: usize = 2;
-    const LEAST_LATIN_LEN: usize = 4;
+    const LEAST_JAPANESE_LEN: LetterCount = LetterCount::new(2);
+    const LEAST_LATIN_LEN: LetterCount = LetterCount::new(4);
 
     #[must_use]
     pub fn of_name(name: &RubyText) -> NameForms {
@@ -90,17 +90,18 @@ impl NameForms {
         )
     }
 
-    fn japanese(letter: char) -> bool {
-        ('\u{3040}'..='\u{9FFF}').contains(&letter)
+    fn latin(text: &Spelling) -> Option<&Spelling> {
+        text.chars()
+            .map(|letter| Letter::from(letter).writing())
+            .find(|writing| *writing == Writing::Japanese)
+            .map_or(Some(text), |_| None)
     }
 
-    fn latin(text: &str) -> Option<&str> {
-        Some(text).filter(|text| !text.chars().any(Self::japanese))
-    }
-
-    fn long_enough(form: &Spelling) -> bool {
-        form.chars().count()
-            >= Self::latin(form).map_or(Self::LEAST_JAPANESE_LEN, |_| Self::LEAST_LATIN_LEN)
+    fn long_enough(form: Spelling) -> Option<Spelling> {
+        Some(form).filter(|form| {
+            LetterCount::letters_in(form)
+                >= Self::latin(form).map_or(Self::LEAST_JAPANESE_LEN, |_| Self::LEAST_LATIN_LEN)
+        })
     }
 }
 
@@ -111,12 +112,12 @@ impl FromStr for NameForms {
         let head = whole
             .split_whitespace()
             .next()
-            .filter(|head| Self::latin(head).is_none());
+            .filter(|head| Self::latin(&Spelling::new((*head).to_owned())).is_none());
         Ok(NameForms {
             forms: std::iter::once(whole)
                 .chain(head)
                 .map(|form| Spelling::new(form.to_owned()))
-                .filter(Self::long_enough)
+                .filter_map(Self::long_enough)
                 .collect(),
         })
     }
