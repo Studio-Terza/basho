@@ -9,6 +9,7 @@ use crate::catch_words::Readings;
 use serde::Deserialize;
 use serde::de::IgnoredAny;
 
+use crate::NonEmpty;
 use crate::day_number::DayNumber;
 use crate::geo::{Coordinate, Degrees, Distance};
 use crate::leg::LegIndex;
@@ -68,7 +69,8 @@ impl DayCatch {
         let picked: Vec<CatchSight<'_>> = self
             .legs
             .iter()
-            .flat_map(|catch| catch.notes_for(leg))
+            .filter(|catch| AsRef::<LegIndex>::as_ref(*catch) == &leg)
+            .flat_map(LegCatch::notes)
             .filter_map(|note| {
                 self.features
                     .iter()
@@ -79,16 +81,30 @@ impl DayCatch {
             })
             .filter(leads)
             .collect();
-        let pool: Vec<CatchSight<'_>> = Some(picked)
-            .filter(|picked| picked.iter().next().is_some())
-            .unwrap_or_else(|| {
-                self.features
-                    .iter()
-                    .filter_map(|feature| Self::sighted(feature, None, here))
-                    .filter(leads)
-                    .collect()
-            });
-        pool.into_iter()
+        Self::pooled(NonEmpty::new(picked), || {
+            self.features
+                .iter()
+                .filter_map(|feature| Self::sighted(feature, None, here))
+                .filter(leads)
+                .collect()
+        })
+    }
+
+    fn pooled<'catch>(
+        picked: Option<NonEmpty<CatchSight<'catch>>>,
+        fallback: impl FnOnce() -> Vec<CatchSight<'catch>>,
+    ) -> Vec<CatchSight<'catch>> {
+        match picked {
+            Some(found) => Self::nearest(found),
+            None => Self::nearest(fallback()),
+        }
+    }
+
+    fn nearest<'catch>(
+        sights: impl IntoIterator<Item = CatchSight<'catch>>,
+    ) -> Vec<CatchSight<'catch>> {
+        sights
+            .into_iter()
             .fold(Vec::new(), |mut nearest: Vec<CatchSight<'_>>, sight| {
                 let place = nearest.partition_point(|kept| {
                     kept.pointer().distance() <= sight.pointer().distance()

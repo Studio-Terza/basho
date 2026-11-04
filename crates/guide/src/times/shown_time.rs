@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 
 use crate::classed::Classed;
@@ -7,6 +8,7 @@ use crate::times::fact_time::FactTime;
 use crate::times::listed_time::ListedTime;
 use crate::times::live_time::LiveTime;
 use crate::times::plan_time::PlanTime;
+use crate::times::shift::Shift;
 
 #[derive(derive_more::From, strum::IntoStaticStr, Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ShownTime {
@@ -23,14 +25,18 @@ impl Classed for ShownTime {}
 impl ShownTime {
     #[must_use]
     pub fn off_by(listed: ListedTime, by: Minutes) -> ShownTime {
-        Some(by)
-            .filter(|by| *by != Minutes::ZERO)
-            .map_or(ShownTime::from(listed), |by| {
-                ShownTime::Live(LiveTime::new(
-                    ClockTime::from(listed).later_by(by),
-                    Basis::OffPlan { listed, by },
-                ))
-            })
+        match by.cmp(&Minutes::ZERO) {
+            Ordering::Equal => ShownTime::from(listed),
+            Ordering::Less => ShownTime::shifted(listed, Shift::Ahead(by.abs())),
+            Ordering::Greater => ShownTime::shifted(listed, Shift::Behind(by)),
+        }
+    }
+
+    fn shifted(listed: ListedTime, shift: Shift) -> ShownTime {
+        ShownTime::Live(LiveTime::new(
+            ClockTime::from(listed).later_by(Minutes::from(shift)),
+            Basis::OffPlan { listed, shift },
+        ))
     }
 }
 

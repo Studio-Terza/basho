@@ -1,6 +1,10 @@
+mod findings;
 mod kana_file;
+mod once;
 use crate::words::Label;
+use findings::Findings;
 pub use kana_file::KanaFile;
+use once::Once;
 use std::collections::{BTreeMap, BTreeSet};
 use std::str::FromStr;
 use std::thread::{Scope, ScopedJoinHandle};
@@ -10,6 +14,7 @@ use serde::Deserialize;
 use crate::itinerary::{Arc, Day, Finding, Itinerary, LegLines, Problem};
 
 use crate::KnownNames;
+use crate::NonEmpty;
 use crate::TripSource;
 use crate::day_number::DayNumber;
 use crate::landmark::Landmarks;
@@ -41,17 +46,20 @@ pub struct TripFile {
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct TripPart {
-    trip: Option<TripHead>,
+    #[serde(default)]
+    trip: Once<TripHead>,
     #[serde(default)]
     arcs: Vec<Arc>,
     #[serde(default)]
     days: Vec<Day>,
     #[serde(default)]
     places: Vec<Place>,
-    landmarks: Option<Landmarks>,
+    #[serde(default)]
+    landmarks: Once<Landmarks>,
     #[serde(default)]
     routes: Vec<LegLines>,
-    kana: Option<KanaFile>,
+    #[serde(default)]
+    kana: Once<KanaFile>,
     #[serde(default)]
     catches: Vec<DayCatch>,
 }
@@ -65,42 +73,31 @@ impl TripPart {
     }
 
     fn joined(self, next: TripPart) -> Option<TripPart> {
-        Some(self)
-            .filter(|part| part.trip.as_ref().zip(next.trip.as_ref()).is_none())
-            .filter(|part| {
-                part.landmarks
-                    .as_ref()
-                    .zip(next.landmarks.as_ref())
-                    .is_none()
-            })
-            .filter(|part| part.kana.as_ref().zip(next.kana.as_ref()).is_none())
-            .map(|part| TripPart {
-                trip: part.trip.or(next.trip),
-                arcs: part.arcs.into_iter().chain(next.arcs).collect(),
-                days: part.days.into_iter().chain(next.days).collect(),
-                places: part.places.into_iter().chain(next.places).collect(),
-                landmarks: part.landmarks.or(next.landmarks),
-                routes: part.routes.into_iter().chain(next.routes).collect(),
-                kana: part.kana.or(next.kana),
-                catches: part.catches.into_iter().chain(next.catches).collect(),
-            })
+        Some(TripPart {
+            trip: self.trip.joined(next.trip)?,
+            arcs: self.arcs.into_iter().chain(next.arcs).collect(),
+            days: self.days.into_iter().chain(next.days).collect(),
+            places: self.places.into_iter().chain(next.places).collect(),
+            landmarks: self.landmarks.joined(next.landmarks)?,
+            routes: self.routes.into_iter().chain(next.routes).collect(),
+            kana: self.kana.joined(next.kana)?,
+            catches: self.catches.into_iter().chain(next.catches).collect(),
+        })
     }
 
     fn whole(self) -> Option<TripFile> {
-        Some(self)
-            .filter(|part| part.arcs.first().zip(part.days.first()).is_some())
-            .and_then(|part| {
-                part.trip.map(|trip| TripFile {
-                    trip,
-                    arcs: part.arcs,
-                    days: part.days,
-                    places: part.places,
-                    landmarks: part.landmarks.unwrap_or_default(),
-                    routes: part.routes,
-                    kana: part.kana.unwrap_or_default(),
-                    catches: part.catches,
-                })
-            })
+        let arcs = NonEmpty::new(self.arcs)?;
+        let days = NonEmpty::new(self.days)?;
+        Some(TripFile {
+            trip: self.trip.given()?,
+            arcs: Vec::from(arcs),
+            days: Vec::from(days),
+            places: self.places,
+            landmarks: self.landmarks.given().unwrap_or_default(),
+            routes: self.routes,
+            kana: self.kana.given().unwrap_or_default(),
+            catches: self.catches,
+        })
     }
 }
 
@@ -186,7 +183,7 @@ impl TripFile {
                 .iter()
                 .copied(),
         );
-        let findings: Vec<Finding> = strays
+        let findings: Findings = strays
             .into_iter()
             .chain(stray_lines)
             .chain(Vec::<Finding>::from(&itinerary))
@@ -194,12 +191,7 @@ impl TripFile {
             .chain(places.findings(&itinerary))
             .chain(named)
             .collect();
-        Some(findings)
-            .filter(|findings| findings.iter().next().is_some())
-            .map_or_else(
-                || Ok(Trip::new(itinerary, places, overview)),
-                |findings| Err(TripError::Invalid(findings)),
-            )
+        findings.into_result(Trip::new(itinerary, places, overview))
     }
 
     fn strays(
@@ -207,20 +199,31 @@ impl TripFile {
         days: impl Iterator<Item = DayNumber>,
         known: &[DayNumber],
     ) -> Vec<Finding> {
-        let mut seen = BTreeSet::new();
-        days.filter(|day| {
-            Some(*day)
-                .filter(|day| known.contains(day))
-                .is_none_or(|day| seen.replace(day).is_some())
-        })
-        .map(|day| {
-            Finding::on_day(
-                day,
-                Problem::StraySection {
-                    section: Label::new(section),
-                },
-            )
-        })
-        .collect()
+        let days: Vec<DayNumber> = days.collect();
+        let first_at: BTreeMap<DayNumber, usize> = days
+            .iter()
+            .copied()
+            .enumerate()
+            .rev()
+            .map(|(at, day)| (day, at))
+            .collect();
+        let accepted: BTreeSet<usize> = known
+            .iter()
+            .filter_map(|day| first_at.get(day))
+            .copied()
+            .collect();
+        let every: BTreeSet<usize> = (0..days.len()).collect();
+        every
+            .difference(&accepted)
+            .filter_map(|at| days.get(*at))
+            .map(|day| {
+                Finding::on_day(
+                    *day,
+                    Problem::StraySection {
+                        section: Label::new(section),
+                    },
+                )
+            })
+            .collect()
     }
 }

@@ -1,26 +1,25 @@
 pub mod catch_note;
-use serde::Deserialize;
+use serde::{Deserialize, Deserializer};
 
 use crate::leg::LegIndex;
 use catch_note::CatchNote;
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(derive_more::AsRef, Clone, Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct LegCatch {
-    index: usize,
+    #[as_ref]
+    #[serde(deserialize_with = "LegCatch::zero_based")]
+    index: LegIndex,
     catch: Vec<CatchNote>,
 }
 
 impl LegCatch {
-    #[must_use]
-    pub fn notes(&self) -> &[CatchNote] {
-        &self.catch
+    fn zero_based<'de, Input: Deserializer<'de>>(input: Input) -> Result<LegIndex, Input::Error> {
+        usize::deserialize(input).map(LegIndex::new)
     }
 
     #[must_use]
-    pub fn notes_for(&self, leg: LegIndex) -> &[CatchNote] {
-        Some(self.index)
-            .filter(|index| *index == usize::from(leg))
-            .map_or(&[], |_| self.catch.as_slice())
+    pub fn notes(&self) -> &[CatchNote] {
+        &self.catch
     }
 }

@@ -1,10 +1,14 @@
+mod filling;
 mod ruby_error;
 mod segment;
+
+use std::cmp::Ordering;
 
 use serde::Deserialize;
 
 use crate::reading::Reading;
 use crate::words::{Label, Spelling};
+pub use filling::Filling;
 use ruby_error::RubyError;
 use segment::{AnnotatedPair, Segment};
 
@@ -62,6 +66,14 @@ impl RubyText {
     #[must_use]
     pub fn letters(&self) -> Vec<char> {
         self.text(Reading::Written).chars().collect()
+    }
+
+    #[must_use]
+    pub fn filling(&self) -> Filling {
+        match self.text(Reading::Written).trim().cmp("") {
+            Ordering::Greater => Filling::Written,
+            Ordering::Equal | Ordering::Less => Filling::Blank,
+        }
     }
 
     #[must_use]

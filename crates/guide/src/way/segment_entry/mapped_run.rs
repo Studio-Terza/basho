@@ -3,6 +3,7 @@ use serde::Deserialize;
 use crate::NodeId;
 use crate::geo::{Coordinate, Degrees, Distance, RouteFix, RouteLine};
 use crate::itinerary::Problem;
+use crate::way::link::Link;
 use crate::way::{MappedSegment, RoadNetwork};
 
 #[derive(Debug, Deserialize)]
@@ -32,7 +33,7 @@ impl MappedRun {
         let [last_but_one, last] = places
             .last_chunk::<{ RouteLine::SEGMENT_ENDS_LENGTH }>()
             .ok_or(Problem::ShortMappedSegment)?;
-        self.joined(network)?;
+        let links = self.joined(network)?;
         let middle = places.get(1..places.len() - 1).unwrap_or_default();
         let start = Self::end_on_edge(self.from, *first, *second)?;
         let finish = Self::end_on_edge(self.to, *last, *last_but_one)?;
@@ -42,19 +43,15 @@ impl MappedRun {
                 .chain(std::iter::once(finish))
                 .collect(),
             self.nodes.clone(),
+            links,
         ))
     }
 
-    fn joined(&self, network: &RoadNetwork) -> Result<(), Problem> {
+    fn joined(&self, network: &RoadNetwork) -> Result<Vec<Link>, Problem> {
         self.nodes
             .windows(RouteLine::SEGMENT_ENDS_LENGTH)
-            .find(|pair| network.joins(pair[0], pair[1]).is_none())
-            .map_or(Ok(()), |pair| {
-                Err(Problem::NoConnection {
-                    from: pair[0],
-                    to: pair[1],
-                })
-            })
+            .map(|pair| network.link(pair[0], pair[1]))
+            .collect()
     }
 
     fn end_on_edge(

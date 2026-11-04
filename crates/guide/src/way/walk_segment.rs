@@ -27,11 +27,14 @@ impl WalkSegment {
 
     fn meeting(before: &MappedSegment, next: &WalkSegment) -> Result<(), Problem> {
         match next {
-            WalkSegment::Mapped(after) => before
-                .meets(after)
-                .map_or(Err(Problem::SegmentsApart), |_| Ok(())),
+            WalkSegment::Mapped(after) => Self::joined(before, after),
             WalkSegment::NoMappedPath(_) => Ok(()),
         }
+    }
+
+    fn joined(before: &MappedSegment, after: &MappedSegment) -> Result<(), Problem> {
+        before.meets(after)?;
+        Ok(())
     }
 
     #[must_use]

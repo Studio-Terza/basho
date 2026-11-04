@@ -1,46 +1,81 @@
-use std::collections::BTreeSet;
-
+use super::link::Link;
 use crate::NodeId;
 use crate::end::End;
 use crate::geo::{Coordinate, RouteLine};
+use crate::itinerary::Problem;
 
 #[derive(derive_more::AsRef, Clone, Debug, PartialEq)]
 pub struct MappedSegment {
     #[as_ref]
     line: RouteLine,
     nodes: Vec<NodeId>,
+    links: Vec<Link>,
 }
 
 impl MappedSegment {
-    pub(super) fn along(points: Vec<Coordinate>, nodes: Vec<NodeId>) -> MappedSegment {
+    pub(super) fn along(
+        points: Vec<Coordinate>,
+        nodes: Vec<NodeId>,
+        links: Vec<Link>,
+    ) -> MappedSegment {
         MappedSegment {
             line: RouteLine::new(points),
             nodes,
+            links,
         }
     }
 
-    #[must_use]
-    pub fn meets<'next>(&self, next: &'next MappedSegment) -> Option<&'next MappedSegment> {
-        Some(next)
-            .filter(|next| self.line.points().last() == next.line.points().first())
-            .filter(|next| {
-                Some(*next)
-                    .filter(|next| self.nodes.last() == next.nodes.first())
-                    .or(Some(*next).filter(|next| self.edge(End::Finish) == next.edge(End::Start)))
-                    .is_some()
-            })
+    pub fn meets(&self, next: &MappedSegment) -> Result<Join, Problem> {
+        match self.touching(next) {
+            Some(_) => Join::new(self.shared_node(next), self.shared_edge(next)),
+            None => Err(Problem::SegmentsApart),
+        }
     }
 
-    fn edge(&self, end: End) -> Option<BTreeSet<NodeId>> {
+    fn touching(&self, next: &MappedSegment) -> Option<&Coordinate> {
+        self.line
+            .points()
+            .last()
+            .filter(|end| Some(*end) == next.line.points().first())
+    }
+
+    fn shared_node(&self, next: &MappedSegment) -> Option<&NodeId> {
+        self.nodes
+            .last()
+            .filter(|node| Some(*node) == next.nodes.first())
+    }
+
+    fn shared_edge(&self, next: &MappedSegment) -> Option<&Link> {
+        self.edge(End::Finish)
+            .filter(|edge| Some(*edge) == next.edge(End::Start))
+    }
+
+    fn edge(&self, end: End) -> Option<&Link> {
         match end {
-            End::Start => self
-                .nodes
-                .first_chunk::<{ RouteLine::SEGMENT_ENDS_LENGTH }>()
-                .map(|ends| ends.iter().copied().collect()),
-            End::Finish => self
-                .nodes
-                .last_chunk::<{ RouteLine::SEGMENT_ENDS_LENGTH }>()
-                .map(|ends| ends.iter().copied().collect()),
+            End::Start => self.links.first(),
+            End::Finish => self.links.last(),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Join {
+    ByNode,
+    ByEdge,
+}
+
+impl Join {
+    fn new(node: Option<&NodeId>, edge: Option<&Link>) -> Result<Join, Problem> {
+        match node {
+            Some(_) => Ok(Join::ByNode),
+            None => Join::by_edge(edge),
+        }
+    }
+
+    fn by_edge(edge: Option<&Link>) -> Result<Join, Problem> {
+        match edge {
+            Some(_) => Ok(Join::ByEdge),
+            None => Err(Problem::SegmentsApart),
         }
     }
 }
