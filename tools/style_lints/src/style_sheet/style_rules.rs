@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use basho_lints::LineNumber;
 
-use super::quoting::Quoting;
+use super::boundary::Quoting;
 use super::style_rule::{Context, Declaration, Selector, StyleRule};
 use uncommented::Uncommented;
 
@@ -76,8 +76,9 @@ impl StyleRules {
                 *state = before.after(character, '{', '}');
                 Some((at, character, *state, before))
             })
-            .find(|(_, character, after, before)| after.reaches(*before, *character, wanted))
-            .map(|(at, ..)| at)
+            .find_map(|(at, character, after, before)| {
+                after.reaching(before, character, wanted).map(|_| at)
+            })
     }
 }
 

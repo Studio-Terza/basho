@@ -70,7 +70,7 @@ impl SelectorParts {
                     *state = state.after(character, open, close);
                     Some((index + character.len_utf8(), *state))
                 })
-                .find(|(_, state)| state.balanced())
+                .find(|(_, state)| state.balanced().is_some())
                 .map_or(text.len(), |(end_len, _)| end_len)
         } else {
             0
