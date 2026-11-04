@@ -45,7 +45,11 @@ impl<'trip> PlannedMeal<'trip> {
             .goals()
             .iter()
             .filter(|goal| matches!(goal.purpose(), Purpose::Aim(Reason::Meal)))
-            .filter(|goal| !seated.iter().any(|stop| goal.holds(stop.leg_index())));
+            .filter(|goal| {
+                !seated
+                    .iter()
+                    .any(|stop| goal.holds(stop.leg_index()).is_some())
+            });
         let mut choices: Vec<Choice<'trip>> = seated
             .iter()
             .copied()

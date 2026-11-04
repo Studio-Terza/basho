@@ -23,26 +23,28 @@ impl LegRule for Stops {
             .map(|pair| Problem::StopsOutOfOrder {
                 stop: pair[1].distance_along(),
             });
-        let range = leg
-            .along()
-            .iter()
-            .filter(|stop| {
-                stop.distance_along() < Distance::default()
-                    || stop.distance_along() > leg.length() + Self::STOP_LENGTH_SLACK
-            })
-            .map(|stop| Problem::StopOutside {
-                stop: stop.distance_along(),
-                length: leg.length(),
-            });
+        let range = leg.along().iter().filter_map(|stop| {
+            let along = stop.distance_along();
+            (along < Distance::default())
+                .then_some(along)
+                .or_else(|| (along > leg.length() + Self::STOP_LENGTH_SLACK).then_some(along))
+                .map(|stop| Problem::StopOutside {
+                    stop,
+                    length: leg.length(),
+                })
+        });
         let far = leg.along().iter().filter_map(|stop| {
             let off = leg
                 .line()
                 .fix(Coordinate::from(stop))
                 .map_or(Distance::default(), |fix| Distance::from(fix.off_route()));
-            (leg.mode() == Mode::Walk && off > Self::STOP_SLACK).then(|| Problem::StopOffLine {
-                name: AsRef::<RubyText>::as_ref(stop).text(Reading::Written),
-                off,
-            })
+            (leg.mode() == Mode::Walk)
+                .then_some(off)
+                .filter(|off| *off > Self::STOP_SLACK)
+                .map(|off| Problem::StopOffLine {
+                    name: AsRef::<RubyText>::as_ref(stop).text(Reading::Written),
+                    off,
+                })
         });
         order.chain(range).chain(far).collect()
     }

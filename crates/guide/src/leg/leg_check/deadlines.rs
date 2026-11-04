@@ -12,13 +12,17 @@ pub struct Deadlines;
 impl Deadlines {
     fn kinds(leg: &Leg) -> impl Iterator<Item = Problem> {
         [
-            (leg.mode() != Mode::Walk && leg.tour().is_some()).then_some(Problem::TourOnRide),
-            (leg.mode() == Mode::Walk
-                && (leg.pay().is_some()
-                    || leg.margin_rule().is_some()
-                    || leg.transfer().is_some()))
-            .then_some(Problem::RideTermsOnWalk),
-            (leg.mode() != Mode::Walk && leg.pay().is_none()).then_some(Problem::PayMissing),
+            leg.tour()
+                .filter(|_| leg.mode() != Mode::Walk)
+                .map(|_| Problem::TourOnRide),
+            leg.pay()
+                .map(|_| Problem::RideTermsOnWalk)
+                .or_else(|| leg.margin_rule().map(|_| Problem::RideTermsOnWalk))
+                .or_else(|| leg.transfer().map(|_| Problem::RideTermsOnWalk))
+                .filter(|_| leg.mode() == Mode::Walk),
+            (leg.mode() != Mode::Walk)
+                .then_some(Problem::PayMissing)
+                .filter(|_| leg.pay().is_none()),
             leg.tour()
                 .filter(|tour| ClockTime::from(tour.check_in()) > leg.time(End::Start))
                 .map(|tour| Problem::TourCheckInAfterStart {
@@ -61,7 +65,7 @@ impl LegRule for Deadlines {
             .branches()
             .iter()
             .filter_map(Branch::backup_ride)
-            .filter(|ride| ride.runs_out_of_order(leg.time(End::Start)))
+            .filter_map(|ride| ride.runs_out_of_order(leg.time(End::Start)))
             .map(|ride| Problem::BackupRideOutOfOrder {
                 leaves: ride.listed(End::Start),
                 arrives: ride.listed(End::Finish),

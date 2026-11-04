@@ -127,7 +127,7 @@ impl Landmarks {
             .map(|fix| Distance::from(fix.off_route()))
             .min_by(|left, right| left.meters().total_cmp(&right.meters()))
             .filter(|off| *off <= Self::PASSED)
-            .filter(|_| !day.claims(point.short()))
+            .filter(|_| day.claims(point.short()).is_none())
             .map(|off| {
                 Finding::on_day(
                     day.number(),

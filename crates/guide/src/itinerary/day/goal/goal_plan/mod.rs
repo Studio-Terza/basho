@@ -103,9 +103,8 @@ impl<'day> GoalPlan<'day> {
             .iter()
             .zip(self.legs.iter().skip(1).map(Some).chain([None]))
             .enumerate()
-            .filter(|(_, (leg, next))| {
-                leg.mode() != Mode::Walk && next.is_none_or(|next| next.mode() == Mode::Walk)
-            })
+            .filter(|(_, (leg, _))| leg.mode() != Mode::Walk)
+            .filter(|(_, (_, next))| next.is_none_or(|next| next.mode() == Mode::Walk))
             .map(|(position, (leg, _))| {
                 Ending::new(
                     LegIndex::new(position),
@@ -120,10 +119,9 @@ impl<'day> GoalPlan<'day> {
             self.legs
                 .iter()
                 .enumerate()
+                .filter(|(_, leg)| leg.mode() == Mode::Walk)
                 .filter(move |(_, leg)| {
-                    leg.mode() == Mode::Walk
-                        && leg.point(End::Finish).distance_to(Coordinate::from(night))
-                            <= Self::INN_DOOR
+                    leg.point(End::Finish).distance_to(Coordinate::from(night)) <= Self::INN_DOOR
                 })
                 .map(move |(position, _)| {
                     Ending::new(

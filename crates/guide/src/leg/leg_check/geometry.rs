@@ -24,11 +24,14 @@ impl Geometry {
                 measured,
             }),
             (miss > Self::END_SLACK).then_some(Problem::EndMiss { miss }),
-            (speed < Self::SLOWEST || speed > leg.gait().fastest()).then(|| Problem::Pace {
-                length: leg.length(),
-                minutes: leg.minutes(),
-                speed,
-            }),
+            Some(speed)
+                .filter(|speed| *speed < Self::SLOWEST)
+                .or(Some(speed).filter(|speed| *speed > leg.gait().fastest()))
+                .map(|speed| Problem::Pace {
+                    length: leg.length(),
+                    minutes: leg.minutes(),
+                    speed,
+                }),
         ]
         .into_iter()
         .flatten()
@@ -38,23 +41,27 @@ impl Geometry {
 
 impl LegRule for Geometry {
     fn problems(&self, leg: &Leg) -> Vec<Problem> {
-        if leg.mode() != Mode::Walk {
-            [
-                leg.boarding().is_none().then_some(Problem::NoBoarding),
-                leg.alighting().is_none().then_some(Problem::NoAlighting),
-                (!leg.segments().is_empty()).then_some(Problem::SegmentsOnRide),
+        match leg.mode() {
+            Mode::Walk => [
+                leg.road().is_none().then_some(Problem::NoRoad),
+                (leg.line().points().len() < Self::SHORTEST_LINE_LENGTH)
+                    .then_some(Problem::NoRouteLine),
+                leg.segments()
+                    .is_empty()
+                    .then_some(Problem::WalkWithoutSegments),
             ]
             .into_iter()
             .flatten()
-            .collect()
-        } else if leg.road().is_none() {
-            vec![Problem::NoRoad]
-        } else if leg.line().points().len() < Self::SHORTEST_LINE_LENGTH {
-            vec![Problem::NoRouteLine]
-        } else if leg.segments().is_empty() {
-            vec![Problem::WalkWithoutSegments]
-        } else {
-            Self::walked(leg)
+            .next()
+            .map_or_else(|| Self::walked(leg), |problem| vec![problem]),
+            Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => [
+                leg.boarding().is_none().then_some(Problem::NoBoarding),
+                leg.alighting().is_none().then_some(Problem::NoAlighting),
+                leg.segments().first().map(|_| Problem::SegmentsOnRide),
+            ]
+            .into_iter()
+            .flatten()
+            .collect(),
         }
     }
 }

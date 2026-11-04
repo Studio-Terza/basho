@@ -13,12 +13,12 @@ pub enum ReasonKind {
 
 impl From<&ReasonKind> for Label {
     fn from(kind: &ReasonKind) -> Label {
-        Label::new(match kind {
-            ReasonKind::PointOfInterest => "Point of interest",
-            ReasonKind::AvoidsRoad => "Avoids a road",
-            ReasonKind::Shorter => "Shorter",
-            ReasonKind::BashoPath => "Bashō's path",
-            ReasonKind::Quieter => "Quieter",
-        })
+        match kind {
+            ReasonKind::PointOfInterest => Label::new("Point of interest"),
+            ReasonKind::AvoidsRoad => Label::new("Avoids a road"),
+            ReasonKind::Shorter => Label::new("Shorter"),
+            ReasonKind::BashoPath => Label::new("Bashō's path"),
+            ReasonKind::Quieter => Label::new("Quieter"),
+        }
     }
 }

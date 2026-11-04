@@ -42,8 +42,8 @@ impl Goal {
     }
 
     #[must_use]
-    pub fn holds(&self, leg: LegIndex) -> bool {
-        (self.first..=self.last).contains(&leg)
+    pub fn holds(&self, leg: LegIndex) -> Option<LegIndex> {
+        (self.first..=self.last).contains(&leg).then_some(leg)
     }
 }
 

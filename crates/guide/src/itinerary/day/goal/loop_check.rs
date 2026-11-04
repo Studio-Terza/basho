@@ -6,6 +6,7 @@ use crate::itinerary::day::goal::Goal;
 use crate::itinerary::{Finding, Problem};
 use crate::leg::{Leg, LegIndex};
 use crate::times::PlanTime;
+use std::ops::Range;
 
 pub struct LoopCheck<'day> {
     day: DayNumber,
@@ -14,7 +15,7 @@ pub struct LoopCheck<'day> {
 }
 
 impl<'day> LoopCheck<'day> {
-    const LEAST_LOOP_LENGTH: usize = 2;
+    const SHORT_LOOP: Range<usize> = 1..2;
     const NEIGHBOUR_PAIR_LENGTH: usize = 2;
 
     #[must_use]
@@ -25,12 +26,13 @@ impl<'day> LoopCheck<'day> {
     #[must_use]
     pub fn findings(&self) -> Vec<Finding> {
         let stops = self.goal.purpose().stops();
-        let short = (!stops.is_empty() && stops.len() < Self::LEAST_LOOP_LENGTH)
+        let short = Self::SHORT_LOOP
+            .contains(&stops.len())
             .then(|| Finding::on_leg(self.day, self.goal.leg(End::Finish), Problem::LoopTooShort));
         let outside = stops
             .iter()
             .map(Self::leg_of)
-            .filter(|leg| !self.goal.holds(*leg))
+            .filter_map(|leg| Some(leg).xor(self.goal.holds(leg)))
             .map(|leg| Finding::on_leg(self.day, leg, Problem::LoopOutsideGoal));
         let unordered = stops
             .windows(Self::NEIGHBOUR_PAIR_LENGTH)

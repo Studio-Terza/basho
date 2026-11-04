@@ -26,7 +26,9 @@ impl BackupRide {
     }
 
     #[must_use]
-    pub fn runs_out_of_order(self, departure: ClockTime) -> bool {
-        self.time(End::Start) <= departure || self.time(End::Finish) <= self.time(End::Start)
+    pub fn runs_out_of_order(self, departure: ClockTime) -> Option<BackupRide> {
+        (self.time(End::Start) <= departure)
+            .then_some(self)
+            .or_else(|| (self.time(End::Finish) <= self.time(End::Start)).then_some(self))
     }
 }
