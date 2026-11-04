@@ -23,26 +23,37 @@ impl MapSpace {
     #[must_use]
     pub fn length(self) -> Pixels {
         match self {
-            MapSpace::ClearHalf => Gap::Snug.design() + Gap::Hair.design(),
-            MapSpace::ControlFoot => {
-                Gap::Tight.design() + Extent::Column.design() + Gap::Snug.design()
+            MapSpace::ClearHalf => Self::total([Gap::Snug.design(), Gap::Hair.design()]),
+            MapSpace::ControlFoot => Self::total([
+                Gap::Tight.design(),
+                Extent::Column.design(),
+                Gap::Snug.design(),
+            ]),
+            MapSpace::ScaleWidth => {
+                Self::total([Extent::ScaleBar.design(), Extent::ScaleText.design()])
             }
-            MapSpace::ScaleWidth => Extent::ScaleBar.design() + Extent::ScaleText.design(),
-            MapSpace::NorthWidth => {
-                Extent::Glyph.design()
-                    + Gap::Tight.design() * Self::BOTH_SIDES.factor()
-                    + Gap::Snug.design() * Self::BOTH_SIDES.factor()
-            }
-            MapSpace::NorthHeight => {
-                Extent::Column.design()
-                    + Extent::Glyph.design()
-                    + Gap::Tight.design() * Self::BOTH_SIDES.factor()
-            }
-            MapSpace::ShieldSpacing => {
-                Gap::Open.design() * Self::SHIELD_GAPS.factor() + Gap::Gutter.design()
-            }
-            MapSpace::PointerSide => Gap::Thin.design() + Gap::Hair.design(),
-            MapSpace::PointerHalfTall => Gap::Close.design() + Gap::Hair.design(),
+            MapSpace::NorthWidth => Self::total([
+                Extent::Glyph.design(),
+                Gap::Tight.design() * Self::BOTH_SIDES.factor(),
+                Gap::Snug.design() * Self::BOTH_SIDES.factor(),
+            ]),
+            MapSpace::NorthHeight => Self::total([
+                Extent::Column.design(),
+                Extent::Glyph.design(),
+                Gap::Tight.design() * Self::BOTH_SIDES.factor(),
+            ]),
+            MapSpace::ShieldSpacing => Self::total([
+                Gap::Open.design() * Self::SHIELD_GAPS.factor(),
+                Gap::Gutter.design(),
+            ]),
+            MapSpace::PointerSide => Self::total([Gap::Thin.design(), Gap::Hair.design()]),
+            MapSpace::PointerHalfTall => Self::total([Gap::Close.design(), Gap::Hair.design()]),
         }
+    }
+
+    fn total(parts: impl IntoIterator<Item = Pixels>) -> Pixels {
+        parts
+            .into_iter()
+            .fold(Pixels::ZERO, |length, part| length + part)
     }
 }

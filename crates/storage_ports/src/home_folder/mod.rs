@@ -1,16 +1,17 @@
 mod disk;
+mod shared_storage;
 
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
 
 use crate::Storage;
 use disk::Disk;
+use shared_storage::SharedStorage;
 
-#[derive(Clone, Debug, derive_more::Deref)]
+#[derive(Clone, Debug, PartialEq, Eq, derive_more::Deref)]
 pub struct HomeFolder {
     root: PathBuf,
     #[deref(forward)]
-    storage: Arc<dyn Storage>,
+    storage: SharedStorage,
 }
 
 impl HomeFolder {
@@ -18,7 +19,7 @@ impl HomeFolder {
     pub fn new(root: PathBuf, storage: impl Storage + 'static) -> HomeFolder {
         HomeFolder {
             root,
-            storage: Arc::new(storage),
+            storage: SharedStorage::new(storage),
         }
     }
 
@@ -39,11 +40,3 @@ impl HomeFolder {
             .fold(self.root.clone(), |path, part| path.join(part))
     }
 }
-
-impl PartialEq for HomeFolder {
-    fn eq(&self, other: &HomeFolder) -> bool {
-        self.root == other.root && Arc::ptr_eq(&self.storage, &other.storage)
-    }
-}
-
-impl Eq for HomeFolder {}

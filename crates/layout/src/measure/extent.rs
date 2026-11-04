@@ -25,25 +25,31 @@ impl Token for Extent {
     ];
 
     fn name(self) -> Label {
-        Label::new(match self {
-            Extent::Glyph => "extent-glyph",
-            Extent::Column => "extent-column",
-            Extent::ScaleBar => "extent-scale-bar",
-            Extent::ScaleText => "extent-scale-text",
-            Extent::MapShortest => "extent-map-shortest",
-            Extent::MapTallest => "extent-map-tallest",
-        })
+        match self {
+            Extent::Glyph => Label::new("extent-glyph"),
+            Extent::Column => Label::new("extent-column"),
+            Extent::ScaleBar => Label::new("extent-scale-bar"),
+            Extent::ScaleText => Label::new("extent-scale-text"),
+            Extent::MapShortest => Label::new("extent-map-shortest"),
+            Extent::MapTallest => Label::new("extent-map-tallest"),
+        }
     }
 
     fn length(self, viewport: Viewport) -> Pixels {
-        viewport.scaled(match self {
+        viewport.scaled(self.designed())
+    }
+}
+
+impl Extent {
+    fn designed(self) -> Pixels {
+        match self {
             Extent::Glyph => Self::GLYPH,
             Extent::Column => Self::COLUMN,
             Extent::ScaleBar => Self::SCALE_BAR,
             Extent::ScaleText => Self::SCALE_TEXT,
             Extent::MapShortest => Self::MAP_SHORTEST,
             Extent::MapTallest => Self::MAP_TALLEST,
-        })
+        }
     }
 }
 

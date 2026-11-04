@@ -14,13 +14,16 @@ fn a_replaced_file_on_disk_is_whole_and_leaves_no_part_file_behind() {
     let path = home.joined(KEPT);
     home.replace(&path, &"old").unwrap();
     home.replace(&path, &"new\nlines").unwrap();
-    assert_eq!(home.read(&path).unwrap(), "new\nlines");
+    assert_eq!(
+        home.read(&path).unwrap().split('\n').collect::<Vec<&str>>(),
+        ["new", "lines"]
+    );
     assert_eq!(
         home.names_in(path.parent().unwrap()).unwrap(),
         vec![KEPT[2]]
     );
     home.forget(&path).unwrap();
-    assert!(!path.exists());
+    assert_eq!(path.try_exists().ok(), Some(false));
 }
 
 #[test]

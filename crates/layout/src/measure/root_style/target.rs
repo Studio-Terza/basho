@@ -16,11 +16,11 @@ impl Token for Target {
     const ALL: &'static [Target] = &[Target::Key, Target::Row, Target::TabBar];
 
     fn name(self) -> Label {
-        Label::new(match self {
-            Target::Key => "target-key",
-            Target::Row => "target-row",
-            Target::TabBar => "target-tab-bar",
-        })
+        match self {
+            Target::Key => Label::new("target-key"),
+            Target::Row => Label::new("target-row"),
+            Target::TabBar => Label::new("target-tab-bar"),
+        }
     }
 
     fn length(self, viewport: Viewport) -> Pixels {

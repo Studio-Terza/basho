@@ -19,30 +19,30 @@ impl Line {
     const FIRM: Scale = Scale::new(1.5);
     const BOLD: Scale = Scale::new(2.0);
     const HEAVY: Scale = Scale::new(3.0);
+
+    fn weight(self) -> Scale {
+        match self {
+            Line::Hair => Self::HAIR,
+            Line::Firm => Self::FIRM,
+            Line::Bold => Self::BOLD,
+            Line::Heavy => Self::HEAVY,
+        }
+    }
 }
 
 impl Token for Line {
     const ALL: &'static [Line] = &[Line::Hair, Line::Firm, Line::Bold, Line::Heavy];
 
     fn name(self) -> Label {
-        Label::new(match self {
-            Line::Hair => "line-hair",
-            Line::Firm => "line-firm",
-            Line::Bold => "line-bold",
-            Line::Heavy => "line-heavy",
-        })
+        match self {
+            Line::Hair => Label::new("line-hair"),
+            Line::Firm => Label::new("line-firm"),
+            Line::Bold => Label::new("line-bold"),
+            Line::Heavy => Label::new("line-heavy"),
+        }
     }
 
     fn length(self, viewport: Viewport) -> Pixels {
-        viewport.scaled(
-            Self::HAIRLINE
-                * match self {
-                    Line::Hair => Self::HAIR,
-                    Line::Firm => Self::FIRM,
-                    Line::Bold => Self::BOLD,
-                    Line::Heavy => Self::HEAVY,
-                }
-                .factor(),
-        )
+        viewport.scaled(Self::HAIRLINE * self.weight().factor())
     }
 }
