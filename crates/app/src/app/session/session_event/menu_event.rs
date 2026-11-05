@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
-use layout::Motion;
 use menu::MenuStep;
+use menu::Motion;
 use std::time::Duration;
 
 use crate::app::session::Session;

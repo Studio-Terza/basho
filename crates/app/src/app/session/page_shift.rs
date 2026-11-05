@@ -2,8 +2,8 @@ use std::fmt;
 use std::time::Duration;
 
 use guide::plane::Pixels;
-use layout::Motion;
 use layout::scale::Viewport;
+use menu::Motion;
 
 use crate::app::session::hand::Swipe;
 use crate::app::step::Toward;

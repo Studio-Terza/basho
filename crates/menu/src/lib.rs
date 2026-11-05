@@ -1,6 +1,7 @@
 mod closed;
 mod closing;
 mod menu_step;
+mod motion;
 mod open;
 mod pose;
 mod pull;
@@ -13,6 +14,7 @@ use closing::Closing;
 use layout::Panel;
 use layout::scale::Viewport;
 pub use menu_step::MenuStep;
+pub use motion::Motion;
 use open::Open;
 use pose::Pose;
 pub use pose::PoseStyle;

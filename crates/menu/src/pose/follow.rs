@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use layout::Motion;
+use crate::Motion;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Follow {

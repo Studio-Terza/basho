@@ -1,16 +1,18 @@
 mod ending;
+mod loop_check;
 use crate::content::Content;
 use crate::day_number::DayNumber;
 use crate::end::End;
 use crate::geo::Coordinate;
 use crate::geo::Distance;
-use crate::itinerary::day::goal::{Aim, Goal, LoopCheck, Purpose};
+use crate::itinerary::day::goal::{Aim, Goal, Purpose};
 use crate::itinerary::day::{Caption, Night};
 use crate::itinerary::{Finding, Problem};
 use crate::leg::{Leg, LegIndex, Mode};
 use crate::leg_line::LegLine;
 use crate::words::Label;
 pub use ending::Ending;
+use loop_check::LoopCheck;
 use newtype::Counter;
 
 pub struct GoalPlan<'day> {

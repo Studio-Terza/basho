@@ -2,7 +2,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 use guide::plane::Pixels;
-use layout::Motion;
+use menu::Motion;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, PartialOrd)]
 pub struct Flick(f64);

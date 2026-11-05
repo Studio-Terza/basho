@@ -1,6 +1,5 @@
 mod aim;
 mod goal_plan;
-mod loop_check;
 mod purpose;
 mod reason;
 
@@ -13,7 +12,6 @@ use std::ops::Index;
 
 pub use aim::Aim;
 pub use goal_plan::GoalPlan;
-use loop_check::LoopCheck;
 pub use purpose::Purpose;
 pub use reason::Reason;
 
