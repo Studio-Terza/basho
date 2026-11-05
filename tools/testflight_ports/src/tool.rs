@@ -4,7 +4,7 @@ use std::path::Path;
 use std::process::{Command, Output};
 use std::str::FromStr;
 
-use crate::bits::RawBytes;
+use crate::boundary::RawBytes;
 use crate::failure::Failure;
 use crate::xcrun_tool::XcrunTool;
 

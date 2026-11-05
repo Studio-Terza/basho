@@ -1,3 +1,3 @@
-mod bits;
+mod boundary;
 
-pub use bits::GridPoint;
+pub use boundary::GridPoint;

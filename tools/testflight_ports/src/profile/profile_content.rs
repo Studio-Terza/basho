@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-use crate::bits::RawBytes;
+use crate::boundary::RawBytes;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]

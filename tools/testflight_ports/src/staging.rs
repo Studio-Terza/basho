@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use tempfile::{Builder, TempDir};
 
-use crate::bits::RawBytes;
+use crate::boundary::RawBytes;
 use crate::failure::Failure;
 
 pub struct Staging {

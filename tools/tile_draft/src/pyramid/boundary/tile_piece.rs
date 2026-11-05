@@ -11,6 +11,10 @@ pub struct TilePiece {
 }
 
 impl TilePiece {
+    const SPOT_CODE: u64 = 1;
+    const LINE_CODE: u64 = 2;
+    const AREA_CODE: u64 = 3;
+
     #[must_use]
     pub fn new(tile: TileId, cut: ShapeCut) -> TilePiece {
         TilePiece { tile, cut }
@@ -28,6 +32,14 @@ impl TilePiece {
             geometry.path(path);
             geometry.close_for(kind == PathKind::Area);
         });
-        layer.add(tags, kind as u64, &geometry);
+        layer.add(tags, Self::geometry_code(kind), &geometry);
+    }
+
+    fn geometry_code(kind: PathKind) -> u64 {
+        match kind {
+            PathKind::Spot => Self::SPOT_CODE,
+            PathKind::Line => Self::LINE_CODE,
+            PathKind::Area => Self::AREA_CODE,
+        }
     }
 }

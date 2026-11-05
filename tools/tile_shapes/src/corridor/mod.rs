@@ -8,10 +8,10 @@ use map_class::Zoom;
 use tiles::GridAxis;
 use tiles::TileId;
 
-mod bits;
+mod boundary;
 
 use crate::WorldPoint;
-use bits::CellWalk;
+use boundary::CellWalk;
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Corridor {

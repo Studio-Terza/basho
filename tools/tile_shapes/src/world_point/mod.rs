@@ -1,3 +1,3 @@
-mod bits;
+mod boundary;
 
-pub use bits::WorldPoint;
+pub use boundary::WorldPoint;
