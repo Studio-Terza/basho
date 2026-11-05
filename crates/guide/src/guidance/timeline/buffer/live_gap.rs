@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 
 use crate::clock::Minutes;
@@ -18,9 +19,11 @@ impl LiveGap {
 
 impl fmt::Display for LiveGap {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let (amount, word) = Some(self.spare)
-            .filter(|spare| *spare < Minutes::ZERO)
-            .map_or((self.spare, "to spare"), |spare| (spare.abs(), "short"));
-        write!(formatter, "{amount} {word} · {}", self.basis)
+        match self.spare.cmp(&Minutes::ZERO) {
+            Ordering::Less => write!(formatter, "{} short · {}", self.spare.abs(), self.basis),
+            Ordering::Equal | Ordering::Greater => {
+                write!(formatter, "{} to spare · {}", self.spare, self.basis)
+            }
+        }
     }
 }

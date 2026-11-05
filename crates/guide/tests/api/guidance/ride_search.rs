@@ -37,10 +37,8 @@ fn the_first_fixes_of_a_train_leaving_the_station_are_riding_not_missed() {
         .fix(ClockTime::try_from(JUST_LEFT.to_owned()).unwrap(), moving);
     assert!(moving.distance_to(station) < NEAR_THE_STATION);
     assert_eq!(guidance.missed_ride(), None);
-    assert_eq!(
-        (guidance.leg_index(), guidance.phase()),
-        (FERN_TRAIN, Phase::Moving)
-    );
+    assert_eq!(guidance.leg_index(), FERN_TRAIN);
+    assert_eq!(guidance.phase(), Phase::Moving);
 }
 
 #[test]
@@ -72,10 +70,10 @@ fn lost_beside_the_railway_is_off_route_with_an_arrow_before_and_after_the_train
 #[test]
 fn after_the_ride_the_walk_from_the_stop_is_walking_not_riding() {
     let trip = Fixture::bundled_days(&AFTER_RIDES);
-    let wrong: Vec<String> = AFTER_RIDES
+    let (found, wanted): (Vec<_>, Vec<_>) = AFTER_RIDES
         .iter()
         .zip(ALIGHTING)
-        .filter_map(|(number, place)| {
+        .map(|(number, place)| {
             let day = trip.day(*number);
             let ride = Walker::reaching(day, place);
             let leg = day.leg(ride).unwrap();
@@ -86,9 +84,12 @@ fn after_the_ride_the_walk_from_the_stop_is_walking_not_riding() {
             let walk = ride.incremented();
             let along = day.leg(walk).unwrap().length() * Share::HALF;
             let guidance = walker.fix_along(walk, along, Minutes::ZERO);
-            ((guidance.leg_index(), guidance.status()) != (walk, Some(Status::OnRoute)))
-                .then(|| format!("day {number} {place}: {:?}", guidance.status()))
+            let label = format!("day {number} {place}");
+            (
+                (label.clone(), (guidance.leg_index(), guidance.status())),
+                (label, (walk, Some(Status::OnRoute))),
+            )
         })
-        .collect();
-    assert_eq!(wrong, Vec::<String>::new());
+        .unzip();
+    assert_eq!(found, wanted);
 }

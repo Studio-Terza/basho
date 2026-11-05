@@ -1,8 +1,10 @@
 pub mod allowance;
 
+use std::cmp::Ordering;
 use std::fmt;
 
 use crate::clock::{Minutes, TripTime};
+use crate::geo::Distance;
 use crate::leg::Leg;
 use crate::readout::Emphasis;
 use crate::times::{FactTime, ShownTime};
@@ -33,25 +35,41 @@ pub enum TimeCheck {
 impl TimeCheck {
     #[must_use]
     pub fn comparing(due: TripTime, by: ShownTime, now: TripTime, leg: &Leg) -> TimeCheck {
-        let over = now.minutes_since(due);
-        Some(over)
-            .filter(|over| *over <= Minutes::ZERO)
-            .map(|over| TimeCheck::Expected { by, left: -over })
-            .or_else(|| {
-                Some(over)
-                    .filter(|over| *over <= Allowance::for_leg(leg))
-                    .map(|over| TimeCheck::Due { by, over })
-            })
-            .unwrap_or(TimeCheck::Late { by, over })
+        Self::overrun(now.minutes_since(due), by, leg)
+    }
+
+    fn overrun(over: Minutes, by: ShownTime, leg: &Leg) -> TimeCheck {
+        match over.cmp(&Minutes::ZERO) {
+            Ordering::Less | Ordering::Equal => TimeCheck::Expected { by, left: -over },
+            Ordering::Greater => Self::allowed(over.cmp(&Allowance::for_leg(leg)), by, over),
+        }
+    }
+
+    fn allowed(against_allowance: Ordering, by: ShownTime, over: Minutes) -> TimeCheck {
+        match against_allowance {
+            Ordering::Less | Ordering::Equal => TimeCheck::Due { by, over },
+            Ordering::Greater => TimeCheck::Late { by, over },
+        }
     }
 
     #[must_use]
     pub fn boarding(due: TripTime, by: ShownTime, now: TripTime) -> TimeCheck {
-        let over = now.minutes_since(due);
-        Some(over).filter(|over| *over <= Minutes::ZERO).map_or(
-            TimeCheck::Due { by, over },
-            |over| TimeCheck::Expected { by, left: -over },
-        )
+        Self::early(now.minutes_since(due), by)
+    }
+
+    fn early(over: Minutes, by: ShownTime) -> TimeCheck {
+        match over.cmp(&Minutes::ZERO) {
+            Ordering::Less | Ordering::Equal => TimeCheck::Expected { by, left: -over },
+            Ordering::Greater => TimeCheck::Due { by, over },
+        }
+    }
+
+    #[must_use]
+    pub fn relocated(self, off_route: Option<Distance>, from: Option<FactTime>) -> TimeCheck {
+        match off_route {
+            Some(_) => self,
+            None => self.estimated(from),
+        }
     }
 
     #[must_use]

@@ -8,7 +8,7 @@ use guide::DeadlineKind;
 use guide::FactSource;
 use guide::Language;
 use guide::classed::Classed;
-use guide::guidance::timeline::Buffer;
+use guide::guidance::timeline::{Buffer, Reaching};
 
 use crate::app::screen::look::Look;
 use crate::app::screen::ruby_view::RubyView;
@@ -38,8 +38,8 @@ impl<'view> BufferView<'view> {
                         buffer.deadline().kind(),
                         DeadlineKind::Ride | DeadlineKind::Tour
                     )
-                    && buffer.reaches_before_event().is_some())
-                .then_some("Walk on now. You can still make it if you do not stop.");
+                    && buffer.reaches_before_event() == Reaching::InTime)
+                    .then_some("Walk on now. You can still make it if you do not stop.");
                 let backup = buffer.backup();
                 let kind = Look::deadline(buffer.deadline().kind());
                 let tone = Look::buffer(state);

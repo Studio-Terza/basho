@@ -9,10 +9,10 @@ pub enum Stance {
 
 impl Stance {
     #[must_use]
-    pub fn playing(self) -> Option<Stance> {
+    pub fn playing<T>(self, found: Option<T>) -> Option<T> {
         match self {
             Stance::Preview | Stance::Done => None,
-            Stance::Waiting | Stance::Moving | Stance::Missed => Some(self),
+            Stance::Waiting | Stance::Moving | Stance::Missed => found,
         }
     }
 }

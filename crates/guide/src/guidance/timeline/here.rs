@@ -1,7 +1,24 @@
 use crate::clock::{ClockTime, Minutes};
+use crate::deadline_kind::StretchEnd;
 use crate::guidance::timeline::deadline::Deadline;
 use crate::guidance::timeline::planned_stop::PlannedStop;
 use crate::guidance::timeline::stretch_index::StretchIndex;
+use std::cmp::Ordering;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Lead {
+    Ahead,
+    Behind,
+}
+
+impl From<Ordering> for Lead {
+    fn from(against_event: Ordering) -> Lead {
+        match against_event {
+            Ordering::Less | Ordering::Equal => Lead::Ahead,
+            Ordering::Greater => Lead::Behind,
+        }
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Here {
@@ -72,15 +89,24 @@ impl Here {
     }
 
     #[must_use]
-    pub fn ahead_of<'deadline, 'day>(
-        self,
-        deadline: &'deadline Deadline<'day>,
-    ) -> Option<&'deadline Deadline<'day>> {
-        deadline.ends_stretch().or(Some(deadline)
-            .filter(|deadline| deadline.reach() >= self.reach)
-            .filter(|deadline| {
-                self.clock
-                    .is_none_or(|clock| clock <= deadline.event().since_midnight())
-            }))
+    pub fn ahead_of(self, deadline: &Deadline<'_>) -> Lead {
+        match deadline.kind().ending() {
+            StretchEnd::Ends => Lead::Ahead,
+            StretchEnd::Continues => self.by_reach(deadline),
+        }
+    }
+
+    fn by_reach(self, deadline: &Deadline<'_>) -> Lead {
+        match deadline.reach().cmp(&self.reach) {
+            Ordering::Less => Lead::Behind,
+            Ordering::Equal | Ordering::Greater => self.by_clock(deadline),
+        }
+    }
+
+    fn by_clock(self, deadline: &Deadline<'_>) -> Lead {
+        match self.clock {
+            None => Lead::Ahead,
+            Some(clock) => Lead::from(clock.cmp(&deadline.event().since_midnight())),
+        }
     }
 }

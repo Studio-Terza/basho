@@ -1,6 +1,6 @@
 use crate::clock::{Minutes, TripTime};
 use crate::end::End;
-use crate::geo::{Coordinate, RouteFix, Share};
+use crate::geo::{Coordinate, Distance, RouteFix, Share};
 use crate::guidance::leg_progress::LegProgress;
 use crate::guidance::nearness::Nearness;
 use crate::guidance::ride_slack::RideSlack;
@@ -26,7 +26,7 @@ impl<'day> RideSearch<'day> {
     #[must_use]
     pub fn riding_on(self, kept: LegProgress) -> Option<Snap> {
         let ride = kept.leg();
-        let leg = self.day.leg(ride).and_then(|leg| self.under_way(leg))?;
+        let leg = self.under_way(ride)?;
         leg.line()
             .fix(self.here)
             .filter(|fix| fix.off_route() <= Nearness::ClearlyElsewhere.beside(leg.line()))
@@ -35,34 +35,48 @@ impl<'day> RideSearch<'day> {
 
     #[must_use]
     pub fn upcoming(self, after: LegIndex) -> Option<Snap> {
-        let next: Vec<LegIndex> = self
-            .day
+        match self.on_walk() {
+            Some(_) => None,
+            None => self.next_ride(after),
+        }
+    }
+
+    fn next_ride(self, after: LegIndex) -> Option<Snap> {
+        self.day
             .legs()
             .iter()
             .enumerate()
             .skip(usize::from(after))
             .skip_while(|(_, leg)| leg.mode() == Mode::Walk)
             .take_while(|(_, leg)| leg.mode() != Mode::Walk)
-            .filter_map(|(index, leg)| self.under_way(leg).map(|_| index))
-            .map(LegIndex::new)
-            .collect();
-        next.into_iter()
-            .filter_map(|index| self.away_from_walks().map(|_| index))
-            .filter_map(|index| {
-                let leg = self.day.leg(index)?;
+            .map(|(index, _)| LegIndex::new(index))
+            .filter_map(|index| self.under_way(index).map(|leg| (index, leg)))
+            .filter_map(|(index, leg)| {
+                let clock = self.now.minutes_into(self.day.date());
+                let station = Nearness::AtStation.distance();
                 leg.line()
                     .fix(self.here)
                     .filter(|fix| fix.off_route() <= Nearness::OnRoute.beside(leg.line()))
-                    .and_then(|fix| self.on_schedule(leg, fix))
+                    .filter(|fix| {
+                        fix.along() + station
+                            >= Self::timetabled(
+                                leg,
+                                clock - RideSlack::Departure.for_mode(leg.mode()),
+                            )
+                    })
+                    .filter(|fix| {
+                        fix.along() <= Self::timetabled(leg, clock + Self::CLOCK_STEP) + station
+                    })
                     .map(|fix| Snap::new(index, fix))
             })
             .min_by_key(|snap| snap.fix().off_route())
     }
 
-    fn under_way(self, leg: &'day Leg) -> Option<&'day Leg> {
+    fn under_way(self, ride: LegIndex) -> Option<&'day Leg> {
         let clock = self.now.minutes_into(self.day.date());
         let station = Nearness::AtStation.distance();
-        Some(leg)
+        self.day
+            .leg(ride)
             .filter(|leg| leg.mode() != Mode::Walk)
             .filter(|leg| clock >= leg.time(End::Start).since_midnight())
             .filter(|leg| {
@@ -77,31 +91,21 @@ impl<'day> RideSearch<'day> {
             })
     }
 
-    fn on_schedule(self, leg: &Leg, fix: RouteFix) -> Option<RouteFix> {
-        let clock = self.now.minutes_into(self.day.date());
+    fn timetabled(leg: &Leg, clock: Minutes) -> Distance {
         let start = leg.time(End::Start).since_midnight();
         let span = (leg.time(End::Finish).since_midnight() - start).max(Minutes::new(1));
-        let share = |minutes: Minutes| Share::ratio((minutes - start).amount(), span.amount());
-        let length = leg.line().length();
-        let station = Nearness::AtStation.distance();
-        Some(fix)
-            .filter(|fix| {
-                fix.along() + station
-                    >= length * share(clock - RideSlack::Departure.for_mode(leg.mode()))
-            })
-            .filter(|fix| fix.along() <= length * share(clock + Self::CLOCK_STEP) + station)
+        leg.line().length() * Share::ratio((clock - start).amount(), span.amount())
     }
 
-    fn away_from_walks(self) -> Option<Self> {
+    fn on_walk(self) -> Option<RouteFix> {
         self.day
             .legs()
             .iter()
             .filter(|leg| leg.mode() == Mode::Walk)
-            .all(|leg| {
+            .find_map(|leg| {
                 leg.line()
                     .fix(self.here)
-                    .is_none_or(|fix| fix.off_route() > Nearness::OnRoute.beside(leg.line()))
+                    .filter(|fix| fix.off_route() <= Nearness::OnRoute.beside(leg.line()))
             })
-            .then_some(self)
     }
 }

@@ -1,4 +1,5 @@
 mod live_gap;
+mod reaching;
 use crate::buffer_state::BufferState;
 use crate::clock::{ClockTime, Minutes};
 use crate::guidance::timeline::backup::Backup;
@@ -7,6 +8,7 @@ use crate::guidance::timeline::footing::Footing;
 use crate::guidance::timeline::here::Here;
 use crate::times::Basis;
 pub use live_gap::LiveGap;
+pub use reaching::Reaching;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Buffer<'day> {
@@ -45,8 +47,8 @@ impl<'day> Buffer<'day> {
     }
 
     #[must_use]
-    pub fn reaches_by(&self, time: ClockTime) -> Option<ClockTime> {
-        Some(time).filter(|time| self.projected <= time.since_midnight())
+    pub fn reaches_by(&self, time: ClockTime) -> Reaching {
+        Reaching::from(self.projected.cmp(&time.since_midnight()))
     }
 
     #[must_use]
@@ -90,25 +92,37 @@ impl<'day> Buffer<'day> {
     #[must_use]
     pub fn state(&self) -> BufferState {
         let spare = BufferState::for_spare(self.spare());
-        let calm = Some(spare)
-            .filter(|state| *state == BufferState::Tight)
-            .filter(|_| self.footing == Footing::Seated)
-            .map_or(spare, |_| BufferState::Comfortable);
+        let calm = Self::calmed(spare, self.footing);
         self.boarding().map_or(calm, |_| BufferState::Waiting)
+    }
+
+    fn calmed(state: BufferState, footing: Footing) -> BufferState {
+        match state {
+            BufferState::Tight => Self::eased(footing),
+            BufferState::Comfortable | BufferState::Short | BufferState::Waiting => state,
+        }
+    }
+
+    fn eased(footing: Footing) -> BufferState {
+        match footing {
+            Footing::Seated => BufferState::Comfortable,
+            Footing::OnFoot => BufferState::Tight,
+        }
     }
 
     #[must_use]
     pub fn boarding(&self) -> Option<Minutes> {
         self.floor
             .filter(|now| self.projected <= *now)
-            .filter(|_| self.projected <= self.deadline.event().since_midnight())
+            .and_then(|now| self.reaches_by(self.deadline.event()).keep(now))
     }
 
     #[must_use]
-    pub fn reaches_before_event(&self) -> Option<Buffer<'day>> {
-        Some(*self)
-            .filter(|buffer| buffer.floor.is_none())
-            .filter(|buffer| buffer.projected <= buffer.deadline.event().since_midnight())
+    pub fn reaches_before_event(&self) -> Reaching {
+        match self.floor {
+            Some(_) => Reaching::Late,
+            None => self.reaches_by(self.deadline.event()),
+        }
     }
 
     #[must_use]

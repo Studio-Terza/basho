@@ -13,7 +13,7 @@ pub struct RouteLine {
 }
 
 impl RouteLine {
-    const SKETCH_SEGMENT: Distance = Distance::new(1000.0);
+    pub const SKETCH_SEGMENT: Distance = Distance::new(1000.0);
     pub const SEGMENT_ENDS_LENGTH: usize = 2;
 
     #[must_use]

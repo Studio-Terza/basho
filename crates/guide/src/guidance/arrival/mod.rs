@@ -2,6 +2,7 @@ mod arrival_mark;
 use crate::clock::{ClockTime, TripTime};
 use crate::times::{Basis, LiveTime};
 pub use arrival_mark::ArrivalMark;
+use std::ops::{Bound, RangeBounds};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Arrival {
@@ -31,20 +32,22 @@ impl Arrival {
     pub fn time(self, mark: ArrivalMark) -> Option<ClockTime> {
         match mark {
             ArrivalMark::Arrives => self.at.map(TripTime::time),
-            ArrivalMark::AfterSunset => self
-                .limited(self.sunset)
-                .filter(|limit| Some(*limit) < self.at)
-                .map(TripTime::time),
-            ArrivalMark::AfterCheckIn => self
-                .limited(self.check_in)
-                .filter(|limit| Some(*limit) < self.at)
-                .or(self.limited(self.check_in).filter(|_| self.at.is_none()))
-                .map(TripTime::time),
+            ArrivalMark::AfterSunset => self.passed(self.sunset, mark),
+            ArrivalMark::AfterCheckIn => self.passed(self.check_in, mark),
         }
     }
 
-    fn limited(self, limit: Option<TripTime>) -> Option<TripTime> {
-        limit.filter(|limit| self.planned <= *limit)
+    fn passed(self, limit: Option<TripTime>, mark: ArrivalMark) -> Option<ClockTime> {
+        limit
+            .filter(|limit| {
+                (
+                    Bound::Included(self.planned),
+                    self.at
+                        .map_or(mark.unarrived(self.planned), Bound::Excluded),
+                )
+                    .contains(limit)
+            })
+            .map(TripTime::time)
     }
 
     #[must_use]

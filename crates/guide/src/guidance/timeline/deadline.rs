@@ -137,14 +137,4 @@ impl<'day> Deadline<'day> {
     pub fn haste(&self) -> Haste {
         self.haste
     }
-
-    #[must_use]
-    pub fn ends_stretch(&self) -> Option<&Deadline<'day>> {
-        Some(self).filter(|deadline| {
-            matches!(
-                deadline.kind,
-                DeadlineKind::Ride | DeadlineKind::Tour | DeadlineKind::CheckIn
-            )
-        })
-    }
 }

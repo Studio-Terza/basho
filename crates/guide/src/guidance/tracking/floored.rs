@@ -1,9 +1,11 @@
 use super::{Placing, Stage};
+use crate::clock::Minutes;
 use crate::end::End;
 use crate::geo::Distance;
 use crate::guidance::LegProgress;
 use crate::guidance::{Guidance, Phase, PositionSource};
 use crate::leg::Leg;
+use std::cmp::Ordering;
 
 impl<'day> Guidance<'day> {
     #[must_use]
@@ -21,27 +23,41 @@ impl<'day> Guidance<'day> {
 
     fn floored(self, floor: Placing) -> Guidance<'day> {
         let clock = self.now.minutes_into(self.day.date()) - self.offset;
-        let waiting = self.day.leg(floor.on_leg()).map(|leg| {
-            let start = leg.time(End::Start).since_midnight();
-            Some(start)
-                .filter(|start| clock < *start)
-                .map_or(Phase::Overdue, |start| Phase::Waiting {
-                    minutes: start - clock,
-                })
-        });
-        let held = Guidance {
+        let waiting = self
+            .day
+            .leg(floor.on_leg())
+            .map(|leg| Self::waiting_for(clock, leg.time(End::Start).since_midnight()));
+        Guidance {
             leg: floor.on_leg(),
-            along: Some(self.leg)
-                .filter(|leg| *leg == floor.on_leg())
-                .map_or(Distance::default(), |_| self.along),
+            along: Self::along_on(self.leg.cmp(&floor.on_leg()), self.along),
             source: PositionSource::Estimate,
             off_route: None,
             ..self
-        };
-        match floor.stage() {
-            Stage::Finished => held.arrived(),
-            Stage::Boarding => held.in_phase(waiting.unwrap_or(Phase::Moving)),
-            Stage::Under => held.in_phase(Phase::Moving),
+        }
+        .staged(floor.stage(), waiting)
+    }
+
+    fn waiting_for(clock: Minutes, start: Minutes) -> Phase {
+        match clock.cmp(&start) {
+            Ordering::Less => Phase::Waiting {
+                minutes: start - clock,
+            },
+            Ordering::Equal | Ordering::Greater => Phase::Overdue,
+        }
+    }
+
+    fn along_on(same_leg: Ordering, along: Distance) -> Distance {
+        match same_leg {
+            Ordering::Equal => along,
+            Ordering::Less | Ordering::Greater => Distance::default(),
+        }
+    }
+
+    fn staged(self, stage: Stage, waiting: Option<Phase>) -> Guidance<'day> {
+        match stage {
+            Stage::Finished => self.arrived(),
+            Stage::Boarding => self.in_phase(waiting.unwrap_or(Phase::Moving)),
+            Stage::Under => self.in_phase(Phase::Moving),
         }
     }
 

@@ -8,6 +8,7 @@ use crate::guidance::snap::Snap;
 use crate::itinerary::Day;
 use crate::leg::{Leg, LegIndex, Mode};
 use newtype::Counter;
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Platform<'day> {
@@ -61,14 +62,19 @@ impl<'day> Platform<'day> {
     #[must_use]
     pub fn phase(self, now: TripTime) -> Phase {
         let minutes = self.leg.time(End::Start).since_midnight() - now.time().since_midnight();
-        Some(minutes)
-            .filter(|minutes| *minutes >= Minutes::ZERO)
-            .map(|minutes| Phase::Waiting { minutes })
-            .or_else(|| {
-                (-minutes <= RideSlack::Departure.for_mode(self.leg.mode()))
-                    .then_some(Phase::Overdue)
-            })
-            .unwrap_or(Phase::Missed)
+        match minutes.cmp(&Minutes::ZERO) {
+            Ordering::Less => {
+                Self::overdue((-minutes).cmp(&RideSlack::Departure.for_mode(self.leg.mode())))
+            }
+            Ordering::Equal | Ordering::Greater => Phase::Waiting { minutes },
+        }
+    }
+
+    fn overdue(against_slack: Ordering) -> Phase {
+        match against_slack {
+            Ordering::Less | Ordering::Equal => Phase::Overdue,
+            Ordering::Greater => Phase::Missed,
+        }
     }
 
     #[must_use]
@@ -89,10 +95,17 @@ impl<'day> Platform<'day> {
 
     #[must_use]
     pub fn late(self, now: TripTime) -> Minutes {
-        Some(self.phase(now))
-            .filter(|phase| *phase == Phase::Missed)
-            .map_or(Minutes::ZERO, |_| {
-                now.time().since_midnight() - self.leg.time(End::Start).since_midnight()
-            })
+        match self.phase(now) {
+            Phase::Missed => self.behind(now),
+            Phase::Preview
+            | Phase::Waiting { .. }
+            | Phase::Moving
+            | Phase::Overdue
+            | Phase::Done => Minutes::ZERO,
+        }
+    }
+
+    fn behind(self, now: TripTime) -> Minutes {
+        now.time().since_midnight() - self.leg.time(End::Start).since_midnight()
     }
 }

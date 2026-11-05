@@ -1,5 +1,6 @@
 use guide::DeadlineKind;
-use guide::guidance::timeline::Buffer;
+use guide::StretchEnd;
+use guide::guidance::timeline::{Buffer, Reaching};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Wanted {
@@ -14,10 +15,15 @@ impl Wanted {
             Wanted::Ride => Self::named_ride(buffer),
             Wanted::RideWithBackup => Self::named_ride(buffer)
                 .filter(|buffer| buffer.backup().is_some())
-                .filter(|buffer| buffer.reaches_before_event().is_some()),
-            Wanted::Cutoff => {
-                Some(buffer).filter(|buffer| buffer.deadline().ends_stretch().is_none())
-            }
+                .filter(|buffer| buffer.reaches_before_event() == Reaching::InTime),
+            Wanted::Cutoff => Self::open_ended(buffer),
+        }
+    }
+
+    fn open_ended(buffer: Buffer<'_>) -> Option<Buffer<'_>> {
+        match buffer.deadline().kind().ending() {
+            StretchEnd::Continues => Some(buffer),
+            StretchEnd::Ends => None,
         }
     }
 

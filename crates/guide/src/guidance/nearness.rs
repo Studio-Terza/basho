@@ -1,4 +1,5 @@
 use crate::geo::{Distance, RouteLine, Share};
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Nearness {
@@ -12,20 +13,24 @@ pub enum Nearness {
 
 impl Nearness {
     const SAME_ROAD: Distance = Distance::new(10.0);
-    const GPS_ERROR: Distance = Distance::new(35.0);
-    const OFF_ROUTE: Distance = Distance::new(70.0);
+    const GPS_ERROR_METERS: f64 = 35.0;
+    const GPS_ERROR: Distance = Distance::new(Self::GPS_ERROR_METERS);
+    const OFF_ROUTE: Distance = Distance::new(2.0 * Self::GPS_ERROR_METERS);
     const ON_ROUTE: Distance = Distance::new(150.0);
     const CLEARLY_ELSEWHERE: Distance = Distance::new(1000.0);
     const SKETCH_SHARE: Share = Share::new(0.25);
 
     #[must_use]
     pub fn beside(self, line: &RouteLine) -> Distance {
-        Some(line)
-            .filter(|line| line.is_sketch())
-            .map_or(self.distance(), |line| {
-                self.distance()
-                    .max(line.longest_segment().unwrap_or_default() * Self::SKETCH_SHARE)
-            })
+        line.longest_segment()
+            .map_or(self.distance(), |longest| self.stretched(longest))
+    }
+
+    fn stretched(self, longest: Distance) -> Distance {
+        match longest.cmp(&RouteLine::SKETCH_SEGMENT) {
+            Ordering::Greater => self.distance().max(longest * Self::SKETCH_SHARE),
+            Ordering::Less | Ordering::Equal => self.distance(),
+        }
     }
 
     #[must_use]

@@ -46,14 +46,20 @@ impl<'day> Course<'day> {
     }
 
     fn boarded(self, index: LegIndex) -> Minutes {
+        self.walk_before(index).map_or_else(
+            || self.planned(Moment::Start, index),
+            |before| self.planned(Moment::Arrival, before),
+        ) + self.wait(Wait::Visit, index)
+    }
+
+    fn walk_before(self, index: LegIndex) -> Option<LegIndex> {
         index
             .previous()
-            .filter(|before| self.day.leg(*before).and_then(Self::is_walk).is_some())
-            .map_or_else(
-                || self.planned(Moment::Start, index),
-                |before| self.planned(Moment::Arrival, before),
-            )
-            + self.wait(Wait::Visit, index)
+            .filter(|before| self.day.leg(*before).map(Leg::mode) == Some(Mode::Walk))
+    }
+
+    fn walk_at(self, index: LegIndex) -> Option<&'day Leg> {
+        self.day.leg(index).filter(|leg| leg.mode() == Mode::Walk)
     }
 
     #[must_use]
@@ -66,10 +72,9 @@ impl<'day> Course<'day> {
                 .map_or(Minutes::ZERO, |(leg, resume)| {
                     resume.since_midnight() - leg.time(End::Finish).since_midnight()
                 }),
-            Wait::Visit => index
-                .previous()
+            Wait::Visit => self
+                .walk_before(index)
                 .and_then(|before| self.day.leg(before))
-                .and_then(Self::is_walk)
                 .zip(self.day.leg(index))
                 .filter(|(before, fixed)| {
                     before
@@ -103,15 +108,24 @@ impl<'day> Course<'day> {
 
     fn resumed(self, index: LegIndex) -> Option<ClockTime> {
         let leg = self.day.leg(index)?;
-        let dwell = self
-            .day
-            .leg(index.incremented())
-            .and_then(Self::is_walk)
-            .map_or(Minutes::ZERO, |_| leg.paused(Pause::AtEnd));
-        Some(Self::is_walk(leg).map_or_else(
-            || leg.time(End::Finish).later_by(dwell),
-            |leg| leg.time(End::Start),
-        ))
+        let dwell = Self::dwell_before(leg, self.day.leg(index.incremented()).map(Leg::mode));
+        Some(Self::resume_at(leg, dwell))
+    }
+
+    fn dwell_before(leg: &Leg, next: Option<Mode>) -> Minutes {
+        match next {
+            Some(Mode::Walk) => leg.paused(Pause::AtEnd),
+            Some(Mode::Train | Mode::Bus | Mode::Boat | Mode::Car) | None => Minutes::ZERO,
+        }
+    }
+
+    fn resume_at(leg: &Leg, dwell: Minutes) -> ClockTime {
+        match leg.mode() {
+            Mode::Walk => leg.time(End::Start),
+            Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => {
+                leg.time(End::Finish).later_by(dwell)
+            }
+        }
     }
 
     #[must_use]
@@ -123,18 +137,13 @@ impl<'day> Course<'day> {
     pub fn reach_at(self, index: LegIndex, along: Distance) -> Minutes {
         self.planned(Moment::Start, index)
             + self
-                .day
-                .leg(index)
-                .filter(|leg| leg.mode() == Mode::Walk)
+                .walk_at(index)
                 .map_or(Minutes::ZERO, |leg| leg.planned_after(along))
     }
 
     #[must_use]
     pub fn backup_branch(self, ride: LegIndex) -> Option<&'day Branch> {
-        let walked = ride
-            .previous()
-            .filter(|before| self.day.leg(*before).and_then(Self::is_walk).is_some());
-        [Some(ride), walked]
+        [Some(ride), self.walk_before(ride)]
             .into_iter()
             .flatten()
             .filter_map(|index| self.day.leg(index))
@@ -154,10 +163,12 @@ impl<'day> Course<'day> {
     #[must_use]
     pub fn finish(self) -> Minutes {
         let last = LegIndex::new(self.day.legs().len().saturating_sub(1));
-        self.day.leg(last).and_then(Self::is_walk).map_or_else(
-            || self.planned(Moment::Start, LegIndex::new(self.day.legs().len())),
-            |_| self.planned(Moment::Arrival, last),
-        )
+        match self.day.leg(last).map(Leg::mode) {
+            Some(Mode::Walk) => self.planned(Moment::Arrival, last),
+            Some(Mode::Train | Mode::Bus | Mode::Boat | Mode::Car) | None => {
+                self.planned(Moment::Start, LegIndex::new(self.day.legs().len()))
+            }
+        }
     }
 
     #[must_use]
@@ -242,9 +253,7 @@ impl<'day> Course<'day> {
     #[must_use]
     pub fn cutoffs_on(self, index: LegIndex) -> Vec<Deadline<'day>> {
         let base = self.planned(Moment::Start, index);
-        self.day
-            .leg(index)
-            .and_then(Self::is_walk)
+        self.walk_at(index)
             .map(|leg| {
                 leg.cutoff()
                     .map(|cutoff| {
@@ -280,7 +289,7 @@ impl<'day> Course<'day> {
             .legs()
             .iter()
             .enumerate()
-            .filter(|(_, leg)| Self::is_walk(leg).is_some())
+            .filter(|(_, leg)| leg.mode() == Mode::Walk)
             .flat_map(|(position, leg)| {
                 let index = LegIndex::new(position);
                 let base = self.planned(Moment::Start, index);
@@ -329,18 +338,15 @@ impl<'day> Course<'day> {
     }
 
     fn left_at(before: &'day Leg) -> &'day RubyText {
-        Self::is_walk(before).map_or_else(
-            || {
-                before
-                    .alighting()
-                    .unwrap_or_else(|| before.line_text(LegLine::Reach))
-            },
-            |before| before.line_text(LegLine::Reach),
-        )
+        match before.mode() {
+            Mode::Walk => before.line_text(LegLine::Reach),
+            Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => Self::alighted(before),
+        }
     }
 
-    #[must_use]
-    pub fn is_walk(leg: &Leg) -> Option<&Leg> {
-        Some(leg).filter(|leg| leg.mode() == Mode::Walk)
+    fn alighted(before: &'day Leg) -> &'day RubyText {
+        before
+            .alighting()
+            .unwrap_or_else(|| before.line_text(LegLine::Reach))
     }
 }

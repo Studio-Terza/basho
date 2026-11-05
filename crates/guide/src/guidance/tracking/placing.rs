@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 
 use super::stage::Stage;
@@ -12,8 +13,6 @@ pub struct Placing {
 }
 
 impl Placing {
-    const WORDS: usize = 2;
-
     #[must_use]
     pub fn new(leg: LegIndex, stage: Stage) -> Placing {
         Placing { leg, stage }
@@ -21,14 +20,12 @@ impl Placing {
 
     #[must_use]
     pub(super) fn from_words(words: &[&str]) -> Option<Placing> {
-        words
-            .split_first_chunk::<{ Self::WORDS }>()
-            .and_then(|([leg, stage], _)| {
-                Some(Placing::new(
-                    LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
-                    stage.parse().ok()?,
-                ))
-            })
+        words.first().zip(words.get(1)).and_then(|(leg, stage)| {
+            Some(Placing::new(
+                LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
+                stage.parse().ok()?,
+            ))
+        })
     }
 
     #[must_use]
@@ -46,15 +43,20 @@ impl Placing {
     #[must_use]
     pub fn lateness(self, leg: &Leg, clock: Minutes) -> Minutes {
         match self.stage {
-            Stage::Boarding => {
-                (clock - leg.time(End::Start).since_midnight() + Minutes::new(1)).max(Minutes::ZERO)
-            }
-            Stage::Under => Some(leg.time(End::Finish).since_midnight())
-                .filter(|end| clock >= *end)
-                .map_or(Minutes::ZERO, |_| {
-                    clock - leg.time(End::Start).since_midnight()
-                }),
+            Stage::Boarding => Self::boarding_lateness(leg, clock),
+            Stage::Under => Self::under_lateness(leg, clock),
             Stage::Finished => Minutes::ZERO,
+        }
+    }
+
+    fn boarding_lateness(leg: &Leg, clock: Minutes) -> Minutes {
+        (clock - leg.time(End::Start).since_midnight() + Minutes::new(1)).max(Minutes::ZERO)
+    }
+
+    fn under_lateness(leg: &Leg, clock: Minutes) -> Minutes {
+        match clock.cmp(&leg.time(End::Finish).since_midnight()) {
+            Ordering::Less => Minutes::ZERO,
+            Ordering::Equal | Ordering::Greater => clock - leg.time(End::Start).since_midnight(),
         }
     }
 }

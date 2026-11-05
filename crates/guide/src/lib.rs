@@ -19,7 +19,7 @@ mod star_point;
 mod trip_source;
 pub use buffer_state::BufferState;
 pub use card::{Card, CardLine};
-pub use deadline_kind::DeadlineKind;
+pub use deadline_kind::{DeadlineKind, StretchEnd};
 pub use elevation::Elevation;
 pub use evidence_counts::EvidenceCounts;
 pub use fact_source::FactSource;

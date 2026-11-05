@@ -5,6 +5,7 @@ use crate::guidance::nearness::Nearness;
 use crate::guidance::snap::Snap;
 use crate::guidance::walk_search::stride::Stride;
 use crate::itinerary::Day;
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Pick<'day> {
@@ -101,27 +102,40 @@ impl<'day> Pick<'day> {
     }
 
     fn drift(self, delay: Minutes) -> Minutes {
-        let elapsed = self.kept.minutes_before(self.day, self.now);
+        self.steadied(self.kept.minutes_before(self.day, self.now), delay)
+    }
+
+    fn steadied(self, elapsed: Minutes, delay: Minutes) -> Minutes {
+        match elapsed.cmp(&Self::STEADY) {
+            Ordering::Greater => self.lagged(elapsed, delay),
+            Ordering::Less | Ordering::Equal => Minutes::ZERO,
+        }
+    }
+
+    fn lagged(self, elapsed: Minutes, delay: Minutes) -> Minutes {
         let earliest = self.kept.offset()
             - Minutes::rounded(elapsed.amount() * Self::CATCH_UP.fraction()).unwrap_or_default();
         let latest = self.kept.offset() + elapsed;
         let early = Minutes::rounded((earliest - delay).amount() / Self::CATCH_UP.fraction())
             .unwrap_or_default();
-        Some(elapsed)
-            .filter(|elapsed| *elapsed > Self::STEADY)
-            .map_or(Minutes::ZERO, |_| {
-                early.max(delay - latest).max(Minutes::ZERO)
-            })
+        early.max(delay - latest).max(Minutes::ZERO)
     }
 
     fn gap(self, stride: Stride) -> Distance {
-        let moved = self.kept.moved_to(self.here).unwrap_or_default();
-        let stepped = stride.stepped();
-        Some(stepped)
-            .filter(|stepped| *stepped < Distance::default())
-            .map_or_else(
-                || (stepped - moved).abs(),
-                |stepped| moved - stepped * Self::CATCH_UP.fraction().recip(),
-            )
+        Self::gapped(
+            stride.stepped(),
+            self.kept.moved_to(self.here).unwrap_or_default(),
+        )
+    }
+
+    fn gapped(stepped: Distance, moved: Distance) -> Distance {
+        match stepped.cmp(&Distance::default()) {
+            Ordering::Less => Self::recoiled(stepped, moved),
+            Ordering::Equal | Ordering::Greater => (stepped - moved).abs(),
+        }
+    }
+
+    fn recoiled(stepped: Distance, moved: Distance) -> Distance {
+        moved - stepped * Self::CATCH_UP.fraction().recip()
     }
 }

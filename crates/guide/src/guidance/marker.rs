@@ -1,6 +1,7 @@
 use crate::end::End;
 use crate::geo::{Coordinate, Distance, Share};
 use crate::leg::Leg;
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Marker {
@@ -12,18 +13,17 @@ pub enum Marker {
 impl Marker {
     #[must_use]
     pub fn on_route(leg: &Leg, along: Distance) -> Option<Marker> {
-        Some(leg.line())
-            .filter(|line| line.points().len() > 1)
-            .map_or_else(
-                || {
-                    Some(
-                        leg.point(End::Start)
-                            .toward(leg.point(End::Finish), Share::ratio(along, leg.length())),
-                    )
-                },
-                |line| line.point_along(along),
-            )
-            .map(Marker::OnRoute)
+        Self::routed(leg, along).map(Marker::OnRoute)
+    }
+
+    fn routed(leg: &Leg, along: Distance) -> Option<Coordinate> {
+        match leg.line().points().len().cmp(&1) {
+            Ordering::Greater => leg.line().point_along(along),
+            Ordering::Less | Ordering::Equal => Some(
+                leg.point(End::Start)
+                    .toward(leg.point(End::Finish), Share::ratio(along, leg.length())),
+            ),
+        }
     }
 
     #[must_use]
