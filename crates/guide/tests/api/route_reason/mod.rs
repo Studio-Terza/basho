@@ -4,8 +4,6 @@ use guide::leg::Mode;
 use guide::leg::conveyance::RouteReason;
 use guide::{Trip, TripError};
 
-const SAMPLE: &str = include_str!("../../../../../data/trips/sample.toml");
-const WALK: &str = "mode = { walk = { reason = \"none_recorded\" } }";
 const RECORDED: &str = r#"mode = { walk = { reason = { recorded = { kind = "quieter", refers = { entry = "Eastfield" }, evidence = { unverified = ["Stated in the leg text."] } } } } }"#;
 const SPOILED: [[&str; 3]; 6] = [
     [
@@ -38,13 +36,13 @@ const SPOILED: [[&str; 3]; 6] = [
 
 #[test]
 fn a_bare_walk_mode_fails_at_load() {
-    let bare = SAMPLE.replacen(WALK, "mode = \"walk\"", 1).parse::<Trip>();
+    let bare = Fixture::with_first_walk_as("mode = \"walk\"");
     assert!(matches!(bare, Err(TripError::Toml(_))));
 }
 
 #[test]
 fn a_walk_marked_none_recorded_carries_no_kind() {
-    let sample = SAMPLE.parse::<Trip>().expect("loads");
+    let sample = Fixture::BUNDLED.parse::<Trip>().expect("loads");
     let first = &sample.itinerary().days()[0].legs()[0];
     assert!(matches!(
         first.route_reason(),
@@ -55,10 +53,7 @@ fn a_walk_marked_none_recorded_carries_no_kind() {
 
 #[test]
 fn a_recorded_reason_reports_its_kind_and_link() {
-    let recorded = SAMPLE
-        .replacen(WALK, RECORDED, 1)
-        .parse::<Trip>()
-        .expect("loads");
+    let recorded = Fixture::with_first_walk_as(RECORDED).expect("loads");
     let first = recorded.itinerary().days()[0].legs()[0]
         .route_reason()
         .expect("a walk");
@@ -92,30 +87,29 @@ fn a_reason_that_is_only_free_text_fails_at_load() {
 
 #[test]
 fn each_missing_or_unknown_part_of_a_reason_is_named_at_load() {
-    SPOILED.iter().copied().for_each(|[good, bad, message]| {
-        let spoiled = SAMPLE
-            .replacen(WALK, &RECORDED.replacen(good, bad, 1), 1)
-            .parse::<Trip>();
-        let error = spoiled.expect_err(bad).to_string();
-        assert!(error.contains(message), "{bad}: {error}");
-    });
+    let named: Vec<&str> = SPOILED
+        .iter()
+        .filter(|[good, bad, message]| {
+            Fixture::said(Fixture::with_first_walk_as(
+                &RECORDED.replacen(good, bad, 1),
+            ))
+            .contains(message)
+        })
+        .map(|[_, bad, _]| *bad)
+        .collect();
+    assert_eq!(named, SPOILED.map(|[_, bad, _]| bad));
 }
 
 #[test]
 fn a_reason_that_refers_to_no_entry_is_found() {
-    let dangling = SAMPLE
-        .replacen(
-            WALK,
-            &RECORDED.replacen("\"Eastfield\"", "\"Nowhere\"", 1),
-            1,
-        )
-        .parse::<Trip>()
-        .expect("loads");
+    let dangling =
+        Fixture::with_first_walk_as(&RECORDED.replacen("\"Eastfield\"", "\"Nowhere\"", 1))
+            .expect("loads");
     assert_ne!(dangling.unresolved_names().len(), 0);
 }
 
 #[test]
 fn a_recorded_reason_loads() {
-    let recorded = SAMPLE.replacen(WALK, RECORDED, 1).parse::<Trip>();
+    let recorded = Fixture::with_first_walk_as(RECORDED);
     assert!(recorded.is_ok(), "{:?}", recorded.err());
 }

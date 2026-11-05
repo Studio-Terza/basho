@@ -24,8 +24,26 @@ struct LateWalker<'trip> {
     day: &'trip Day,
 }
 
-impl LateWalker<'_> {
-    fn misplaced(&self) -> Vec<String> {
+struct Placed<'trip> {
+    day: &'trip Day,
+    position: usize,
+    drift: Distance,
+    guidance: Guidance<'trip>,
+}
+
+impl Placed<'_> {
+    fn report(&self) -> String {
+        format!(
+            "day {} leg {}: placed on leg {}",
+            self.day.number(),
+            LegIndex::new(self.position),
+            self.guidance.leg_index()
+        )
+    }
+}
+
+impl<'trip> LateWalker<'trip> {
+    fn placed(&self) -> Vec<Placed<'trip>> {
         let evening = self.day.legs().last().map(|leg| {
             TripTime::on_date_at(
                 self.day.zone(),
@@ -43,24 +61,24 @@ impl LateWalker<'_> {
                 let guidance =
                     Guidance::new(self.day, LegProgress::default(), evening?, Some(here));
                 let found = guidance.leg().map(Leg::line)?.fix(here)?;
-                matches!(
-                    (
-                        guidance.missed_ride(),
-                        found.off_route() > SAME_SPOT,
-                        guidance.off_route().is_some()
-                    ),
-                    (None, true, _) | (None, _, true)
-                )
-                .then(|| {
-                    format!(
-                        "day {} leg {}: placed on leg {}",
-                        self.day.number(),
-                        LegIndex::new(position),
-                        guidance.leg_index()
-                    )
+                Some(Placed {
+                    day: self.day,
+                    position,
+                    drift: Distance::from(found.off_route()),
+                    guidance,
                 })
             })
+            .filter(|placed| placed.guidance.missed_ride().is_none())
             .collect()
+    }
+
+    fn misplaced(&self) -> Vec<String> {
+        let placed = self.placed();
+        let drifted = placed.iter().filter(|placed| placed.drift > SAME_SPOT);
+        let lost = placed
+            .iter()
+            .filter(|placed| placed.guidance.off_route().is_some());
+        drifted.chain(lost).map(Placed::report).collect()
     }
 }
 

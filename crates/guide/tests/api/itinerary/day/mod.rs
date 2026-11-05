@@ -1,5 +1,6 @@
 mod goal;
 
+use std::cmp::Ordering;
 use std::time::SystemTime;
 
 use chrono::NaiveDate;
@@ -35,6 +36,153 @@ const HOURS_PER_DAY: u16 = 24;
 const READY_UTC_HOUR: u32 = 11;
 const READY_UTC_MINUTE: u32 = 22;
 const READY_SPARE: Minutes = Minutes::new(8);
+
+#[derive(Debug, PartialEq)]
+enum Kind {
+    Walk,
+    Tour,
+    Ride,
+}
+
+impl Kind {
+    fn of(leg: &Leg) -> Self {
+        match leg.mode() {
+            Mode::Walk => Self::on_foot(leg),
+            Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => Kind::Ride,
+        }
+    }
+
+    fn on_foot(leg: &Leg) -> Self {
+        match leg.tour() {
+            Some(_) => Kind::Tour,
+            None => Kind::Walk,
+        }
+    }
+}
+
+struct Visit;
+
+impl Visit {
+    fn leaves(before: &Leg, ride: &Leg) -> Option<ClockTime> {
+        match before.mode() {
+            Mode::Walk => Self::after_pause(before, ride),
+            Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => None,
+        }
+    }
+
+    fn after_pause(before: &Leg, ride: &Leg) -> Option<ClockTime> {
+        Self::early(
+            before
+                .time(End::Finish)
+                .later_by(before.paused(Pause::AtEnd)),
+            ride.time(End::Start),
+        )
+    }
+
+    fn early(leaves: ClockTime, departs: ClockTime) -> Option<ClockTime> {
+        match leaves.cmp(&departs) {
+            Ordering::Less => Some(leaves),
+            Ordering::Equal | Ordering::Greater => None,
+        }
+    }
+}
+
+struct Landing {
+    label: String,
+    early: Minutes,
+    late: Minutes,
+    riding: LegIndex,
+    of: LegIndex,
+    shown: Option<ClockTime>,
+    expected: Option<ClockTime>,
+}
+
+impl Landing {
+    fn failures(landings: &[Landing]) -> Vec<String> {
+        landings
+            .iter()
+            .filter(|landing| landing.riding == landing.of)
+            .filter(|landing| landing.early < landing.late)
+            .filter(|landing| landing.shown != landing.expected)
+            .map(|landing| {
+                format!(
+                    "{}: inn shown {:?}, expected {:?}",
+                    landing.label, landing.shown, landing.expected
+                )
+            })
+            .collect()
+    }
+}
+
+struct Stranded {
+    label: String,
+    event: ClockTime,
+    departs: ClockTime,
+    spare: Minutes,
+}
+
+impl Stranded {
+    fn failures(strandings: &[Stranded]) -> Vec<String> {
+        strandings
+            .iter()
+            .filter(|stranded| stranded.event == stranded.departs)
+            .filter(|stranded| stranded.spare >= Minutes::ZERO)
+            .map(|stranded| {
+                format!(
+                    "{}: {} to spare after it left",
+                    stranded.label, stranded.spare
+                )
+            })
+            .collect()
+    }
+}
+
+struct Shown {
+    label: String,
+    planned: Minutes,
+    live: Minutes,
+}
+
+impl Shown {
+    fn failures(shown: &[Shown]) -> Vec<String> {
+        let drifted = shown
+            .iter()
+            .filter(|shown| (shown.planned - shown.live).abs() > ON_PLAN);
+        let short = shown.iter().filter(|shown| shown.live < Minutes::ZERO);
+        drifted
+            .chain(short)
+            .map(|shown| {
+                format!(
+                    "{}: planned {}, shown {}",
+                    shown.label, shown.planned, shown.live
+                )
+            })
+            .collect()
+    }
+}
+
+struct Closing {
+    starts: ClockTime,
+    target: ClockTime,
+    arrival: ClockTime,
+}
+
+impl Closing {
+    fn spare(&self, time: ClockTime) -> Minutes {
+        match time.cmp(&self.arrival) {
+            Ordering::Less => self.planned(),
+            Ordering::Equal | Ordering::Greater => self.at(time),
+        }
+    }
+
+    fn planned(&self) -> Minutes {
+        self.target.since_midnight() - self.arrival.since_midnight()
+    }
+
+    fn at(&self, time: ClockTime) -> Minutes {
+        self.starts.since_midnight() - time.since_midnight()
+    }
+}
 
 struct Sample {
     leg: LegIndex,
@@ -90,15 +238,8 @@ impl Sample {
             .and_then(|before| day.leg(before).map(|leg| (before, leg)));
         before
             .map(|(position, leg)| {
-                let visit = (leg.mode() == Mode::Walk)
-                    .then_some(leg.paused(Pause::AtEnd))
-                    .filter(|paused| {
-                        leg.time(End::Finish).later_by(*paused) < ride.time(End::Start)
-                    })
-                    .unwrap_or_default();
-                let from = leg
-                    .time(End::Finish)
-                    .later_by(visit)
+                let from = Visit::leaves(leg, ride)
+                    .unwrap_or(leg.time(End::Finish))
                     .since_midnight()
                     .count();
                 (from..ride.time(End::Start).since_midnight().count())
@@ -218,14 +359,7 @@ impl<'day> Audit<'day> {
     pub fn planned_boarding(&self, ride: LegIndex) -> Option<Minutes> {
         let leg = self.day.leg(ride)?;
         let before = ride.previous().and_then(|before| self.day.leg(before));
-        let visit = before
-            .filter(|before| before.mode() == Mode::Walk)
-            .map(|before| {
-                before
-                    .time(End::Finish)
-                    .later_by(before.paused(Pause::AtEnd))
-            })
-            .filter(|leaves| *leaves < leg.time(End::Start));
+        let visit = before.and_then(|before| Visit::leaves(before, leg));
         visit
             .or(before.map(|leg| leg.time(End::Finish)))
             .or(self.day.leave_from())
@@ -238,14 +372,26 @@ impl<'day> Audit<'day> {
         arrival: Minutes,
         waiting: Option<Minutes>,
     ) -> Option<Minutes> {
-        let leg = self.day.leg(ride)?;
-        let last = self.day.legs().last()?.time(End::Finish).since_midnight();
-        Some(arrival)
-            .filter(|arrival| *arrival <= leg.time(End::Start).since_midnight())
-            .map_or_else(
-                || self.after_backup(ride, leg, arrival, waiting),
-                |_| Some(last),
-            )
+        self.day
+            .leg(ride)
+            .and_then(|leg| self.boarded(ride, leg, arrival, waiting))
+    }
+
+    pub fn boarded(
+        &self,
+        ride: LegIndex,
+        leg: &Leg,
+        arrival: Minutes,
+        waiting: Option<Minutes>,
+    ) -> Option<Minutes> {
+        match arrival.cmp(&leg.time(End::Start).since_midnight()) {
+            Ordering::Greater => self.after_backup(ride, leg, arrival, waiting),
+            Ordering::Less | Ordering::Equal => self.day_end(),
+        }
+    }
+
+    pub fn day_end(&self) -> Option<Minutes> {
+        Some(self.day.legs().last()?.time(End::Finish).since_midnight())
     }
 
     fn after_backup(
@@ -290,7 +436,8 @@ impl<'day> Audit<'day> {
     }
 
     pub fn late_mismatches(&self) -> Vec<String> {
-        self.day
+        let landings: Vec<Landing> = self
+            .day
             .legs()
             .iter()
             .enumerate()
@@ -312,23 +459,28 @@ impl<'day> Audit<'day> {
                     let expected = self
                         .brute(index, arrival, Some(arrival))
                         .map(|minutes| self.clock_of(minutes));
-                    (arrival > ride.time(End::Start).since_midnight())
-                        .then_some(shown)
-                        .filter(|shown| *shown != expected)
-                        .map(|shown| {
-                            format!(
-                                "day {} {} late {late}: inn shown {shown:?}, expected {expected:?}",
-                                self.day.number(),
-                                ride.listed(End::Start)
-                            )
-                        })
+                    Some(Landing {
+                        label: format!(
+                            "day {} {} late {late}",
+                            self.day.number(),
+                            ride.listed(End::Start)
+                        ),
+                        early: ride.time(End::Start).since_midnight(),
+                        late: arrival,
+                        riding: index,
+                        of: index,
+                        shown,
+                        expected,
+                    })
                 })
             })
-            .collect()
+            .collect();
+        Landing::failures(&landings)
     }
 
     pub fn aboard_mismatches(&self) -> Vec<String> {
-        self.day
+        let landings: Vec<Landing> = self
+            .day
             .legs()
             .iter()
             .enumerate()
@@ -345,9 +497,8 @@ impl<'day> Audit<'day> {
                 let now =
                     TripTime::on_date_at(self.day.zone(), self.day.date(), self.clock_of(middle));
                 let guidance = Guidance::new(self.day, progress, now, here);
-                let riding = Some(guidance.leg_index()).filter(|leg| *leg == index);
-                let shown = riding
-                    .and_then(|_| guidance.arrival())
+                let shown = guidance
+                    .arrival()
                     .and_then(|arrival| arrival.time(ArrivalMark::Arrives));
                 let end = self.run_end(index);
                 let landed = self.day.leg(end)?.time(End::Finish).since_midnight();
@@ -357,25 +508,27 @@ impl<'day> Audit<'day> {
                         backup.time(End::Finish).since_midnight() - landed,
                     )
                     .map(|minutes| self.clock_of(minutes));
-                riding
-                    .and_then(|leg| {
-                        (middle < backup.time(End::Finish).since_midnight()).then_some(leg)
-                    })
-                    .map(|_| shown)
-                    .filter(|shown| *shown != expected)
-                    .map(|shown| {
-                        format!(
-                            "day {} on the {} backup: inn shown {shown:?}, expected {expected:?}",
-                            self.day.number(),
-                            backup.listed(End::Start)
-                        )
-                    })
+                Some(Landing {
+                    label: format!(
+                        "day {} on the {} backup",
+                        self.day.number(),
+                        backup.listed(End::Start)
+                    ),
+                    early: middle,
+                    late: backup.time(End::Finish).since_midnight(),
+                    riding: guidance.leg_index(),
+                    of: index,
+                    shown,
+                    expected,
+                })
             })
-            .collect()
+            .collect();
+        Landing::failures(&landings)
     }
 
     pub fn stranded(&self) -> Vec<String> {
-        self.day
+        let strandings: Vec<Stranded> = self
+            .day
             .legs()
             .iter()
             .enumerate()
@@ -388,37 +541,30 @@ impl<'day> Audit<'day> {
                     since: None,
                 };
                 let buffer = self.live_buffer(&sample)?;
-                let spare = buffer.spare();
-                (buffer.deadline().event() == ride.time(End::Start))
-                    .then_some(spare)
-                    .filter(|spare| *spare >= Minutes::ZERO)
-                    .map(|spare| {
-                        format!(
-                            "day {} {}: {spare} to spare after it left",
-                            self.day.number(),
-                            ride.listed(End::Start)
-                        )
-                    })
+                Some(Stranded {
+                    label: format!("day {} {}", self.day.number(), ride.listed(End::Start)),
+                    event: buffer.deadline().event(),
+                    departs: ride.time(End::Start),
+                    spare: buffer.spare(),
+                })
             })
-            .collect()
+            .collect();
+        Stranded::failures(&strandings)
     }
 
     pub fn closer(&self, sample: &Sample) -> Option<LegIndex> {
         let legs = self.day.legs();
-        let counts = |leg: &Leg| {
-            matches!(
-                (leg.mode() == Mode::Walk, leg.tour().is_some()),
-                (false, _) | (_, true)
-            )
-        };
+        let counts = |leg: &Leg| Kind::of(leg) != Kind::Walk;
         let begun = legs
             .get(usize::from(sample.leg))
             .filter(|leg| counts(leg))
             .filter(|leg| sample.time >= leg.time(End::Start))
             .map_or(sample.leg, |_| sample.leg.incremented());
-        (usize::from(begun)..legs.len())
-            .map(LegIndex::new)
-            .find(|index| self.day.leg(*index).is_some_and(counts))
+        legs.iter()
+            .enumerate()
+            .skip(usize::from(begun))
+            .find(|(_, leg)| counts(leg))
+            .map(|(index, _)| LegIndex::new(index))
     }
 
     pub fn closing_spare(&self, closer: Option<LegIndex>, time: ClockTime) -> Option<Minutes> {
@@ -436,14 +582,7 @@ impl<'day> Audit<'day> {
     fn closing_spare_at(&self, index: LegIndex, time: ClockTime) -> Option<Minutes> {
         let leg = self.day.leg(index)?;
         let before = index.previous().and_then(|before| self.day.leg(before));
-        let visit = before
-            .filter(|before| before.mode() == Mode::Walk)
-            .map(|before| {
-                before
-                    .time(End::Finish)
-                    .later_by(before.paused(Pause::AtEnd))
-            })
-            .filter(|leaves| *leaves < leg.time(End::Start));
+        let visit = before.and_then(|before| Visit::leaves(before, leg));
         let arrival = visit
             .or(before.map(|leg| leg.time(End::Finish)))
             .or(self.day.leave_from())
@@ -453,11 +592,12 @@ impl<'day> Audit<'day> {
             .map(|margin| margin.target(leg.time(End::Start)))
             .or_else(|| leg.tour().map(|tour| ClockTime::from(tour.check_in())))?;
         Some(
-            Some(time)
-                .filter(|time| *time >= arrival)
-                .map_or(target.since_midnight() - arrival.since_midnight(), |time| {
-                    leg.time(End::Start).since_midnight() - time.since_midnight()
-                }),
+            Closing {
+                starts: leg.time(End::Start),
+                target,
+                arrival,
+            }
+            .spare(time),
         )
     }
 
@@ -504,25 +644,23 @@ impl<'day> Audit<'day> {
     }
 
     pub fn mismatches(&self) -> Vec<String> {
-        self.samples()
+        let shown: Vec<Shown> = self
+            .samples()
             .iter()
             .filter_map(|sample| {
-                let planned = self.planned_spare(sample)?;
-                let live = self.live_buffer(sample).map(|buffer| buffer.spare())?;
-                matches!(
-                    ((planned - live).abs() > ON_PLAN, live < Minutes::ZERO),
-                    (true, _) | (_, true)
-                )
-                .then(|| {
-                    format!(
-                        "day {} leg {} at {}: planned {planned}, shown {live}",
+                Some(Shown {
+                    label: format!(
+                        "day {} leg {} at {}",
                         self.day.number(),
                         usize::from(sample.leg),
                         sample.time.since_midnight()
-                    )
+                    ),
+                    planned: self.planned_spare(sample)?,
+                    live: self.live_buffer(sample).map(|buffer| buffer.spare())?,
                 })
             })
-            .collect()
+            .collect();
+        Shown::failures(&shown)
     }
 }
 
@@ -554,17 +692,22 @@ fn the_day_before_the_trip_shows_no_buffer_and_no_lateness() {
         .pred_opt()
         .map(CalendarDate::from)
         .unwrap();
-    let shown: Vec<TripTime> = (0..HOURS_PER_DAY)
+    let guidances: Vec<(TripTime, Guidance)> = (0..HOURS_PER_DAY)
         .map(|hour| TripTime::on_date_at(first.zone(), eve, ClockTime::at_hour(hour)))
-        .filter(|now| {
-            let guidance = Guidance::new(first, LegProgress::default(), *now, here);
-            matches!(
-                (guidance.buffer(), guidance.time_check()),
-                (Some(_), _) | (_, Some(_))
-            )
-        })
+        .map(|now| (now, Guidance::new(first, LegProgress::default(), now, here)))
         .collect();
-    assert_eq!(shown, Vec::<TripTime>::new());
+    let buffered: Vec<TripTime> = guidances
+        .iter()
+        .filter(|(_, guidance)| guidance.buffer().is_some())
+        .map(|(now, _)| *now)
+        .collect();
+    let checked: Vec<TripTime> = guidances
+        .iter()
+        .filter(|(_, guidance)| guidance.time_check().is_some())
+        .map(|(now, _)| *now)
+        .collect();
+    assert_eq!(buffered, Vec::<TripTime>::new());
+    assert_eq!(checked, Vec::<TripTime>::new());
 }
 
 #[test]

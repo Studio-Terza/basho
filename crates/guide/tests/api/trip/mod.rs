@@ -1,3 +1,4 @@
+use crate::fixture::Fixture;
 use guide::english_name::EnglishName;
 use std::ops::Range;
 use std::path::Path;
@@ -161,19 +162,14 @@ fn the_trip_file_alone_sets_the_name_and_the_clock_of_the_trip() {
 
 #[test]
 fn each_bad_file_fails_at_load_and_says_what_is_wrong() {
-    let unnamed: Vec<&str> = SPOILED
+    let named: Vec<&str> = SPOILED
         .iter()
         .filter(|[good, bad, said]| {
-            SAMPLE
-                .replacen(good, bad, 1)
-                .parse::<Trip>()
-                .map_or_else(|error| error.to_string(), |_| String::new())
-                .find(said)
-                .is_none()
+            Fixture::said(SAMPLE.replacen(good, bad, 1).parse()).contains(said)
         })
         .map(|[good, ..]| *good)
         .collect();
-    assert_eq!(unnamed, Vec::<&str>::new());
+    assert_eq!(named, SPOILED.map(|[good, ..]| good));
 }
 
 #[test]

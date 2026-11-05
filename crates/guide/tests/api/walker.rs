@@ -1,5 +1,6 @@
 use std::cell::Cell;
 use std::cmp::Ordering;
+use std::collections::BTreeMap;
 use std::ops::Range;
 
 use guide::clock::{ClockTime, Minutes, TripTime};
@@ -16,6 +17,30 @@ use guide::reading::Reading;
 use guide::readout::Status;
 use guide::readout::pointer::Pointer;
 use newtype::Counter;
+
+struct Stride<'day> {
+    day: &'day Day,
+    walk: LegIndex,
+    along: Distance,
+    left: Distance,
+    gap: f64,
+    step: Ordering,
+    guidance: Guidance<'day>,
+}
+
+impl Stride<'_> {
+    fn report(&self, wrong: &str) -> String {
+        format!(
+            "day {} leg {} at {}: {wrong}, leg {} arrow {:.0}° {:?}",
+            self.day.number(),
+            self.walk,
+            self.along,
+            self.guidance.leg_index(),
+            self.gap,
+            self.guidance.status()
+        )
+    }
+}
 
 pub struct Walker<'day> {
     day: &'day Day,
@@ -146,7 +171,7 @@ impl<'day> Walker<'day> {
     ) -> Vec<String> {
         let leg = self.day.leg(walk).expect("a walk");
         let kept = Cell::new(self.progress);
-        Self::strides(leg.length())
+        let strides: Vec<Stride> = Self::strides(leg.length())
             .filter_map(|along| {
                 let here = Self::beside(leg, along, aside)?;
                 let walker = Walker::kept(self.day, kept.get());
@@ -158,34 +183,54 @@ impl<'day> Walker<'day> {
                 let gap = guidance
                     .arrow()
                     .map_or(0.0, |arrow| arrow.pointer().bearing().gap_to(truth));
-                let misplaced = matches!(
-                    (guidance.leg_index().cmp(&walk), left > Self::NEAR_END),
-                    (Ordering::Less, _) | (Ordering::Greater, true)
-                )
-                .then_some("step");
-                let reversed = (left > Self::NEAR_END)
-                    .then_some(along)
-                    .filter(|along| *along >= Self::STRIDE)
-                    .map(|_| gap)
-                    .filter(|gap| *gap > Self::WRONG_WAY.degrees())
-                    .map(|_| "arrow");
-                let alarmed = (left > Self::NEAR_END)
-                    .then_some(guidance.status())
-                    .filter(|status| *status != Some(Status::OnRoute))
-                    .map(|_| "status");
-                misplaced
-                    .or(reversed)
-                    .or(alarmed)
-                    .filter(|_| along >= settle)
-                    .map(|wrong| {
-                        format!(
-                            "day {} leg {walk} at {along}: {wrong}, leg {} arrow {gap:.0}° {:?}",
-                            self.day.number(),
-                            guidance.leg_index(),
-                            guidance.status()
-                        )
-                    })
+                Some(Stride {
+                    day: self.day,
+                    walk,
+                    along,
+                    left,
+                    gap,
+                    step: guidance.leg_index().cmp(&walk),
+                    guidance,
+                })
             })
+            .collect();
+        Self::wrong(&strides, settle)
+    }
+
+    fn wrong(strides: &[Stride], settle: Distance) -> Vec<String> {
+        let settled: Vec<(usize, &Stride)> = strides
+            .iter()
+            .enumerate()
+            .filter(|(_, stride)| stride.along >= settle)
+            .collect();
+        let far: Vec<(usize, &Stride)> = settled
+            .iter()
+            .copied()
+            .filter(|(_, stride)| stride.left > Self::NEAR_END)
+            .collect();
+        let behind = settled
+            .iter()
+            .filter(|(_, stride)| stride.step == Ordering::Less);
+        let ahead = far
+            .iter()
+            .filter(|(_, stride)| stride.step == Ordering::Greater);
+        let reversed = far
+            .iter()
+            .filter(|(_, stride)| stride.along >= Self::STRIDE)
+            .filter(|(_, stride)| stride.gap > Self::WRONG_WAY.degrees());
+        let alarmed = far
+            .iter()
+            .filter(|(_, stride)| stride.guidance.status() != Some(Status::OnRoute));
+        let wrong: BTreeMap<usize, &str> = behind
+            .chain(ahead)
+            .map(|(index, _)| (*index, "step"))
+            .chain(reversed.map(|(index, _)| (*index, "arrow")))
+            .chain(alarmed.map(|(index, _)| (*index, "status")))
+            .rev()
+            .collect();
+        wrong
+            .iter()
+            .map(|(index, wrong)| strides[*index].report(wrong))
             .collect()
     }
 

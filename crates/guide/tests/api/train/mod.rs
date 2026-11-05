@@ -1,12 +1,10 @@
-use guide::Trip;
 use guide::itinerary::Day;
 use guide::leg::conveyance::Platform;
 
 use crate::fixture::Fixture;
 
-const SAMPLE: &str = include_str!("../../../../../data/trips/sample.toml");
+const PLATFORMS: usize = 5;
 const CHECK_BOARD: &str = "check the board";
-const WALK: &str = "mode = { walk = { reason = \"none_recorded\" } }";
 const WHOLE: &str = r#"mode = { train = { line = "JR {奥羽本線|おううほんせん}", kind = "local", headsign = "{新庄|しんじょう}{行|ゆ}き", platform = "not_published", evidence = { unverified = ["Made up."] } } }"#;
 const SPOILED: [[&str; 3]; 13] = [
     [
@@ -68,19 +66,14 @@ fn a_bare_train_mode_fails_at_load() {
 
 #[test]
 fn each_missing_or_empty_board_fact_is_named_at_load() {
-    let unnamed: Vec<&str> = SPOILED
+    let named: Vec<&str> = SPOILED
         .iter()
         .filter(|[good, bad, said]| {
-            SAMPLE
-                .replacen(WALK, &WHOLE.replacen(good, bad, 1), 1)
-                .parse::<Trip>()
-                .map_or_else(|error| error.to_string(), |_| String::new())
-                .find(said)
-                .is_none()
+            Fixture::said(Fixture::with_first_walk_as(&WHOLE.replacen(good, bad, 1))).contains(said)
         })
         .map(|[_, bad, _]| *bad)
         .collect();
-    assert_eq!(unnamed, Vec::<&str>::new());
+    assert_eq!(named, SPOILED.map(|[_, bad, _]| bad));
 }
 
 #[test]
@@ -93,7 +86,7 @@ fn a_platform_either_keeps_its_evidence_or_says_to_check_the_board() {
         .filter_map(|leg| leg.conveyance().train())
         .map(AsRef::as_ref)
         .collect();
-    assert_ne!(platforms.len(), 0);
+    assert_eq!(platforms.len(), PLATFORMS);
     assert!(platforms.iter().all(
         |platform| platform.evidence().is_some() != platform.to_string().contains(CHECK_BOARD)
     ));

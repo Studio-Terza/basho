@@ -157,12 +157,15 @@ impl Fixture {
             })
             .map(|listed| listed.trim().to_owned())
             .collect();
-        listed.first().map(|_| {
+        listed.split_first().map(|(first, rest)| {
+            let days = rest
+                .iter()
+                .fold(first.clone(), |days, next| format!("{days}, {next}"));
             arc.lines()
                 .map(|line| {
-                    line.strip_prefix(Self::ARC_DAYS).map_or_else(
+                    line.split_once(Self::ARC_DAYS).map_or_else(
                         || line.to_owned(),
-                        |_| format!("{}{}]", Self::ARC_DAYS, listed.join(", ")),
+                        |(before, _)| format!("{before}{}{days}]", Self::ARC_DAYS),
                     )
                 })
                 .collect::<Vec<String>>()
@@ -173,6 +176,11 @@ impl Fixture {
 
     pub fn with_first_walk_as(mode: &str) -> Result<Trip, TripError> {
         Self::BUNDLED.replacen(Self::FIRST_WALK, mode, 1).parse()
+    }
+
+    #[must_use]
+    pub fn said(parsed: Result<Trip, TripError>) -> String {
+        parsed.map_or_else(|error| error.to_string(), |_| String::new())
     }
 
     #[must_use]

@@ -98,13 +98,16 @@ fn a_live_gap_shows_its_basis_on_both_sides_of_zero() {
 #[test]
 fn facts_and_plans_never_carry_the_approximate_mark() {
     let noon = Written::clock("12:00");
-    let marked: Vec<String> = SOURCES
+    let rendered: Vec<String> = SOURCES
         .map(|source| FactTime::new(noon, source, &Written::evidence()).to_string())
         .into_iter()
-        .filter(|fact| fact.contains(APPROXIMATE))
+        .chain([PlanTime::new(noon).to_string()])
+        .collect();
+    let marked: Vec<String> = rendered
+        .into_iter()
+        .filter(|time| time.contains(APPROXIMATE))
         .collect();
     assert_eq!(marked, Vec::<String>::new());
-    assert_eq!(PlanTime::new(noon).to_string().find(APPROXIMATE), None);
 }
 
 #[test]
