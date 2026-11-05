@@ -255,45 +255,28 @@ fn starred_points_on_different_days_may_share_a_short_name() {
 
 const STRAY_ARC_DAYS: &str = "[[arcs]] names no day, or names one twice";
 
-#[test]
-fn an_arc_naming_a_day_the_trip_lacks_is_flagged_once_per_naming() {
-    let strayed = SAMPLE.replacen("days = [1, 2, 3, 4]", "days = [1, 2, 3, 4, 9, 9]", 1);
-    let said = strayed
-        .parse::<Trip>()
-        .err()
-        .map(|error| error.to_string())
-        .unwrap_or_default();
-    assert_eq!(said.matches(STRAY_ARC_DAYS).count(), 2);
-}
+laws::table!(
+    an_arc_is_flagged_once_for_each_unknown_or_repeated_naming_of_a_day,
+    Stray::flagged,
+    [
+        "[1, 2, 3, 4, 9, 9]" => 2,
+        "[1, 2, 2, 2, 3, 4]" => 2,
+        "[3, 1, 3, 9, 2, 4]" => 2,
+        "[1, 2, 3, 4]" => 0,
+    ],
+);
 
-#[test]
-fn an_arc_naming_a_day_twice_is_flagged_for_each_repeat_only() {
-    let repeated = SAMPLE.replacen("days = [1, 2, 3, 4]", "days = [1, 2, 2, 2, 3, 4]", 1);
-    let said = repeated
-        .parse::<Trip>()
-        .err()
-        .map(|error| error.to_string())
-        .unwrap_or_default();
-    assert_eq!(said.matches(STRAY_ARC_DAYS).count(), 2);
-}
+struct Stray;
 
-#[test]
-fn an_arc_naming_each_day_once_is_not_flagged() {
-    let said = SAMPLE
-        .parse::<Trip>()
-        .err()
-        .map(|error| error.to_string())
-        .unwrap_or_default();
-    assert_eq!(said.matches(STRAY_ARC_DAYS).count(), 0);
-}
-
-#[test]
-fn a_known_day_is_flagged_for_a_repeat_but_not_for_its_first_naming() {
-    let mixed = SAMPLE.replacen("days = [1, 2, 3, 4]", "days = [3, 1, 3, 9, 2, 4]", 1);
-    let said = mixed
-        .parse::<Trip>()
-        .err()
-        .map(|error| error.to_string())
-        .unwrap_or_default();
-    assert_eq!(said.matches(STRAY_ARC_DAYS).count(), 2);
+impl Stray {
+    fn flagged(days: &&str) -> usize {
+        SAMPLE
+            .replacen("days = [1, 2, 3, 4]", &format!("days = {days}"), 1)
+            .parse::<Trip>()
+            .err()
+            .map(|error| error.to_string())
+            .unwrap_or_default()
+            .matches(STRAY_ARC_DAYS)
+            .count()
+    }
 }

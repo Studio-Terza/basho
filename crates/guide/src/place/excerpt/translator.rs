@@ -11,13 +11,9 @@ pub enum Translator {
 impl Translator {
     #[must_use]
     pub fn label(self) -> Label {
-        Label::new(self.text())
-    }
-
-    fn text(self) -> &'static str {
         match self {
-            Translator::Ours => "Our translation",
-            Translator::WrittenInEnglish => "Written in English; no translation",
+            Translator::Ours => Label::new("Our translation"),
+            Translator::WrittenInEnglish => Label::new("Written in English; no translation"),
         }
     }
 }

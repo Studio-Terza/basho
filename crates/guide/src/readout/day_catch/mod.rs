@@ -9,7 +9,6 @@ use crate::catch_words::Readings;
 use serde::Deserialize;
 use serde::de::IgnoredAny;
 
-use crate::NonEmpty;
 use crate::day_number::DayNumber;
 use crate::geo::{Coordinate, Degrees, Distance};
 use crate::leg::LegIndex;
@@ -81,7 +80,7 @@ impl DayCatch {
             })
             .filter(leads)
             .collect();
-        Self::pooled(NonEmpty::new(picked), || {
+        Self::pooled(picked, || {
             self.features
                 .iter()
                 .filter_map(|feature| Self::sighted(feature, None, here))
@@ -91,11 +90,11 @@ impl DayCatch {
     }
 
     fn pooled<'catch>(
-        picked: Option<NonEmpty<CatchSight<'catch>>>,
+        picked: Vec<CatchSight<'catch>>,
         fallback: impl FnOnce() -> Vec<CatchSight<'catch>>,
     ) -> Vec<CatchSight<'catch>> {
-        match picked {
-            Some(found) => Self::nearest(found),
+        match picked.first() {
+            Some(_) => Self::nearest(picked),
             None => Self::nearest(fallback()),
         }
     }

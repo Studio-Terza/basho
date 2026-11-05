@@ -14,7 +14,6 @@ use serde::Deserialize;
 use crate::itinerary::{Arc, Day, Finding, Itinerary, LegLines, Problem};
 
 use crate::KnownNames;
-use crate::NonEmpty;
 use crate::TripSource;
 use crate::day_number::DayNumber;
 use crate::landmark::Landmarks;
@@ -86,12 +85,11 @@ impl TripPart {
     }
 
     fn whole(self) -> Option<TripFile> {
-        let arcs = NonEmpty::new(self.arcs)?;
-        let days = NonEmpty::new(self.days)?;
+        self.arcs.first().zip(self.days.first())?;
         Some(TripFile {
             trip: self.trip.given()?,
-            arcs: Vec::from(arcs),
-            days: Vec::from(days),
+            arcs: self.arcs,
+            days: self.days,
             places: self.places,
             landmarks: self.landmarks.given().unwrap_or_default(),
             routes: self.routes,

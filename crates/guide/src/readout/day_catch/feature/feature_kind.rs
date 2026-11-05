@@ -20,21 +20,17 @@ pub enum FeatureKind {
 impl FeatureKind {
     #[must_use]
     pub fn phrase(self) -> Label {
-        Label::new(self.text())
-    }
-
-    fn text(self) -> &'static str {
         match self {
-            FeatureKind::Road => "the road",
-            FeatureKind::River => "the river",
-            FeatureKind::Stream => "the stream",
-            FeatureKind::Railway => "the railway",
-            FeatureKind::Station => "the station",
-            FeatureKind::Lake => "the lake",
-            FeatureKind::Coast => "the coast",
-            FeatureKind::Peak => "the mountain",
-            FeatureKind::Place => "the town",
-            FeatureKind::Other => "the landmark",
+            FeatureKind::Road => Label::new("the road"),
+            FeatureKind::River => Label::new("the river"),
+            FeatureKind::Stream => Label::new("the stream"),
+            FeatureKind::Railway => Label::new("the railway"),
+            FeatureKind::Station => Label::new("the station"),
+            FeatureKind::Lake => Label::new("the lake"),
+            FeatureKind::Coast => Label::new("the coast"),
+            FeatureKind::Peak => Label::new("the mountain"),
+            FeatureKind::Place => Label::new("the town"),
+            FeatureKind::Other => Label::new("the landmark"),
         }
     }
 }

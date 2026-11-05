@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 use std::iter;
 
@@ -44,9 +45,10 @@ enum EntryKind {
 
 impl From<&Spelling> for EntryKind {
     fn from(key: &Spelling) -> EntryKind {
-        Some(key)
-            .filter(|key| key.as_ref() == CountingVisitor::KEY)
-            .map_or(EntryKind::Section, |_| EntryKind::Evidence)
+        match key.as_ref().cmp(CountingVisitor::KEY) {
+            Ordering::Equal => EntryKind::Evidence,
+            Ordering::Less | Ordering::Greater => EntryKind::Section,
+        }
     }
 }
 

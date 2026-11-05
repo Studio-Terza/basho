@@ -1,6 +1,5 @@
 use super::link::Link;
 use crate::NodeId;
-use crate::end::End;
 use crate::geo::{Coordinate, RouteLine};
 use crate::itinerary::Problem;
 
@@ -25,9 +24,9 @@ impl MappedSegment {
         }
     }
 
-    pub fn meets(&self, next: &MappedSegment) -> Result<Join, Problem> {
+    pub fn meets(&self, next: &MappedSegment) -> Result<(), Problem> {
         match self.touching(next) {
-            Some(_) => Join::new(self.shared_node(next), self.shared_edge(next)),
+            Some(_) => Self::joined(self.shared_node(next), self.shared_edge(next)),
             None => Err(Problem::SegmentsApart),
         }
     }
@@ -46,36 +45,15 @@ impl MappedSegment {
     }
 
     fn shared_edge(&self, next: &MappedSegment) -> Option<&Link> {
-        self.edge(End::Finish)
-            .filter(|edge| Some(*edge) == next.edge(End::Start))
+        self.links
+            .last()
+            .filter(|edge| Some(*edge) == next.links.first())
     }
 
-    fn edge(&self, end: End) -> Option<&Link> {
-        match end {
-            End::Start => self.links.first(),
-            End::Finish => self.links.last(),
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Join {
-    ByNode,
-    ByEdge,
-}
-
-impl Join {
-    fn new(node: Option<&NodeId>, edge: Option<&Link>) -> Result<Join, Problem> {
+    fn joined(node: Option<&NodeId>, edge: Option<&Link>) -> Result<(), Problem> {
         match node {
-            Some(_) => Ok(Join::ByNode),
-            None => Join::by_edge(edge),
-        }
-    }
-
-    fn by_edge(edge: Option<&Link>) -> Result<Join, Problem> {
-        match edge {
-            Some(_) => Ok(Join::ByEdge),
-            None => Err(Problem::SegmentsApart),
+            Some(_) => Ok(()),
+            None => Link::shared(edge),
         }
     }
 }
