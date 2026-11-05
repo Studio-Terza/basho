@@ -4,6 +4,7 @@ use serde::{Deserialize, Deserializer};
 
 use crate::content::Content;
 use crate::evidence::Evidence;
+use crate::ruby_text::Filling;
 use crate::trip::ContentList;
 
 pub use note_kind::NoteKind;
@@ -20,11 +21,13 @@ pub struct Fact {
 
 impl Fact {
     fn stated<'de, Input: Deserializer<'de>>(input: Input) -> Result<Content, Input::Error> {
-        let text = Content::deserialize(input)?;
-        if text.letters().iter().all(|letter| letter.is_whitespace()) {
-            Err(Input::Error::custom("a fact needs its text"))
-        } else {
-            Ok(text)
+        Content::deserialize(input).and_then(Self::filled::<Input::Error>)
+    }
+
+    fn filled<Failure: Error>(text: Content) -> Result<Content, Failure> {
+        match text.filling() {
+            Filling::Written => Ok(text),
+            Filling::Blank => Err(Failure::custom("a fact needs its text")),
         }
     }
 

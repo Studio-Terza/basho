@@ -1,6 +1,7 @@
 use crate::itinerary::{Day, Finding, Itinerary, Problem};
 use crate::leg::LegIndex;
 use crate::place::Place;
+use crate::words::Slug;
 use newtype::Newtype;
 
 #[derive(Newtype, Debug)]
@@ -41,19 +42,22 @@ impl PlaceCatalog {
     }
 
     fn unknown_on<'day>(&'day self, day: &'day Day) -> impl Iterator<Item = Finding> + 'day {
-        day.legs()
-            .iter()
-            .enumerate()
-            .filter_map(|(index, leg)| leg.place().map(|slug| (index, slug)))
-            .filter(|(_, slug)| !self.places.iter().any(|place| place.slug() == *slug))
-            .map(|(index, slug)| {
-                Finding::on_leg(
-                    day.number(),
-                    LegIndex::new(index),
-                    Problem::UnknownPlace {
-                        slug: slug.to_owned(),
-                    },
-                )
-            })
+        day.legs().iter().enumerate().filter_map(|(index, leg)| {
+            leg.place()
+                .and_then(|slug| self.unlisted(day, LegIndex::new(index), slug))
+        })
+    }
+
+    fn unlisted(&self, day: &Day, leg: LegIndex, slug: &Slug) -> Option<Finding> {
+        match self.places.iter().find(|place| place.slug() == slug) {
+            Some(_) => None,
+            None => Some(Finding::on_leg(
+                day.number(),
+                leg,
+                Problem::UnknownPlace {
+                    slug: slug.to_owned(),
+                },
+            )),
+        }
     }
 }

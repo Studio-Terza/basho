@@ -2,8 +2,6 @@ mod content_list;
 mod trip_error;
 mod trip_file;
 
-use crate::TripSource;
-
 use crate::KnownNames;
 pub use content_list::ContentList;
 
@@ -97,10 +95,6 @@ impl FromStr for Trip {
     type Err = TripError;
 
     fn from_str(text: &str) -> Result<Trip, TripError> {
-        match TripFile::in_stretches(TripSource::new(text)) {
-            Some(file) => file,
-            None => toml::from_str::<TripFile>(text).map_err(TripError::Toml)?,
-        }
-        .trip()
+        text.parse::<TripFile>().and_then(TripFile::trip)
     }
 }

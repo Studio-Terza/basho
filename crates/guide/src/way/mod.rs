@@ -1,4 +1,5 @@
 mod leg_path;
+mod link;
 mod mapped_segment;
 mod mapped_way;
 mod no_mapped_path;

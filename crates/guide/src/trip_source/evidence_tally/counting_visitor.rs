@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::fmt;
 use std::iter;
 
@@ -26,14 +27,27 @@ impl CountingVisitor {
         key: &Spelling,
         entries: &mut Entries,
     ) -> Result<EvidenceCounts, Entries::Error> {
-        if key.as_ref() == Self::KEY {
-            entries
+        match EntryKind::from(key) {
+            EntryKind::Evidence => entries
                 .next_value::<Evidence>()
-                .map(|evidence| EvidenceCounts::from(evidence.kind()))
-        } else {
-            entries
+                .map(|evidence| EvidenceCounts::from(evidence.kind())),
+            EntryKind::Section => entries
                 .next_value::<EvidenceTally>()
-                .map(EvidenceCounts::from)
+                .map(EvidenceCounts::from),
+        }
+    }
+}
+
+enum EntryKind {
+    Evidence,
+    Section,
+}
+
+impl From<&Spelling> for EntryKind {
+    fn from(key: &Spelling) -> EntryKind {
+        match key.as_ref().cmp(CountingVisitor::KEY) {
+            Ordering::Equal => EntryKind::Evidence,
+            Ordering::Less | Ordering::Greater => EntryKind::Section,
         }
     }
 }

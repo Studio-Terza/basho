@@ -1,7 +1,12 @@
+mod findings;
 mod kana_file;
+mod once;
 use crate::words::Label;
+use findings::Findings;
 pub use kana_file::KanaFile;
+use once::Once;
 use std::collections::{BTreeMap, BTreeSet};
+use std::str::FromStr;
 use std::thread::{Scope, ScopedJoinHandle};
 
 use serde::Deserialize;
@@ -40,17 +45,20 @@ pub struct TripFile {
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct TripPart {
-    trip: Option<TripHead>,
+    #[serde(default)]
+    trip: Once<TripHead>,
     #[serde(default)]
     arcs: Vec<Arc>,
     #[serde(default)]
     days: Vec<Day>,
     #[serde(default)]
     places: Vec<Place>,
-    landmarks: Option<Landmarks>,
+    #[serde(default)]
+    landmarks: Once<Landmarks>,
     #[serde(default)]
     routes: Vec<LegLines>,
-    kana: Option<KanaFile>,
+    #[serde(default)]
+    kana: Once<KanaFile>,
     #[serde(default)]
     catches: Vec<DayCatch>,
 }
@@ -64,34 +72,41 @@ impl TripPart {
     }
 
     fn joined(self, next: TripPart) -> Option<TripPart> {
-        let twice = [
-            self.trip.is_some() && next.trip.is_some(),
-            self.landmarks.is_some() && next.landmarks.is_some(),
-            self.kana.is_some() && next.kana.is_some(),
-        ];
-        (!twice.contains(&true)).then(|| TripPart {
-            trip: self.trip.or(next.trip),
+        Some(TripPart {
+            trip: self.trip.joined(next.trip)?,
             arcs: self.arcs.into_iter().chain(next.arcs).collect(),
             days: self.days.into_iter().chain(next.days).collect(),
             places: self.places.into_iter().chain(next.places).collect(),
-            landmarks: self.landmarks.or(next.landmarks),
+            landmarks: self.landmarks.joined(next.landmarks)?,
             routes: self.routes.into_iter().chain(next.routes).collect(),
-            kana: self.kana.or(next.kana),
+            kana: self.kana.joined(next.kana)?,
             catches: self.catches.into_iter().chain(next.catches).collect(),
         })
     }
 
     fn whole(self) -> Option<TripFile> {
-        (!self.arcs.is_empty() && !self.days.is_empty()).then_some(TripFile {
-            trip: self.trip?,
+        self.arcs.first().zip(self.days.first())?;
+        Some(TripFile {
+            trip: self.trip.given()?,
             arcs: self.arcs,
             days: self.days,
             places: self.places,
-            landmarks: self.landmarks.unwrap_or_default(),
+            landmarks: self.landmarks.given().unwrap_or_default(),
             routes: self.routes,
-            kana: self.kana.unwrap_or_default(),
+            kana: self.kana.given().unwrap_or_default(),
             catches: self.catches,
         })
+    }
+}
+
+impl FromStr for TripFile {
+    type Err = TripError;
+
+    fn from_str(text: &str) -> Result<TripFile, TripError> {
+        match TripFile::in_stretches(TripSource::new(text)) {
+            Some(file) => Ok(file),
+            None => toml::from_str::<TripFile>(text).map_err(TripError::Toml),
+        }
     }
 }
 
@@ -166,7 +181,7 @@ impl TripFile {
                 .iter()
                 .copied(),
         );
-        let findings: Vec<Finding> = strays
+        let findings: Findings = strays
             .into_iter()
             .chain(stray_lines)
             .chain(Vec::<Finding>::from(&itinerary))
@@ -174,11 +189,7 @@ impl TripFile {
             .chain(places.findings(&itinerary))
             .chain(named)
             .collect();
-        if findings.is_empty() {
-            Ok(Trip::new(itinerary, places, overview))
-        } else {
-            Err(TripError::Invalid(findings))
-        }
+        findings.into_result(Trip::new(itinerary, places, overview))
     }
 
     fn strays(
@@ -186,11 +197,26 @@ impl TripFile {
         days: impl Iterator<Item = DayNumber>,
         known: &[DayNumber],
     ) -> Vec<Finding> {
-        let mut seen = BTreeSet::new();
-        days.filter(|day| !known.contains(day) || !seen.insert(*day))
+        let days: Vec<DayNumber> = days.collect();
+        let first_at: BTreeMap<DayNumber, usize> = days
+            .iter()
+            .copied()
+            .enumerate()
+            .rev()
+            .map(|(at, day)| (day, at))
+            .collect();
+        let accepted: BTreeSet<usize> = known
+            .iter()
+            .filter_map(|day| first_at.get(day))
+            .copied()
+            .collect();
+        let every: BTreeSet<usize> = (0..days.len()).collect();
+        every
+            .difference(&accepted)
+            .filter_map(|at| days.get(*at))
             .map(|day| {
                 Finding::on_day(
-                    day,
+                    *day,
                     Problem::StraySection {
                         section: Label::new(section),
                     },

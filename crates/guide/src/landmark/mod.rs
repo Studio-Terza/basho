@@ -2,22 +2,26 @@ mod mountain_range;
 mod peak;
 mod river;
 mod sea;
+mod star_key;
+
+use std::collections::BTreeSet;
 
 use crate::StarPoint;
 use crate::day_number::DayNumber;
 use crate::geo::Coordinate;
-use crate::words::StarName;
 use serde::Deserialize;
 
 use crate::end::End;
 use crate::geo::Distance;
 use crate::itinerary::{Day, Finding, Itinerary, Problem};
-use crate::leg::Mode;
+use crate::leg::{LegIndex, Mode};
+use crate::words::StarName;
 
 pub use mountain_range::MountainRange;
 pub use peak::Peak;
 pub use river::River;
 pub use sea::Sea;
+use star_key::StarKey;
 
 #[derive(Debug, Default, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -64,10 +68,11 @@ impl Landmarks {
 
     #[must_use]
     pub fn findings(&self, itinerary: &Itinerary) -> Vec<Finding> {
+        let known: BTreeSet<StarKey<'_>> = self.stars.iter().map(StarKey::from).collect();
         itinerary
             .days()
             .iter()
-            .flat_map(|day| self.unknown_claims(day))
+            .flat_map(|day| Self::unknown_claims(&known, day))
             .chain(self.stars.iter().filter_map(|point| {
                 itinerary
                     .day_number(DayNumber::from(point))
@@ -80,43 +85,46 @@ impl Landmarks {
     fn repeated_names(&self) -> impl Iterator<Item = Finding> + '_ {
         self.stars
             .iter()
-            .enumerate()
-            .filter(|(index, point)| {
-                self.stars[..*index].iter().any(|earlier| {
-                    DayNumber::from(earlier) == DayNumber::from(*point)
-                        && earlier.short() == point.short()
-                })
+            .scan(BTreeSet::new(), |seen, point| {
+                Some(seen.replace(StarKey::from(point)))
             })
-            .map(|(_, point)| {
+            .flatten()
+            .map(|earlier| {
                 Finding::on_day(
-                    DayNumber::from(point),
+                    earlier.day(),
                     Problem::DuplicateStarName {
-                        name: point.short().clone(),
+                        name: earlier.name().clone(),
                     },
                 )
             })
     }
 
-    fn unknown_claims<'day>(&'day self, day: &'day Day) -> impl Iterator<Item = Finding> + 'day {
+    fn unknown_claims<'day>(
+        known: &'day BTreeSet<StarKey<'_>>,
+        day: &'day Day,
+    ) -> impl Iterator<Item = Finding> + 'day {
         day.goals().iter().flat_map(move |goal| {
             goal.purpose()
                 .claims()
                 .iter()
-                .filter(move |name| !self.knows(day, name))
-                .map(move |name| {
-                    Finding::on_leg(
-                        day.number(),
-                        goal.leg(End::Finish),
-                        Problem::UnknownStarPoint { name: name.clone() },
-                    )
-                })
+                .filter_map(move |name| Self::unknown(known, day, goal.leg(End::Finish), name))
         })
     }
 
-    fn knows(&self, day: &Day, name: &StarName) -> bool {
-        self.stars
-            .iter()
-            .any(|point| DayNumber::from(point) == day.number() && point.short() == name)
+    fn unknown(
+        known: &BTreeSet<StarKey<'_>>,
+        day: &Day,
+        leg: LegIndex,
+        name: &StarName,
+    ) -> Option<Finding> {
+        match known.get(&StarKey::new(day.number(), name)) {
+            Some(_) => None,
+            None => Some(Finding::on_leg(
+                day.number(),
+                leg,
+                Problem::UnknownStarPoint { name: name.clone() },
+            )),
+        }
     }
 
     fn unclaimed(point: &StarPoint, day: &Day) -> Option<Finding> {

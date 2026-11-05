@@ -1,41 +1,59 @@
-use std::collections::BTreeSet;
-
+use super::link::Link;
 use crate::NodeId;
-use crate::end::End;
 use crate::geo::{Coordinate, RouteLine};
+use crate::itinerary::Problem;
 
 #[derive(derive_more::AsRef, Clone, Debug, PartialEq)]
 pub struct MappedSegment {
     #[as_ref]
     line: RouteLine,
     nodes: Vec<NodeId>,
+    links: Vec<Link>,
 }
 
 impl MappedSegment {
-    pub(super) fn along(points: Vec<Coordinate>, nodes: Vec<NodeId>) -> MappedSegment {
+    pub(super) fn along(
+        points: Vec<Coordinate>,
+        nodes: Vec<NodeId>,
+        links: Vec<Link>,
+    ) -> MappedSegment {
         MappedSegment {
             line: RouteLine::new(points),
             nodes,
+            links,
         }
     }
 
-    #[must_use]
-    pub fn meets(&self, next: &MappedSegment) -> bool {
-        self.line.points().last() == next.line.points().first()
-            && (self.nodes.last() == next.nodes.first()
-                || self.edge(End::Finish) == next.edge(End::Start))
+    pub fn meets(&self, next: &MappedSegment) -> Result<(), Problem> {
+        match self.touching(next) {
+            Some(_) => Self::joined(self.shared_node(next), self.shared_edge(next)),
+            None => Err(Problem::SegmentsApart),
+        }
     }
 
-    fn edge(&self, end: End) -> Option<BTreeSet<NodeId>> {
-        match end {
-            End::Start => self
-                .nodes
-                .first_chunk::<{ RouteLine::SEGMENT_ENDS_LENGTH }>()
-                .map(|ends| ends.iter().copied().collect()),
-            End::Finish => self
-                .nodes
-                .last_chunk::<{ RouteLine::SEGMENT_ENDS_LENGTH }>()
-                .map(|ends| ends.iter().copied().collect()),
+    fn touching(&self, next: &MappedSegment) -> Option<&Coordinate> {
+        self.line
+            .points()
+            .last()
+            .filter(|end| Some(*end) == next.line.points().first())
+    }
+
+    fn shared_node(&self, next: &MappedSegment) -> Option<&NodeId> {
+        self.nodes
+            .last()
+            .filter(|node| Some(*node) == next.nodes.first())
+    }
+
+    fn shared_edge(&self, next: &MappedSegment) -> Option<&Link> {
+        self.links
+            .last()
+            .filter(|edge| Some(*edge) == next.links.first())
+    }
+
+    fn joined(node: Option<&NodeId>, edge: Option<&Link>) -> Result<(), Problem> {
+        match node {
+            Some(_) => Ok(()),
+            None => Link::shared(edge),
         }
     }
 }

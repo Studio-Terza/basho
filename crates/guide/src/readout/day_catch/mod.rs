@@ -68,7 +68,8 @@ impl DayCatch {
         let picked: Vec<CatchSight<'_>> = self
             .legs
             .iter()
-            .flat_map(|catch| catch.notes_for(leg))
+            .filter(|catch| AsRef::<LegIndex>::as_ref(*catch) == &leg)
+            .flat_map(LegCatch::notes)
             .filter_map(|note| {
                 self.features
                     .iter()
@@ -79,16 +80,30 @@ impl DayCatch {
             })
             .filter(leads)
             .collect();
-        let pool: Vec<CatchSight<'_>> = if picked.is_empty() {
+        Self::pooled(picked, || {
             self.features
                 .iter()
                 .filter_map(|feature| Self::sighted(feature, None, here))
                 .filter(leads)
                 .collect()
-        } else {
-            picked
-        };
-        pool.into_iter()
+        })
+    }
+
+    fn pooled<'catch>(
+        picked: Vec<CatchSight<'catch>>,
+        fallback: impl FnOnce() -> Vec<CatchSight<'catch>>,
+    ) -> Vec<CatchSight<'catch>> {
+        match picked.first() {
+            Some(_) => Self::nearest(picked),
+            None => Self::nearest(fallback()),
+        }
+    }
+
+    fn nearest<'catch>(
+        sights: impl IntoIterator<Item = CatchSight<'catch>>,
+    ) -> Vec<CatchSight<'catch>> {
+        sights
+            .into_iter()
             .fold(Vec::new(), |mut nearest: Vec<CatchSight<'_>>, sight| {
                 let place = nearest.partition_point(|kept| {
                     kept.pointer().distance() <= sight.pointer().distance()

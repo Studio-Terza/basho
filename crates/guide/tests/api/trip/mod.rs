@@ -252,3 +252,31 @@ fn starred_points_on_different_days_may_share_a_short_name() {
         None
     );
 }
+
+const STRAY_ARC_DAYS: &str = "[[arcs]] names no day, or names one twice";
+
+laws::table!(
+    an_arc_is_flagged_once_for_each_unknown_or_repeated_naming_of_a_day,
+    Stray::flagged,
+    [
+        "[1, 2, 3, 4, 9, 9]" => 2,
+        "[1, 2, 2, 2, 3, 4]" => 2,
+        "[3, 1, 3, 9, 2, 4]" => 2,
+        "[1, 2, 3, 4]" => 0,
+    ],
+);
+
+struct Stray;
+
+impl Stray {
+    fn flagged(days: &&str) -> usize {
+        SAMPLE
+            .replacen("days = [1, 2, 3, 4]", &format!("days = {days}"), 1)
+            .parse::<Trip>()
+            .err()
+            .map(|error| error.to_string())
+            .unwrap_or_default()
+            .matches(STRAY_ARC_DAYS)
+            .count()
+    }
+}

@@ -2,7 +2,9 @@ use std::collections::{BTreeMap, BTreeSet};
 
 use crate::NodeId;
 use crate::geo::{Coordinate, RouteLine};
+use crate::itinerary::Problem;
 use crate::way::MappedWay;
+use crate::way::link::Link;
 
 #[derive(Debug, Default)]
 pub struct RoadNetwork {
@@ -32,10 +34,11 @@ impl RoadNetwork {
         self.places.get(&node).copied()
     }
 
-    #[must_use]
-    pub fn joins(&self, from: NodeId, to: NodeId) -> bool {
+    pub fn link(&self, from: NodeId, to: NodeId) -> Result<Link, Problem> {
         self.links
             .get(&from)
-            .is_some_and(|linked| linked.contains(&to))
+            .and_then(|linked| linked.get(&to))
+            .map(|joined| Link::between(from, *joined))
+            .ok_or(Problem::NoConnection { from, to })
     }
 }
