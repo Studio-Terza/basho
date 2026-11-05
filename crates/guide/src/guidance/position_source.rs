@@ -1,5 +1,7 @@
 use crate::clock::{Minutes, TripTime};
 use crate::geo::Distance;
+use crate::guidance::arrow::{Arrow, Freshness};
+use crate::guidance::time_check::TimeCheck;
 use crate::readout::Status;
 use crate::times::FactTime;
 
@@ -33,12 +35,31 @@ impl PositionSource {
     }
 
     #[must_use]
+    pub fn age(self, now: TripTime) -> Freshness {
+        match self {
+            PositionSource::GpsLost { since } => {
+                Freshness::from(now.minutes_since(since).cmp(&Arrow::STALE))
+            }
+            PositionSource::Gps | PositionSource::Estimate => Freshness::Fresh,
+        }
+    }
+
+    #[must_use]
+    pub fn checked(self, off_route: Option<Distance>, check: TimeCheck) -> TimeCheck {
+        match self {
+            PositionSource::Gps => check,
+            PositionSource::GpsLost { .. } | PositionSource::Estimate => {
+                check.relocated(off_route, self.last_fix_time())
+            }
+        }
+    }
+
+    #[must_use]
     pub fn status(self, now: TripTime, off_route: Option<Distance>) -> Status {
-        match (self, off_route) {
-            (PositionSource::GpsLost { since }, _) => Status::NoGps(Some(now.minutes_since(since))),
-            (PositionSource::Estimate, _) => Status::NoGps(None),
-            (PositionSource::Gps, Some(distance)) => Status::OffRoute(distance),
-            (PositionSource::Gps, None) => Status::OnRoute,
+        match self {
+            PositionSource::GpsLost { since } => Status::NoGps(Some(now.minutes_since(since))),
+            PositionSource::Estimate => Status::NoGps(None),
+            PositionSource::Gps => off_route.map_or(Status::OnRoute, Status::OffRoute),
         }
     }
 }

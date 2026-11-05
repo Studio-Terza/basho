@@ -13,11 +13,20 @@ impl RideSlack {
 
     #[must_use]
     pub fn for_mode(self, mode: Mode) -> Minutes {
-        match (self, mode) {
-            (RideSlack::Departure, Mode::Train | Mode::Boat | Mode::Walk) => Minutes::ZERO,
-            (RideSlack::Departure, Mode::Bus | Mode::Car) => Self::ROAD_DELAY,
-            (RideSlack::Arrival, Mode::Train | Mode::Boat | Mode::Walk) => Self::LANDING,
-            (RideSlack::Arrival, Mode::Bus | Mode::Car) => Self::LANDING + Self::ROAD_DELAY,
+        match self {
+            RideSlack::Departure => Self::delay(mode),
+            RideSlack::Arrival => Self::landed(Self::delay(mode)),
         }
+    }
+
+    fn delay(mode: Mode) -> Minutes {
+        match mode {
+            Mode::Train | Mode::Boat | Mode::Walk => Minutes::ZERO,
+            Mode::Bus | Mode::Car => Self::ROAD_DELAY,
+        }
+    }
+
+    fn landed(delay: Minutes) -> Minutes {
+        Self::LANDING + delay
     }
 }

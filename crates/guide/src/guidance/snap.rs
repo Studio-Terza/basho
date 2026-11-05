@@ -6,6 +6,7 @@ use crate::guidance::nearness::Nearness;
 use crate::itinerary::Day;
 use crate::leg::{Leg, LegIndex};
 use newtype::Counter;
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Snap {
@@ -46,11 +47,14 @@ impl Snap {
             .leaves(day)
             .filter(|leaves| clock > *leaves)
             .map(|leaves| clock - leaves);
-        if clock < arrives {
-            clock - arrives
-        } else {
-            overdue.unwrap_or(Minutes::ZERO)
+        match clock.cmp(&arrives) {
+            Ordering::Less => Self::before(clock, arrives),
+            Ordering::Equal | Ordering::Greater => overdue.unwrap_or(Minutes::ZERO),
         }
+    }
+
+    fn before(clock: Minutes, arrives: Minutes) -> Minutes {
+        clock - arrives
     }
 
     fn arrives(self, day: &Day) -> Minutes {
@@ -71,12 +75,15 @@ impl Snap {
                     )
                 })
                 .unwrap_or(Minutes::ZERO);
-            if along <= slack {
-                walked.min(before)
-            } else {
-                walked
-            }
+            Self::pinned(along.cmp(&slack), walked, before)
         })
+    }
+
+    fn pinned(from_start: Ordering, walked: Minutes, before: Minutes) -> Minutes {
+        match from_start {
+            Ordering::Greater => walked,
+            Ordering::Less | Ordering::Equal => walked.min(before),
+        }
     }
 
     fn leaves(self, day: &Day) -> Option<Minutes> {
@@ -86,16 +93,29 @@ impl Snap {
         let walked = leg.time(End::Start).since_midnight()
             + leg.planned_after(along)
             + Self::dwell_between(leg, along, along + slack);
-        let visit = leg.time(End::Finish).since_midnight() + leg.paused(Pause::AtEnd);
-        if along >= leg.length() - slack {
-            day.leg(self.index.incremented()).map(|next| {
-                walked
-                    .max(visit)
-                    .max(next.time(End::Start).since_midnight())
-            })
-        } else {
-            Some(walked)
+        self.parted(day, leg, walked)
+    }
+
+    fn parted(self, day: &Day, leg: &Leg, walked: Minutes) -> Option<Minutes> {
+        match self
+            .fix
+            .along()
+            .cmp(&(leg.length() - Nearness::GpsError.distance()))
+        {
+            Ordering::Less => Some(walked),
+            Ordering::Equal | Ordering::Greater => {
+                Self::onward(day.leg(self.index.incremented()), leg, walked)
+            }
         }
+    }
+
+    fn onward(next: Option<&Leg>, leg: &Leg, walked: Minutes) -> Option<Minutes> {
+        let visit = leg.time(End::Finish).since_midnight() + leg.paused(Pause::AtEnd);
+        next.map(|next| {
+            walked
+                .max(visit)
+                .max(next.time(End::Start).since_midnight())
+        })
     }
 
     #[expect(
@@ -105,7 +125,8 @@ impl Snap {
     fn dwell_between(leg: &Leg, from: Distance, to: Distance) -> Minutes {
         leg.along()
             .iter()
-            .filter(|stop| stop.distance_along() >= from && stop.distance_along() < to)
+            .filter(|stop| stop.distance_along() >= from)
+            .filter(|stop| stop.distance_along() < to)
             .map(|stop| stop.dwell_minutes())
             .sum()
     }

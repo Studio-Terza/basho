@@ -1,8 +1,10 @@
 pub mod allowance;
 
+use std::cmp::Ordering;
 use std::fmt;
 
 use crate::clock::{Minutes, TripTime};
+use crate::geo::Distance;
 use crate::leg::Leg;
 use crate::readout::Emphasis;
 use crate::times::{FactTime, ShownTime};
@@ -33,23 +35,40 @@ pub enum TimeCheck {
 impl TimeCheck {
     #[must_use]
     pub fn comparing(due: TripTime, by: ShownTime, now: TripTime, leg: &Leg) -> TimeCheck {
-        let over = now.minutes_since(due);
-        if over <= Minutes::ZERO {
-            TimeCheck::Expected { by, left: -over }
-        } else if over <= Allowance::for_leg(leg) {
-            TimeCheck::Due { by, over }
-        } else {
-            TimeCheck::Late { by, over }
+        Self::overrun(now.minutes_since(due), by, leg)
+    }
+
+    fn overrun(over: Minutes, by: ShownTime, leg: &Leg) -> TimeCheck {
+        match over.cmp(&Minutes::ZERO) {
+            Ordering::Less | Ordering::Equal => TimeCheck::Expected { by, left: -over },
+            Ordering::Greater => Self::allowed(over.cmp(&Allowance::for_leg(leg)), by, over),
+        }
+    }
+
+    fn allowed(against_allowance: Ordering, by: ShownTime, over: Minutes) -> TimeCheck {
+        match against_allowance {
+            Ordering::Less | Ordering::Equal => TimeCheck::Due { by, over },
+            Ordering::Greater => TimeCheck::Late { by, over },
         }
     }
 
     #[must_use]
     pub fn boarding(due: TripTime, by: ShownTime, now: TripTime) -> TimeCheck {
-        let over = now.minutes_since(due);
-        if over <= Minutes::ZERO {
-            TimeCheck::Expected { by, left: -over }
-        } else {
-            TimeCheck::Due { by, over }
+        Self::early(now.minutes_since(due), by)
+    }
+
+    fn early(over: Minutes, by: ShownTime) -> TimeCheck {
+        match over.cmp(&Minutes::ZERO) {
+            Ordering::Less | Ordering::Equal => TimeCheck::Expected { by, left: -over },
+            Ordering::Greater => TimeCheck::Due { by, over },
+        }
+    }
+
+    #[must_use]
+    pub fn relocated(self, off_route: Option<Distance>, from: Option<FactTime>) -> TimeCheck {
+        match off_route {
+            Some(_) => self,
+            None => self.estimated(from),
         }
     }
 
@@ -73,19 +92,19 @@ impl TimeCheck {
 
     #[must_use]
     pub fn rest(self) -> Spelling {
-        Spelling::new(match self {
+        match self {
             TimeCheck::Expected { left, .. }
             | TimeCheck::Estimated {
                 left, from: None, ..
-            } => format!(" · {left} left"),
+            } => Spelling::new(format!(" · {left} left")),
             TimeCheck::Estimated {
                 left,
                 from: Some(from),
                 ..
-            } => format!(" · {left} left (from {from})"),
-            TimeCheck::Due { .. } => " · now".to_owned(),
-            TimeCheck::Late { .. } => String::new(),
-        })
+            } => Spelling::new(format!(" · {left} left (from {from})")),
+            TimeCheck::Due { .. } => Spelling::new(" · now".to_owned()),
+            TimeCheck::Late { .. } => Spelling::new(String::new()),
+        }
     }
 
     #[must_use]

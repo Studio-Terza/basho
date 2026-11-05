@@ -8,6 +8,7 @@ use crate::guidance::track::Trust;
 use crate::guidance::walk_search::reach::Reach;
 use crate::itinerary::Day;
 use crate::leg::{Leg, LegIndex, Mode};
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Stride {
@@ -53,10 +54,23 @@ impl Stride {
 
     #[must_use]
     pub fn reach(self) -> Reach {
+        match self.walked.cmp(&-Nearness::GpsError.distance()) {
+            Ordering::Less => Reach::Behind,
+            Ordering::Equal | Ordering::Greater => self.within_budget(),
+        }
+    }
+
+    fn within_budget(self) -> Reach {
         match self.budget {
-            _ if self.walked < -Nearness::GpsError.distance() => Reach::Behind,
-            Some(budget) if self.walked > budget => Reach::Beyond,
-            Some(_) | None => Reach::Within,
+            Some(budget) => Self::spent(self.walked.cmp(&budget)),
+            None => Reach::Within,
+        }
+    }
+
+    fn spent(against_budget: Ordering) -> Reach {
+        match against_budget {
+            Ordering::Greater => Reach::Beyond,
+            Ordering::Less | Ordering::Equal => Reach::Within,
         }
     }
 

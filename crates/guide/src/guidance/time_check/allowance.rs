@@ -19,12 +19,16 @@ impl Allowance {
         floor: Minutes::new(3),
     };
 
-    #[must_use]
-    pub fn for_leg(leg: &Leg) -> Minutes {
-        let rule = match leg.mode() {
+    fn for_mode(mode: Mode) -> Allowance {
+        match mode {
             Mode::Walk => Allowance::WALK,
             Mode::Train | Mode::Bus | Mode::Boat | Mode::Car => Allowance::RIDE,
-        };
+        }
+    }
+
+    #[must_use]
+    pub fn for_leg(leg: &Leg) -> Minutes {
+        let rule = Allowance::for_mode(leg.mode());
         let planned = leg
             .time(End::Start)
             .minutes_until(leg.time(End::Finish))

@@ -1,9 +1,11 @@
+use std::cmp::Ordering;
 use std::ops::Range;
 
 use crate::clock::{ClockTime, Minutes};
 use crate::guidance::timeline::buffer::Buffer;
 use crate::guidance::timeline::deadline::Deadline;
-use crate::guidance::timeline::here::Here;
+use crate::guidance::timeline::here::{Here, Lead};
+use crate::guidance::timeline::holding::Holding;
 use crate::leg::LegIndex;
 
 #[derive(Clone, Debug)]
@@ -85,8 +87,18 @@ impl<'day> Stretch<'day> {
     }
 
     #[must_use]
-    pub fn holds(&self, leg: LegIndex) -> bool {
-        self.opener <= leg && self.closer.is_none_or(|closer| leg < closer)
+    pub fn holds(&self, leg: LegIndex) -> Holding {
+        match self.opener.cmp(&leg) {
+            Ordering::Greater => Holding::Free,
+            Ordering::Less | Ordering::Equal => self.holds_until(leg),
+        }
+    }
+
+    fn holds_until(&self, leg: LegIndex) -> Holding {
+        match self.closer {
+            None => Holding::Held,
+            Some(closer) => Holding::from(leg.cmp(&closer)),
+        }
     }
 
     #[must_use]
@@ -105,12 +117,13 @@ impl<'day> Stretch<'day> {
         });
         self.cutoffs
             .iter()
-            .filter(|deadline| here.ahead_of(deadline))
+            .filter(|deadline| here.ahead_of(deadline) == Lead::Ahead)
             .map(|deadline| {
                 Buffer::new(*deadline, here.projected(deadline.reach())).seen_from(here)
             })
             .chain(end)
-            .filter(|buffer| buffer.deadline().leg() >= first && buffer.deadline().leg() <= last)
+            .filter(|buffer| buffer.deadline().leg() >= first)
+            .filter(|buffer| buffer.deadline().leg() <= last)
             .min_by_key(Buffer::spare)
     }
 

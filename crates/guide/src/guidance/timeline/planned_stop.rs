@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::ops::Range;
 
 use crate::clock::{ClockTime, Minutes};
@@ -79,10 +80,16 @@ impl<'day> PlannedStop<'day> {
     pub fn settled(&self, time: Minutes, spent: Option<Minutes>, here: Minutes) -> Minutes {
         let inferred = time - self.planned.since_midnight();
         let spent = spent.unwrap_or(inferred).clamp(Minutes::ZERO, self.booked);
-        match (spent == Minutes::ZERO, spent == self.booked) {
-            (true, _) => here.min(self.reach),
-            (false, true) => here.max(self.reach + spent),
-            (false, false) => self.reach + spent,
+        match spent.cmp(&Minutes::ZERO) {
+            Ordering::Equal => here.min(self.reach),
+            Ordering::Less | Ordering::Greater => self.stayed(spent, here),
+        }
+    }
+
+    fn stayed(&self, spent: Minutes, here: Minutes) -> Minutes {
+        match spent.cmp(&self.booked) {
+            Ordering::Equal => here.max(self.reach + spent),
+            Ordering::Less | Ordering::Greater => self.reach + spent,
         }
     }
 }

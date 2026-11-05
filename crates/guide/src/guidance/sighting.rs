@@ -3,6 +3,7 @@ use crate::geo::{Coordinate, Distance};
 use crate::guidance::{Guidance, LegProgress};
 use crate::itinerary::Day;
 use crate::readout::Trail;
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Sighting {
@@ -60,13 +61,35 @@ impl Sighting {
 
     #[must_use]
     pub fn guidance(self, day: &Day, progress: LegProgress, now: TripTime) -> Guidance<'_> {
-        match self {
-            Sighting::Fresh(at) => Guidance::new(day, progress, now, Some(at)),
-            Sighting::Stale { since, .. } if since.trip_date() != now.trip_date() => {
-                Guidance::new(day, progress, now, None)
-            }
-            Sighting::Stale { at, since } => Guidance::new(day, progress, since, Some(at))
+        match self.standing(now) {
+            Standing::Current(at) => Guidance::new(day, progress, now, Some(at)),
+            Standing::Lapsed => Guidance::new(day, progress, now, None),
+            Standing::Recent { at, since } => Guidance::new(day, progress, since, Some(at))
                 .after_gps_loss(Guidance::new(day, progress, now, None)),
+        }
+    }
+
+    fn standing(self, now: TripTime) -> Standing {
+        match self {
+            Sighting::Fresh(at) => Standing::Current(at),
+            Sighting::Stale { at, since } => {
+                Standing::on_day(since.trip_date().cmp(&now.trip_date()), at, since)
+            }
+        }
+    }
+}
+
+enum Standing {
+    Current(Coordinate),
+    Lapsed,
+    Recent { at: Coordinate, since: TripTime },
+}
+
+impl Standing {
+    fn on_day(same_day: Ordering, at: Coordinate, since: TripTime) -> Standing {
+        match same_day {
+            Ordering::Equal => Standing::Recent { at, since },
+            Ordering::Less | Ordering::Greater => Standing::Lapsed,
         }
     }
 }

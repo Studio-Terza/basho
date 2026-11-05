@@ -137,12 +137,4 @@ impl<'day> Deadline<'day> {
     pub fn haste(&self) -> Haste {
         self.haste
     }
-
-    #[must_use]
-    pub fn ends_stretch(&self) -> bool {
-        matches!(
-            self.kind,
-            DeadlineKind::Ride | DeadlineKind::Tour | DeadlineKind::CheckIn
-        )
-    }
 }

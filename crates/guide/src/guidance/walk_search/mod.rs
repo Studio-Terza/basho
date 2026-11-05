@@ -1,5 +1,6 @@
 mod pick;
 mod reach;
+mod recovering;
 mod stride;
 use crate::clock::TripTime;
 use crate::end::End;
@@ -9,10 +10,12 @@ use crate::guidance::nearness::Nearness;
 use crate::guidance::snap::Snap;
 use crate::guidance::track::{Track, Trust};
 use crate::itinerary::Day;
-use crate::leg::{LegIndex, Mode};
+use crate::leg::{Leg, LegIndex, Mode};
 use newtype::Counter;
 use pick::Pick;
 use reach::Reach;
+use recovering::Recovering;
+use std::cmp::Ordering;
 use stride::Stride;
 
 #[derive(Clone, Copy, Debug)]
@@ -30,13 +33,20 @@ impl<'day> WalkSearch<'day> {
 
     #[must_use]
     pub fn best(self, kept: Option<LegProgress>) -> Option<Track> {
-        let near = self.candidates();
+        self.searched(&self.candidates(), kept)
+    }
+
+    fn searched(self, near: &[Snap], kept: Option<LegProgress>) -> Option<Track> {
         match kept.filter(|kept| self.day.leg(kept.leg()).is_some()) {
-            Some(kept) => self.continued(&near, kept),
-            None => Pick::unseen(self.day, self.here, self.now)
-                .best(&near)
-                .map(|snap| self.tracked(snap, None, Trust::Followed)),
+            Some(kept) => self.continued(near, kept),
+            None => self.unseen(near),
         }
+    }
+
+    fn unseen(self, near: &[Snap]) -> Option<Track> {
+        Pick::unseen(self.day, self.here, self.now)
+            .best(near)
+            .map(|snap| self.tracked(snap, None, Trust::Followed))
     }
 
     #[must_use]
@@ -96,93 +106,63 @@ impl<'day> WalkSearch<'day> {
     }
 
     fn recovered(self, near: &[Snap], kept: LegProgress, best: Distance) -> Option<Track> {
-        let pick = Pick::new(self.day, self.here, self.now, kept);
-        let behind = |snap: &Snap| {
-            Stride::between(self.day, kept, *snap, self.now)
-                .is_some_and(|stride| stride.reach() == Reach::Behind)
-        };
-        let others: Vec<Snap> = near
-            .iter()
-            .copied()
-            .filter(|snap| snap.index() != kept.leg() && snap.fix().off_route() <= best)
-            .collect();
-        let current: Vec<Snap> = near
-            .iter()
-            .copied()
-            .filter(|snap| snap.index() == kept.leg())
-            .collect();
-        let settled: Vec<Snap> = near
-            .iter()
-            .copied()
-            .filter(|snap| {
-                Stride::between(self.day, kept, *snap, self.now)
-                    .is_some_and(|stride| stride.reach() != Reach::Beyond)
-            })
-            .collect();
-        if self.elsewhere(kept) {
-            pick.best(near)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else if self
-            .day
-            .leg(kept.leg())
-            .is_some_and(|leg| leg.mode() != Mode::Walk)
-        {
-            pick.best(&settled)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else if !others.is_empty()
-            && current
-                .iter()
-                .any(|snap| snap.fix().off_route() <= best && behind(snap))
-        {
-            pick.best(&others)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else if others.iter().any(behind)
-            && current
-                .iter()
-                .all(|snap| snap.fix().off_route() > Nearness::OffRoute.distance())
-        {
-            let back: Vec<Snap> = others.iter().copied().filter(behind).collect();
-            pick.best(&back)
-                .map(|snap| self.tracked(snap, Some(kept), Trust::Turned))
-        } else {
-            pick.best(&current).map(|snap| {
-                self.tracked(
-                    snap,
-                    Some(kept),
-                    Stride::between(self.day, kept, snap, self.now)
-                        .map_or(Trust::Unconfirmed, Stride::returning),
-                )
-            })
+        let recovering = Recovering::new(self, near, kept, best);
+        match self.whereabouts(kept) {
+            Whereabouts::Elsewhere => recovering.turned_within(near),
+            Whereabouts::Beside => recovering.aboard(),
         }
     }
 
-    fn elsewhere(self, kept: LegProgress) -> bool {
-        self.day.leg(kept.leg()).is_none_or(|leg| {
-            leg.line()
-                .fix(self.here)
-                .is_none_or(|fix| fix.off_route() > Nearness::ClearlyElsewhere.beside(leg.line()))
-        })
+    fn whereabouts(self, kept: LegProgress) -> Whereabouts {
+        match self.day.leg(kept.leg()) {
+            None => Whereabouts::Elsewhere,
+            Some(leg) => self.along_line(leg),
+        }
+    }
+
+    fn along_line(self, leg: &Leg) -> Whereabouts {
+        match leg.line().fix(self.here) {
+            None => Whereabouts::Elsewhere,
+            Some(fix) => Whereabouts::from(
+                Distance::from(fix.off_route()).cmp(&Nearness::ClearlyElsewhere.beside(leg.line())),
+            ),
+        }
     }
 
     fn tracked(self, snap: Snap, kept: Option<LegProgress>, trust: Trust) -> Track {
         let leg = self.day.leg(snap.index());
         let ended = leg
+            .filter(|leg| snap.fix().along() >= leg.length() - Nearness::GpsError.distance())
             .filter(|leg| {
-                snap.fix().along() >= leg.length() - Nearness::GpsError.distance()
-                    && self.here.distance_to(leg.point(End::Finish))
-                        <= Nearness::OffRoute.distance()
+                self.here.distance_to(leg.point(End::Finish)) <= Nearness::OffRoute.distance()
             })
             .and_then(|_| self.day.leg(snap.index().incremented()))
             .filter(|next| next.mode() == Mode::Walk)
             .map(|next| Snap::at_start(snap.index().incremented(), next, self.here));
         let shown = ended.unwrap_or(snap);
-        let trust = if leg
-            .is_some_and(|leg| snap.fix().off_route() > Nearness::OffRoute.beside(leg.line()))
-        {
-            Trust::Unconfirmed
-        } else {
-            trust
-        };
-        Track::new(shown, kept, trust, self.here)
+        Track::new(shown, kept, self.confirmed(snap, trust), self.here)
+    }
+
+    fn confirmed(self, snap: Snap, trust: Trust) -> Trust {
+        match self.day.leg(snap.index()).map(|leg| {
+            Distance::from(snap.fix().off_route()).cmp(&Nearness::OffRoute.beside(leg.line()))
+        }) {
+            Some(Ordering::Greater) => Trust::Unconfirmed,
+            Some(Ordering::Less | Ordering::Equal) | None => trust,
+        }
+    }
+}
+
+enum Whereabouts {
+    Elsewhere,
+    Beside,
+}
+
+impl From<Ordering> for Whereabouts {
+    fn from(against_reach: Ordering) -> Whereabouts {
+        match against_reach {
+            Ordering::Greater => Whereabouts::Elsewhere,
+            Ordering::Less | Ordering::Equal => Whereabouts::Beside,
+        }
     }
 }

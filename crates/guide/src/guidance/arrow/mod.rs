@@ -7,6 +7,7 @@ use crate::geo::{Bearing, Coordinate, Distance, RouteFix};
 use crate::leg::{Leg, Mode};
 use crate::readout::Pointer;
 use crate::times::FactTime;
+use std::cmp::Ordering;
 
 pub use aim::Aim;
 use arrow_angle::ArrowAngle;
@@ -26,11 +27,19 @@ impl Arrow {
     pub fn ahead(here: Coordinate, leg: &Leg, along: Distance, next: Option<&Leg>) -> Arrow {
         let reach = along + Self::LOOK_AHEAD;
         let target = next
-            .filter(|next| next.mode() == Mode::Walk && reach > leg.length())
-            .and_then(|next| next.line().point_along(reach - leg.length()))
+            .filter(|next| next.mode() == Mode::Walk)
+            .zip(Self::spill(reach, leg.length()))
+            .and_then(|(next, spill)| next.line().point_along(spill))
             .or_else(|| leg.line().point_along(reach))
             .unwrap_or_else(|| leg.point(End::Finish));
         Self::toward(here, target)
+    }
+
+    fn spill(reach: Distance, length: Distance) -> Option<Distance> {
+        match reach.cmp(&length) {
+            Ordering::Greater => Some(reach - length),
+            Ordering::Less | Ordering::Equal => None,
+        }
     }
 
     #[must_use]
@@ -74,5 +83,30 @@ impl Arrow {
     #[must_use]
     pub fn angle(self, heading: Option<Bearing>) -> ArrowAngle {
         ArrowAngle::new(self.pointer.bearing(), heading)
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Freshness {
+    Fresh,
+    Stale,
+}
+
+impl From<Ordering> for Freshness {
+    fn from(against_stale: Ordering) -> Freshness {
+        match against_stale {
+            Ordering::Greater => Freshness::Stale,
+            Ordering::Less | Ordering::Equal => Freshness::Fresh,
+        }
+    }
+}
+
+impl Freshness {
+    #[must_use]
+    pub fn keep<T>(self, found: Option<T>) -> Option<T> {
+        match self {
+            Freshness::Fresh => found,
+            Freshness::Stale => None,
+        }
     }
 }

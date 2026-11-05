@@ -1,6 +1,9 @@
+mod phrase;
 mod progress_error;
+mod reach;
 use crate::words::Written;
 use newtype::Counter;
+use std::cmp::Ordering;
 use std::fmt;
 use std::ops::RangeInclusive;
 use std::str::FromStr;
@@ -8,12 +11,14 @@ use std::str::FromStr;
 use crate::clock::{ClockTime, Minutes, TripTime};
 use crate::day_number::DayNumber;
 use crate::end::End;
-use crate::geo::{Coordinate, Degrees, Distance};
+use crate::geo::{Coordinate, Distance};
 use crate::guidance::nearness::Nearness;
 use crate::guidance::tracking::{Placing, Stage, Tracking};
 use crate::itinerary::Day;
-use crate::leg::{LegIndex, Mode};
+use crate::leg::{Leg, LegIndex, Mode};
+use phrase::{Word, Words};
 use progress_error::ProgressError;
+pub use reach::Reach;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct LegProgress {
@@ -71,9 +76,13 @@ impl LegProgress {
         });
         let pinned = LegProgress::confirmed(day.number(), placing.on_leg(), offset)
             .tracked(Tracking::pinned(placing, baseline));
-        match (placing.stage(), day.leg(placing.on_leg())) {
-            (Stage::Finished, Some(leg)) => pinned.placed(leg.length(), now),
-            _ => pinned,
+        pinned.settled(placing.stage(), day.leg(placing.on_leg()), now)
+    }
+
+    fn settled(self, stage: Stage, leg: Option<&Leg>, now: TripTime) -> LegProgress {
+        match stage {
+            Stage::Finished => leg.map_or(self, |leg| self.placed(leg.length(), now)),
+            Stage::Boarding | Stage::Under => self,
         }
     }
 
@@ -153,52 +162,19 @@ impl LegProgress {
     }
 
     #[must_use]
-    pub fn arrived(self, day: &Day) -> bool {
-        let last = day.legs().len().checked_sub(1).map(LegIndex::new);
-        self.for_day(day.number()).is_some_and(|kept| {
-            Some(kept.leg) == last
-                && day
-                    .leg(kept.leg)
-                    .is_some_and(|leg| kept.along >= leg.length() - Nearness::GpsError.distance())
-        })
+    pub fn reach(self, day: &Day) -> Reach {
+        match self.day.cmp(&Some(day.number())) {
+            Ordering::Equal => Reach::finishing(
+                day.leg(self.leg.incremented()),
+                day.leg(self.leg),
+                self.along,
+            ),
+            Ordering::Less | Ordering::Greater => Reach::Underway,
+        }
     }
 }
 
 impl Eq for LegProgress {}
-
-impl LegProgress {
-    fn offset_word<'text>(rest: &[&'text str]) -> Option<&'text str> {
-        match rest {
-            ["offset" | "behind", offset] | ["behind", _, "started", offset] => Some(*offset),
-            _ => Self::word_after(rest, "offset"),
-        }
-    }
-
-    fn word_after<'text>(rest: &[&'text str], label: &str) -> Option<&'text str> {
-        rest.iter()
-            .zip(rest.iter().skip(1))
-            .find(|(word, _)| **word == label)
-            .map(|(_, next)| *next)
-    }
-
-    fn along_word(rest: &[&str], label: &str) -> Distance {
-        Self::word_after(rest, label)
-            .and_then(|along| along.parse().ok())
-            .map_or(Distance::default(), Distance::new)
-    }
-
-    fn seen_word(rest: &[&str]) -> Option<Coordinate> {
-        rest.iter()
-            .position(|word| *word == "from")
-            .and_then(|from| match rest.get(from..)? {
-                [_, lat, lon, ..] => Some(Coordinate::new(
-                    Degrees::new(lat.parse().ok()?),
-                    Degrees::new(lon.parse().ok()?),
-                )),
-                _ => None,
-            })
-    }
-}
 
 impl fmt::Display for LegProgress {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -232,27 +208,9 @@ impl FromStr for LegProgress {
     type Err = ProgressError;
 
     fn from_str(text: &str) -> Result<LegProgress, ProgressError> {
-        let words: Vec<&str> = text.split_whitespace().collect();
-        match words.as_slice() {
-            ["day", day, "leg", leg, rest @ ..] => Self::offset_word(rest).and_then(|offset| {
-                Some(LegProgress {
-                    day: Some(DayNumber::new(day.parse().ok()?)),
-                    leg: LegIndex::new(leg.parse::<usize>().ok()?.checked_sub(1)?),
-                    along: Self::along_word(rest, "along"),
-                    furthest: Self::along_word(rest, "furthest")
-                        .max(Self::along_word(rest, "along")),
-                    offset: Minutes::new(offset.parse().ok()?),
-                    at: Self::word_after(rest, "at")
-                        .map(str::parse)
-                        .and_then(Result::ok)
-                        .map(Minutes::new)
-                        .map(ClockTime::at_minutes),
-                    seen: Self::seen_word(rest),
-                    tracking: rest.join(" ").parse().unwrap_or_default(),
-                })
-            }),
-            _ => None,
-        }
-        .ok_or_else(|| ProgressError::Unreadable(Written::new(text.to_owned())))
+        let words: Vec<Word<'_>> = text.split_whitespace().map(Word::new).collect();
+        Words::new(&words)
+            .progress()
+            .ok_or_else(|| ProgressError::Unreadable(Written::new(text.to_owned())))
     }
 }

@@ -10,15 +10,22 @@ pub enum Hold {
 
 impl From<Option<&Leg>> for Hold {
     fn from(leg: Option<&Leg>) -> Hold {
-        match leg {
-            Some(leg) if leg.mode() != Mode::Walk => Hold::Ride,
-            Some(leg) if leg.tour().is_some() => Hold::Tour,
-            Some(_) | None => Hold::Free,
+        match leg.map(Leg::mode) {
+            None => Hold::Free,
+            Some(Mode::Walk) => Hold::walking(leg),
+            Some(Mode::Train | Mode::Bus | Mode::Boat | Mode::Car) => Hold::Ride,
         }
     }
 }
 
 impl Hold {
+    fn walking(leg: Option<&Leg>) -> Hold {
+        match leg.and_then(Leg::tour) {
+            Some(_) => Hold::Tour,
+            None => Hold::Free,
+        }
+    }
+
     #[must_use]
     pub fn resume_after(self, closer: LegIndex) -> LegIndex {
         match self {

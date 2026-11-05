@@ -8,6 +8,7 @@ use crate::guidance::snap::Snap;
 use crate::itinerary::Day;
 use crate::leg::{Leg, LegIndex, Mode};
 use newtype::Counter;
+use std::cmp::Ordering;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Platform<'day> {
@@ -61,12 +62,18 @@ impl<'day> Platform<'day> {
     #[must_use]
     pub fn phase(self, now: TripTime) -> Phase {
         let minutes = self.leg.time(End::Start).since_midnight() - now.time().since_midnight();
-        if minutes >= Minutes::ZERO {
-            Phase::Waiting { minutes }
-        } else if -minutes <= RideSlack::Departure.for_mode(self.leg.mode()) {
-            Phase::Overdue
-        } else {
-            Phase::Missed
+        match minutes.cmp(&Minutes::ZERO) {
+            Ordering::Less => {
+                Self::overdue((-minutes).cmp(&RideSlack::Departure.for_mode(self.leg.mode())))
+            }
+            Ordering::Equal | Ordering::Greater => Phase::Waiting { minutes },
+        }
+    }
+
+    fn overdue(against_slack: Ordering) -> Phase {
+        match against_slack {
+            Ordering::Less | Ordering::Equal => Phase::Overdue,
+            Ordering::Greater => Phase::Missed,
         }
     }
 
@@ -77,7 +84,8 @@ impl<'day> Platform<'day> {
             .line()
             .fix(here)
             .filter(|_| now.time() > self.leg.time(End::Start))
-            .filter(|fix| fix.along() > station && fix.off_route() < station)
+            .filter(|fix| fix.along() > station)
+            .filter(|fix| fix.off_route() < station)
             .filter(|fix| {
                 self.walking
                     .is_none_or(|walk| fix.off_route() < walk.fix().off_route())
@@ -87,10 +95,17 @@ impl<'day> Platform<'day> {
 
     #[must_use]
     pub fn late(self, now: TripTime) -> Minutes {
-        if self.phase(now) == Phase::Missed {
-            now.time().since_midnight() - self.leg.time(End::Start).since_midnight()
-        } else {
-            Minutes::ZERO
+        match self.phase(now) {
+            Phase::Missed => self.behind(now),
+            Phase::Preview
+            | Phase::Waiting { .. }
+            | Phase::Moving
+            | Phase::Overdue
+            | Phase::Done => Minutes::ZERO,
         }
+    }
+
+    fn behind(self, now: TripTime) -> Minutes {
+        now.time().since_midnight() - self.leg.time(End::Start).since_midnight()
     }
 }
