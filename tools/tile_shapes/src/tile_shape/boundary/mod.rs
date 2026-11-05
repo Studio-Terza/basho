@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::ops::RangeInclusive;
 
 use map_class::Zoom;
@@ -56,14 +57,16 @@ impl TileShape {
 
     #[must_use]
     pub fn tiles_at(&self, zoom: Zoom) -> Vec<TileId> {
-        let points: Vec<WorldPoint> = match self {
-            TileShape::Spot(point) => vec![*point],
-            TileShape::Line(line) => line.clone(),
-            TileShape::Area(polygons) => polygons.iter().flatten().flatten().copied().collect(),
+        let points: Cow<[WorldPoint]> = match self {
+            TileShape::Spot(point) => Cow::Owned(vec![*point]),
+            TileShape::Line(line) => Cow::Borrowed(line),
+            TileShape::Area(polygons) => {
+                Cow::Owned(polygons.iter().flatten().flatten().copied().collect())
+            }
         };
-        let rows = Self::span_along(&points, GridAxis::Down);
+        let rows: Vec<u32> = Self::span_along(&points, GridAxis::Down).collect();
         Self::span_along(&points, GridAxis::Across)
-            .flat_map(|column| rows.clone().map(move |row| TileId::new(zoom, column, row)))
+            .flat_map(|column| rows.iter().map(move |row| TileId::new(zoom, column, *row)))
             .collect()
     }
 

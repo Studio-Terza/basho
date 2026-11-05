@@ -41,7 +41,7 @@ impl LayerBytes {
         let mut layer = ProtoBytes::default();
         layer.number_field(15, Self::VERSION);
         layer.bytes_field(1, <&str>::from(name).as_bytes());
-        layer.append(&self.features.clone().into_bytes());
+        layer.append(self.features.as_ref());
         self.keys.names_in_order().iter().for_each(|key| {
             layer.bytes_field(3, <&str>::from(**key).as_bytes());
         });

@@ -13,7 +13,7 @@ You need a recent stable Rust toolchain (see `rust-version` in `Cargo.toml`).
 - Run on the iOS simulator (needs Xcode): `cd crates/app && dx serve --platform ios`.
 - Print the days: `cargo xtask print`.
 
-The shared lints come from [Studio-Terza/meta-dev](https://github.com/Studio-Terza/meta-dev): `cargo install --git https://github.com/Studio-Terza/meta-dev --rev 10eaa06225 --locked lint`.
+The shared lints come from [Studio-Terza/meta-dev](https://github.com/Studio-Terza/meta-dev): `cargo install --git https://github.com/Studio-Terza/meta-dev --tag v0.2.0 --locked lint`.
 
 ## Trip file format
 

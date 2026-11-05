@@ -49,3 +49,9 @@ impl ProtoBytes {
         }));
     }
 }
+
+impl AsRef<[u8]> for ProtoBytes {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}

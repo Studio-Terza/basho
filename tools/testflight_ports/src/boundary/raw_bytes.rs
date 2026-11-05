@@ -8,10 +8,6 @@ use serde::Deserialize;
 pub struct RawBytes(Vec<u8>);
 
 impl RawBytes {
-    pub fn decoded(encoded: &str) -> Result<RawBytes, DecodeError> {
-        STANDARD.decode(encoded).map(RawBytes)
-    }
-
     #[must_use]
     pub fn as_slice(&self) -> &[u8] {
         &self.0
@@ -22,7 +18,7 @@ impl TryFrom<String> for RawBytes {
     type Error = DecodeError;
 
     fn try_from(encoded: String) -> Result<RawBytes, DecodeError> {
-        RawBytes::decoded(&encoded)
+        STANDARD.decode(encoded).map(RawBytes)
     }
 }
 
