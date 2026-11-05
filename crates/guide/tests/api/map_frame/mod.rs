@@ -19,13 +19,12 @@ fn every_framed_point_lands_inside_the_frame_with_north_up() {
     let frame = MapFrame::around(&[SOUTH_WEST, NORTH_EAST], WIDTH).expect("frame");
     let low = frame.project(SOUTH_WEST);
     let high = frame.project(NORTH_EAST);
-    assert!(
-        low[ACROSS] > Pixels::ZERO
-            && high[ACROSS] < WIDTH
-            && high[DOWN] > Pixels::ZERO
-            && low[DOWN] < frame.extent(DOWN)
-    );
-    assert!(high[DOWN] < low[DOWN] && high[ACROSS] > low[ACROSS]);
+    assert!(low[ACROSS] > Pixels::ZERO);
+    assert!(high[ACROSS] < WIDTH);
+    assert!(high[DOWN] > Pixels::ZERO);
+    assert!(low[DOWN] < frame.extent(DOWN));
+    assert!(high[DOWN] < low[DOWN]);
+    assert!(high[ACROSS] > low[ACROSS]);
 }
 
 #[test]

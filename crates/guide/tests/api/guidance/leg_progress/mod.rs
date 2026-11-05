@@ -62,7 +62,7 @@ fn at_the_inn_the_day_is_done_even_hours_later() {
             let night = ClockTime::try_from("22:00".to_owned()).unwrap();
             let walker = Walker::fresh(day).strolled(last, inn.length(), Minutes::ZERO);
             let guidance = walker.fix(night, inn.point(INN_DOOR).offset_by(INSIDE, INSIDE));
-            (guidance.phase() != Phase::Done || guidance.recovery().is_some())
+            ((guidance.phase(), guidance.recovery().is_some()) != (Phase::Done, false))
                 .then(|| format!("day {number}: {:?}", guidance.status()))
         })
         .collect();

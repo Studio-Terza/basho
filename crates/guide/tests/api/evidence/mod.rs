@@ -7,11 +7,38 @@ use guide::evidence::{Evidence, EvidenceKind};
 use guide::times::FactTime;
 use guide::{Trip, TripSource};
 
+use crate::fixture::Fixture;
+
 const SAMPLE: &str = include_str!("../../../../../data/trips/sample.toml");
 const BUILT_IN: &str = include_str!("../../../../../data/trips/sample.toml");
 const CITED: &str = "evidence = { source = { url = \"";
 const WEB: &str = "http";
 const RESEARCH: &str = "research/";
+const MISSING_EVIDENCE: &str = "missing field `evidence`";
+const OUTSIDE: [(&str, Cited<'static>); 2] = [(WEB, Cited::Web), (RESEARCH, Cited::Research)];
+
+#[derive(Clone, Copy)]
+enum Cited<'cited> {
+    Web,
+    Research,
+    File(&'cited str),
+}
+
+impl<'cited> Cited<'cited> {
+    fn of(cited: &'cited str) -> Self {
+        OUTSIDE
+            .iter()
+            .find(|(prefix, _)| cited.starts_with(prefix))
+            .map_or(Cited::File(cited), |(_, kind)| *kind)
+    }
+
+    fn file(self) -> Option<&'cited str> {
+        match self {
+            Cited::File(path) => Some(path),
+            Cited::Web | Cited::Research => None,
+        }
+    }
+}
 const PLANNED: &str = "start = { plan = \"09:00\" }";
 const FACT_EVIDENCE: &str = "evidence = { unverified = [\"This place is not real.\"] }";
 const NIGHT_EVIDENCE: &str =
@@ -95,12 +122,13 @@ fn a_night_or_a_fact_with_no_evidence_fails_at_load() {
         SAMPLE.replacen(NIGHT_EVIDENCE, "why = [\"Sleep here.\"]", 1),
         SAMPLE.replacen(FACT_EVIDENCE, "", 1),
     ];
-    assert!(spoiled.iter().all(|text| {
-        text != SAMPLE
-            && text
-                .parse::<Trip>()
-                .is_err_and(|error| error.to_string().contains("missing field `evidence`"))
-    }));
+    let unchanged: Vec<&String> = spoiled.iter().filter(|text| *text == SAMPLE).collect();
+    assert_eq!(unchanged, Vec::<&String>::new());
+    let named: Vec<&String> = spoiled
+        .iter()
+        .filter(|text| Fixture::said(text.parse()).contains(MISSING_EVIDENCE))
+        .collect();
+    assert_eq!(named.len(), spoiled.len());
 }
 
 #[test]
@@ -166,14 +194,19 @@ fn the_counts_of_a_file_are_the_sum_of_its_kinds_and_stop_at_a_bad_entry() {
 #[test]
 fn a_source_in_the_repo_names_a_file_that_is_there() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let missing: Vec<&str> = BUILT_IN
+    let cited: Vec<&str> = BUILT_IN
         .split(CITED)
         .skip(1)
         .filter_map(|rest| rest.split(['"', '#']).next())
-        .filter(|cited| !cited.starts_with(WEB) && !cited.starts_with(RESEARCH))
-        .filter(|cited| !root.join(cited).is_file())
+        .map(Cited::of)
+        .filter_map(Cited::file)
         .collect();
-    assert_eq!(missing, Vec::<&str>::new());
+    let there: Vec<&str> = cited
+        .iter()
+        .copied()
+        .filter(|path| root.join(path).is_file())
+        .collect();
+    assert_eq!(there, cited);
 }
 
 #[test]

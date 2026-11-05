@@ -37,7 +37,10 @@ fn the_first_fixes_of_a_train_leaving_the_station_are_riding_not_missed() {
         .fix(ClockTime::try_from(JUST_LEFT.to_owned()).unwrap(), moving);
     assert!(moving.distance_to(station) < NEAR_THE_STATION);
     assert_eq!(guidance.missed_ride(), None);
-    assert!(guidance.leg_index() == FERN_TRAIN && guidance.phase() == Phase::Moving);
+    assert_eq!(
+        (guidance.leg_index(), guidance.phase()),
+        (FERN_TRAIN, Phase::Moving)
+    );
 }
 
 #[test]
@@ -83,7 +86,7 @@ fn after_the_ride_the_walk_from_the_stop_is_walking_not_riding() {
             let walk = ride.incremented();
             let along = day.leg(walk).unwrap().length() * Share::HALF;
             let guidance = walker.fix_along(walk, along, Minutes::ZERO);
-            (guidance.leg_index() != walk || guidance.status() != Some(Status::OnRoute))
+            ((guidance.leg_index(), guidance.status()) != (walk, Some(Status::OnRoute)))
                 .then(|| format!("day {number} {place}: {:?}", guidance.status()))
         })
         .collect();

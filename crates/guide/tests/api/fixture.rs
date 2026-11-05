@@ -55,6 +55,7 @@ pub struct Fixture;
 
 impl Fixture {
     pub const BUNDLED: &str = include_str!("../../../../data/trips/sample.toml");
+    const FIRST_WALK: &str = "mode = { walk = { reason = \"none_recorded\" } }";
     const CATCHES_ONWARD: &str = "\n[kana]\n";
     const DAYS_OPEN: &str = "\n[[days]]\n";
     const ARCS_OPEN: &str = "\n[[arcs]]\n";
@@ -156,19 +157,30 @@ impl Fixture {
             })
             .map(|listed| listed.trim().to_owned())
             .collect();
-        (!listed.is_empty()).then(|| {
+        listed.split_first().map(|(first, rest)| {
+            let days = rest
+                .iter()
+                .fold(first.clone(), |days, next| format!("{days}, {next}"));
             arc.lines()
                 .map(|line| {
-                    if line.starts_with(Self::ARC_DAYS) {
-                        format!("{}{}]", Self::ARC_DAYS, listed.join(", "))
-                    } else {
-                        line.to_owned()
-                    }
+                    line.split_once(Self::ARC_DAYS).map_or_else(
+                        || line.to_owned(),
+                        |(before, _)| format!("{before}{}{days}]", Self::ARC_DAYS),
+                    )
                 })
                 .collect::<Vec<String>>()
                 .join("\n")
                 + "\n"
         })
+    }
+
+    pub fn with_first_walk_as(mode: &str) -> Result<Trip, TripError> {
+        Self::BUNDLED.replacen(Self::FIRST_WALK, mode, 1).parse()
+    }
+
+    #[must_use]
+    pub fn said(parsed: Result<Trip, TripError>) -> String {
+        parsed.map_or_else(|error| error.to_string(), |_| String::new())
     }
 
     #[must_use]

@@ -48,7 +48,7 @@ fn a_walker_with_gps_history_still_at_the_station_after_departure_missed_it() {
         guidance
             .plans(STATION_ROAD)
             .iter()
-            .any(|plan| plan.leg() == TRAIN && plan.pressing() == Pressing::Now)
+            .any(|plan| (plan.leg(), plan.pressing()) == (TRAIN, Pressing::Now))
     );
 }
 
@@ -64,6 +64,7 @@ fn a_fix_on_the_train_line_is_riding_even_when_the_timetable_says_walking() {
         on_board.unwrap(),
     );
     assert_eq!(guidance.leg_index(), TRAIN);
-    assert!(guidance.source() == PositionSource::Gps && guidance.off_route().is_none());
+    assert_eq!(guidance.source(), PositionSource::Gps);
+    assert!(guidance.off_route().is_none());
     assert_eq!(guidance.phase(), Phase::Moving);
 }

@@ -122,19 +122,24 @@ fn words_keep_what_only_looks_typed() {
     assert!(kept.iter().all(|text| Reader::read(text).is_ok()));
 }
 
+#[derive(Debug, PartialEq)]
+struct Stated(Option<EvidenceKind>);
+
+impl Stated {
+    fn of(part: &Part) -> Option<Self> {
+        match part {
+            Part::Typed(TypedPart::Stated(fact)) => Some(Self(fact.evidence())),
+            Part::Words(_) | Part::Typed(_) => None,
+        }
+    }
+}
+
 #[test]
 fn a_stated_fact_keeps_the_kind_of_its_evidence() {
     let content = Reader::read(
         r#"text = [{ fact = { at = "12:44", source = "train", evidence = { unverified = ["why"] } } }]"#,
     )
     .expect("the fact reads");
-    let kinds: Vec<Option<EvidenceKind>> = content
-        .parts()
-        .iter()
-        .filter_map(|part| match part {
-            Part::Typed(TypedPart::Stated(fact)) => Some(fact.evidence()),
-            Part::Words(_) | Part::Typed(_) => None,
-        })
-        .collect();
-    assert_eq!(kinds, [Some(EvidenceKind::Unverified)]);
+    let kinds: Vec<Stated> = content.parts().iter().filter_map(Stated::of).collect();
+    assert_eq!(kinds, [Stated(Some(EvidenceKind::Unverified))]);
 }

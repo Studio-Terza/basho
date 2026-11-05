@@ -96,16 +96,21 @@ fn a_known_name_in_the_words_of_any_field_is_named_at_load() {
         Planted::disagreement(LEAF, CLEAN),
         Planted::disagreement(CLEAN, LEAF),
     ];
-    let quiet: Vec<&String> = planted
+    let loud: Vec<&String> = planted
         .iter()
         .filter(|text| {
-            !TripSource::new(text)
+            TripSource::new(text)
                 .findings()
                 .iter()
                 .any(|finding| finding.to_string().contains(NAMED))
         })
         .collect();
-    assert!(quiet.is_empty(), "{} leaves passed", quiet.len());
+    assert_eq!(
+        loud.len(),
+        planted.len(),
+        "{} leaves passed",
+        planted.len() - loud.len()
+    );
 }
 
 #[test]
